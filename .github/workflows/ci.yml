@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Node 24 strips TypeScript types itself, which is what lets the test
+        # suite run the sources directly with no build step.
+        node: ['24']
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: The build really emits the declared entry point
+        run: |
+          test -f lib/index.js
+          test -f lib/index.d.ts
+          node -e "import('./lib/index.js').then(m => { if (typeof m.apply !== 'function') throw new Error('apply is not exported'); if (typeof m.Config !== 'function') throw new Error('Config is not a schema'); console.log('entry point ok'); })"

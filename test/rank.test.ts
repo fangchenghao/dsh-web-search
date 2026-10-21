@@ -80,6 +80,16 @@ function urls(sources: Source[]): string[] {
   return sources.map((source) => source.url);
 }
 
+/**
+ * How many ranked sources came from one fake host.
+ * @param sources - ranked sources.
+ * @param marker - hostname fragment to look for.
+ * @returns the count.
+ */
+function countOf(sources: Source[], marker: string): number {
+  return sources.filter((source) => source.url.includes(marker)).length;
+}
+
 test('dedupe collapses www. and a trailing slash while keeping the first row', () => {
   const first = src('https://www.example.com/docs/', undefined, 'first');
   const out = dedupe([
@@ -230,30 +240,56 @@ test('fuse ranks a result two engines agree on above a single-engine result', ()
   assert.equal(fused.length, 4);
 });
 
-test('fuse takes engine weights from the options before the host default', () => {
-  const light = answer(host('light', 'global'), [src('https://light.test/1')]);
-  const heavy = answer(host('heavy', 'global', 1), [
-    src('https://heavy.test/1'),
-    src('https://heavy.test/2'),
-  ]);
-  // Unweighted, the heavy engine's rank-2 row loses to the light rank-1 row.
-  assert.deepEqual(urls(fuse([light, heavy], 3)), [
+test('fuse shapes the slot share from the weights instead of inflating scores', () => {
+  const light = answer(host('light', 'global'), numbered('light', 6));
+  const heavy = answer(host('heavy', 'global', 1), numbered('heavy', 6));
+  // Equal weights alternate: three rows each in a six-row budget.
+  const even = fuse([light, heavy], 6);
+  assert.equal(countOf(even, 'light.test'), 3);
+  assert.equal(countOf(even, 'heavy.test'), 3);
+  // Weight 3 lets the heavy engine take three rows per round. The round still
+  // starts with the first engine, so the light engine keeps the very first slot
+  // and loses the share, not the top position.
+  const heavyShare = fuse([light, heavy], 6, { weights: [1, 3] });
+  assert.deepEqual(urls(heavyShare), [
     'https://light.test/1',
     'https://heavy.test/1',
     'https://heavy.test/2',
+    'https://heavy.test/3',
+    'https://light.test/2',
+    'https://heavy.test/4',
   ]);
-  // At weight 3 the heavy engine takes both top slots and pushes the light row down.
-  assert.deepEqual(urls(fuse([light, heavy], 3, { weights: [1, 3] })), [
-    'https://heavy.test/1',
-    'https://heavy.test/2',
-    'https://light.test/1',
-  ]);
+  assert.equal(countOf(heavyShare, 'light.test'), 2);
+  assert.equal(countOf(heavyShare, 'heavy.test'), 4);
 });
 
 test('fuse falls back to the host weight when no per-engine weight is given', () => {
-  const plain = answer(host('plain', 'global'), [src('https://plain.test/1')]);
-  const boosted = answer(host('boosted', 'global', 2), [src('https://boosted.test/1')]);
-  assert.deepEqual(urls(fuse([plain, boosted], 2)), ['https://boosted.test/1', 'https://plain.test/1']);
+  const light = answer(host('light', 'global'), numbered('light', 6));
+  const fromHost = fuse([light, answer(host('heavy', 'global', 3), numbered('heavy', 6))], 6);
+  const fromOptions = fuse(
+    [light, answer(host('heavy', 'global', 1), numbered('heavy', 6))],
+    6,
+    { weights: [1, 3] },
+  );
+  assert.deepEqual(urls(fromHost), urls(fromOptions));
+  assert.equal(countOf(fromHost, 'heavy.test'), 4);
+});
+
+test('a weight-2 engine cannot outscore another engine at every rank', () => {
+  const heavy = answer(host('anysearch', 'both', 2), numbered('any', 10));
+  const light = answer(host('cnbing', 'cn'), numbered('cnbing', 10));
+  const fused = fuse([heavy, light], 8);
+  // Two-to-one slot share over eight slots, not 8/0.
+  assert.equal(countOf(fused, 'any.test'), 6);
+  assert.equal(countOf(fused, 'cnbing.test'), 2);
+});
+
+test('cross-engine agreement still outranks position after the weight change', () => {
+  const consensus = src('https://consensus.test/doc');
+  const heavy = answer(host('anysearch', 'both', 2), [...numbered('any', 3), consensus]);
+  const light = answer(host('so', 'cn'), [...numbered('so', 2), consensus]);
+  const merged = mergeRegions([heavy, light], 'cn', 8);
+  assert.equal(merged[0]?.url, 'https://consensus.test/doc');
 });
 
 test('fuse breaks exact ties by engine order, then rank, and repeats identically', () => {
@@ -297,6 +333,45 @@ test('mergeRegions fills a CJK-style budget from cn and both engines only', () =
   const merged = mergeRegions(answers, 'cn', 8);
   assert.equal(merged.length, 8);
   for (const source of merged) assert.match(source.url, /^https:\/\/(any|cnbing|so)\.test\//);
+});
+
+test('mergeRegions gives a CJK budget the 2/1/1 slot share, not one engine', () => {
+  // The measured regression: cn.bing answered 10, so 4 and AnySearch (weight 2)
+  // answered 10, and the old multiplicative score returned 8 AnySearch rows.
+  const answers = [
+    answer(host('anysearch', 'both', 2), numbered('any', 10)),
+    answer(host('cnbing', 'cn'), numbered('cnbing', 10)),
+    answer(host('so', 'cn'), numbered('so', 4)),
+  ];
+  const merged = mergeRegions(answers, 'cn', 8);
+  assert.deepEqual(urls(merged), [
+    'https://any.test/1',
+    'https://any.test/2',
+    'https://cnbing.test/1',
+    'https://so.test/1',
+    'https://any.test/3',
+    'https://any.test/4',
+    'https://cnbing.test/2',
+    'https://so.test/2',
+  ]);
+  assert.equal(countOf(merged, 'any.test'), 4);
+  assert.equal(countOf(merged, 'cnbing.test'), 2);
+  assert.equal(countOf(merged, 'so.test'), 2);
+  assert.ok(countOf(merged, 'any.test') <= 5, 'the weight-2 engine must not fill the list');
+});
+
+test('mergeRegions gives an ASCII budget the 2/1/1 slot share of its global engines', () => {
+  const answers = [
+    answer(host('anysearch', 'both', 2), numbered('any', 10)),
+    answer(host('ddg', 'global'), numbered('ddg', 10)),
+    answer(host('bing', 'global'), numbered('bing', 10)),
+    answer(host('cnbing', 'cn'), numbered('cnbing', 10)),
+  ];
+  const merged = mergeRegions(answers, 'global', 8);
+  assert.equal(countOf(merged, 'any.test'), 4);
+  assert.equal(countOf(merged, 'ddg.test'), 2);
+  assert.equal(countOf(merged, 'bing.test'), 2);
+  assert.equal(countOf(merged, 'cnbing.test'), 0, 'a full head never reaches the tail');
 });
 
 test('mergeRegions appends the tail only to fill a short head and never reorders it', () => {

@@ -4,11 +4,26 @@
  * The engines agree on nothing except that a result near the top of their own
  * list is the one they consider relevant, and they do not expose a comparable
  * score. Reciprocal rank fusion turns those ranks into one number the merge can
- * sort on: a source is worth `engineWeight / (rrfConstant + rank)` for every
- * engine that returned it, so agreement between engines compounds and a row
- * carried by two engines beats a row only one engine found.
+ * sort on, but the weight cannot simply multiply that number: at
+ * `rrfConstant = 60` the distance between rank 1 and rank 10 is `1/61` versus
+ * `1/70`, so a weight of 2 would let one engine outscore every other engine at
+ * every rank and fill the whole list by itself. Measured on a CJK query, that is
+ * exactly what happened: AnySearch (weight 2) returned all 8 sources and no
+ * Chinese engine appeared at all.
  *
- * Two corrections ride on top of that score, because rank alone says nothing
+ * Weight therefore shapes *admission*, not score. The engines' lists are walked
+ * in a weighted round robin (a weight-2 engine takes two consecutive rows per
+ * round, so it owns roughly twice the slots), and that interleaved order gives
+ * each candidate a position. A source then scores
+ *
+ *     votes / (rrfConstant + position)
+ *
+ * where `votes` is the number of distinct engines that returned it: appearing
+ * near the top of the merged list is what earns a slot, and cross-engine
+ * agreement doubles the evidence instead of letting one engine's weight double
+ * its every row.
+ *
+ * Two corrections ride on top of that score, because position alone says nothing
  * about the page itself:
  *
  * - authority: official documentation and standards bodies (`postgresql.org`,
@@ -28,7 +43,10 @@
  */
 import type { EngineAnswer, HostSpec, RankOptions, Region, Source } from './types.ts';
 
-/** Reciprocal-rank-fusion constant; larger flattens the rank curve. */
+/**
+ * Reciprocal-rank-fusion constant over the interleaved slot order; a larger
+ * value flattens the curve so authority and freshness reorder more freely.
+ */
 export const RRF_CONSTANT = 60;
 
 /** Domains that earn the authority boost by default: official documentation. */
@@ -81,11 +99,22 @@ interface RankedEntry {
   engineIndex: number;
 }
 
-/** A source plus the evidence the fusion gathered for it. */
+/** One engine's deduplicated list, ready for the weighted round robin. */
+interface CandidateRow {
+  key: string;
+  source: Source;
+  /** 1-based rank inside its own engine, kept for the deterministic tie-break. */
+  rank: number;
+  engineIndex: number;
+}
+
+/** A candidate plus the evidence the fusion gathered for it. */
 interface RankedSource {
   source: Source;
   key: string;
-  /** Fused score after the authority and freshness multipliers. */
+  /** 1-based position in the weighted interleave; the fusion rank. */
+  position: number;
+  /** Fused score after the vote multiplier and the authority/freshness boosts. */
   score: number;
   /** Earliest engine that returned the source; the first tie-break. */
   engineIndex: number;
@@ -250,7 +279,8 @@ function resolveOptions(options: RankOptions | undefined): ResolvedOptions {
 }
 
 /**
- * Weight of one engine in the fusion.
+ * Slot share of one engine in the fusion: how many consecutive rows it takes
+ * per weighted round robin, not a score multiplier.
  *
  * @param weights - per-engine weights from the options.
  * @param engineIndex - position of the engine in the answer array.
@@ -350,6 +380,13 @@ function budgetOf(limit: number): number {
 /**
  * Fuse a group of engines and slice to the budget.
  *
+ * Weight is a slot share, not a score multiplier: the engines' lists are walked
+ * in a weighted round robin (the same order {@link interleave} produces), and a
+ * source's fused rank is its 1-based position in that merged walk. Because every
+ * engine owns its share of each round, no weight can outscore the other engines
+ * at every rank; because a source returned by two engines earns two votes, the
+ * engines that agree can still push a row to the top.
+ *
  * Entry indices are the ones from the caller's `answers` array, so weights and
  * tie-breaks stay aligned even when {@link mergeRegions} fuses two subgroups.
  *
@@ -363,48 +400,75 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
   if (budget === 0) return [];
   const config = resolveOptions(options);
   const now = Date.now();
-  const buckets = new Map<string, RankedSource>();
 
+  // Per-engine lists, deduplicated so one engine gets at most one vote per
+  // document and the earliest row keeps its rank.
+  const lists: CandidateRow[][] = [];
+  const weights: number[] = [];
   for (const entry of entries) {
-    const weight = engineWeight(config.weights, entry.engineIndex, entry.host);
     const seen = new Set<string>();
-    for (let position = 0; position < entry.sources.length; position += 1) {
-      const source = entry.sources[position];
+    const rows: CandidateRow[] = [];
+    for (let index = 0; index < entry.sources.length; index += 1) {
+      const source = entry.sources[index];
       if (source === undefined) continue;
       if (typeof source.url !== 'string' || source.url.trim() === '') continue;
       const key = normaliseUrl(source.url);
-      // One engine gets one vote per document, always at its best rank.
       if (seen.has(key)) continue;
       seen.add(key);
-      const rank = position + 1;
-      const contribution = weight / (config.rrfConstant + rank);
-      const bucket = buckets.get(key);
-      if (bucket === undefined) {
-        buckets.set(key, { source, key, score: contribution, engineIndex: entry.engineIndex, rank });
-        continue;
-      }
-      bucket.score += contribution;
-      if (
-        entry.engineIndex < bucket.engineIndex ||
-        (entry.engineIndex === bucket.engineIndex && rank < bucket.rank)
-      ) {
-        bucket.engineIndex = entry.engineIndex;
-        bucket.rank = rank;
+      rows.push({ key, source, rank: index + 1, engineIndex: entry.engineIndex });
+    }
+    lists.push(rows);
+    weights.push(engineWeight(config.weights, entry.engineIndex, entry.host));
+  }
+
+  const rounds = lists.reduce((deepest, rows, index) => {
+    const weight = weights[index] ?? 1;
+    if (weight === 0 || rows.length === 0) return deepest;
+    return Math.max(deepest, Math.ceil(rows.length / weight));
+  }, 0);
+
+  // The weighted round robin itself: it assigns every row a slot, which is the
+  // fused rank, and counts the distinct engines behind every URL. A repeated
+  // document still occupies its slot (so later rows do not shift up) but only
+  // the first appearance sets the position.
+  const candidates = new Map<string, RankedSource>();
+  const votes = new Map<string, number>();
+  let slot = 0;
+  for (let round = 0; round < rounds; round += 1) {
+    for (let index = 0; index < lists.length; index += 1) {
+      const rows = lists[index];
+      if (rows === undefined) continue;
+      const weight = weights[index] ?? 1;
+      for (let offset = 0; offset < weight; offset += 1) {
+        const row = rows[round * weight + offset];
+        if (row === undefined) continue;
+        slot += 1;
+        votes.set(row.key, (votes.get(row.key) ?? 0) + 1);
+        if (candidates.has(row.key)) continue;
+        candidates.set(row.key, {
+          source: row.source,
+          key: row.key,
+          position: slot,
+          score: 0,
+          engineIndex: row.engineIndex,
+          rank: row.rank,
+        });
       }
     }
   }
 
-  if (buckets.size === 0) return [];
+  if (candidates.size === 0) return [];
 
-  const ranked = [...buckets.values()];
-  for (const bucket of ranked) {
-    let score = bucket.score;
-    if (isAuthoritative(bucket.source.url, config.authorityDomains)) score *= 1 + config.authorityBoost;
-    score *= freshnessFactor(bucket.source.publishedAt, config.freshnessDays, config.freshnessBoost, now);
-    bucket.score = score;
+  const ranked = [...candidates.values()];
+  for (const candidate of ranked) {
+    const voteCount = votes.get(candidate.key) ?? 1;
+    let score = voteCount / (config.rrfConstant + candidate.position);
+    if (isAuthoritative(candidate.source.url, config.authorityDomains)) score *= 1 + config.authorityBoost;
+    score *= freshnessFactor(candidate.source.publishedAt, config.freshnessDays, config.freshnessBoost, now);
+    candidate.score = score;
   }
   ranked.sort(compareRanked);
-  return ranked.slice(0, budget).map((bucket) => bucket.source);
+  return ranked.slice(0, budget).map((candidate) => candidate.source);
 }
 
 /**
@@ -412,7 +476,7 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
  *
  * @param answers - per-engine answers, in engine priority order.
  * @param limit - maximum sources to return.
- * @param options - ranking knobs; `weights` is indexed like `answers`.
+ * @param options - ranking knobs; `weights` is a per-engine slot share indexed like `answers`.
  * @returns the fused sources, highest score first, at most `limit` of them.
  */
 export function fuse(answers: EngineAnswer[], limit: number, options: RankOptions = {}): Source[] {
@@ -445,7 +509,7 @@ function leadsRegion(region: Region, lead: Region): boolean {
  * @param answers - per-engine answers, in engine priority order.
  * @param lead - the region that leads this query (`global` for ASCII, `cn` for CJK).
  * @param limit - maximum sources to return.
- * @param options - ranking knobs; `weights` is indexed like `answers`.
+ * @param options - ranking knobs; `weights` is a per-engine slot share indexed like `answers`.
  * @returns the merged sources, at most `limit` of them.
  */
 export function mergeRegions(

@@ -1,145 +1,76 @@
 # dsh-web-search-bing
 
-给 DeepSeek Harness 的 `web_search` 工具接一个**不需要任何 API key** 的搜索后端。
+A **key-free** search backend for the DeepSeek Harness `web_search` tool: it
+fetches public result pages (DuckDuckGo, Bing, 360) and one anonymous JSON API
+(AnySearch) locally, parses titles, links and snippets, and hands them to the
+`ctx.web` seam. No provider API key, no credential, only ordinary outbound
+network access.
 
-## 它解决什么
+- [中文说明](README.zh-CN.md)
+- [Architecture](docs/architecture.md) · [Engines and their quirks](docs/engines.md) · [Troubleshooting](docs/troubleshooting.md)
+- [Changelog](CHANGELOG.md)
 
-产品自带的搜索后端是 `@deepseek-ai/dsh-web-search-deepseek`（provider id `deepseek-official`）。
-它的检索并不在本地发生，而是把一次 Messages 请求发到 DeepSeek 的 Anthropic 兼容接口，
-由**服务端**原生 `web_search` 工具（`web_search_20250305` → `web_search_tool_result`）执行，
-再把结果块映射成来源列表。因此：
+> **Status: 0.7.0 is unreleased.** The rewrite lives in `src/*.ts` and is
+> compiled to `lib/` (which `package.json` points `main` at). Build before
+> mounting from a checkout — see [Install](#install).
 
-- 没有 DeepSeek 凭据时，`apiKey()` 直接抛 `WEB_PROVIDER_CREDENTIAL_MISSING`，`web_search` 结构性失败；
-- 换成第三方中转地址也救不了——搜索语义在服务端工具里，不在接口形状里。
-  实测 gpugeek 的 `/v1/messages` 收下 `tools` 声明但从不执行，响应里没有
-  `web_search_tool_result` 块（Claude-4.5-Sonnet 900 秒无响应；DeepSeek-V4.1-Flash 只回
-  thinking 块并自述 "I don't have web search tool"），只会把凭据错误换成
-  `WEB_PROVIDER_ERROR: DeepSeek returned no web_search_tool_result blocks`。
+## Why it is needed
 
-本插件把检索搬回本地：自己请求公开搜索结果页，解析出标题、链接、摘要，
-再按 `ctx.web` 的 provider 契约返回。只需要普通出网能力，不需要任何密钥。
+The search provider the harness ships with (`deepseek-official`) has no local
+retrieval step. It sends a Messages request to DeepSeek's Anthropic-compatible
+endpoint and lets the **server-side** `web_search` tool
+(`web_search_20250305` → `web_search_tool_result`) do the searching, then maps
+the result blocks into a source list. So:
 
-## 接口契约
+- without DeepSeek credentials `apiKey()` throws
+  `WEB_PROVIDER_CREDENTIAL_MISSING` and `web_search` fails structurally;
+- pointing the provider at a third-party relay does not help, because the search
+  semantics live in the server-side tool, not in the request shape. Measured on
+  a relay: `/v1/messages` accepted the `tools` declaration but never executed it
+  — Claude-4.5-Sonnet stalled for 900 s, DeepSeek-V4.1-Flash returned only a
+  thinking block saying it had no web-search tool — and the failure merely became
+  `WEB_PROVIDER_ERROR: DeepSeek returned no web_search_tool_result blocks`.
 
-`apply(ctx, config)` 内调用 `ctx.web.registerSearchProvider({ id, available, search })`：
+This plugin moves retrieval back into the process: it requests public result
+pages itself, parses them, and returns sources through the `ctx.web` provider
+contract. `web_fetch` does not go through this plugin and is unchanged.
 
-- `id`：`bing`，由 `web.searchProvider` 选中；
-- `available()`：同步，恒为 `true`；
-- `search(request, signal)`：返回 `{ sources, truncated }`，`sources` 元素形如
-  `{ url, title?, snippet?, publishedAt? }`——空字段直接省略，不写空串；按 URL 去重。
+## Interface
 
-`web_fetch` 不经过本插件，行为不变。
+`apply(ctx, config)` registers a provider with
+`ctx.web.registerSearchProvider({ id, available, search })`:
 
-## 引擎（`engines.js`）
+- `id`: `bing`, selected by `web.searchProvider`;
+- `available()`: synchronous, always `true`;
+- `search(request, signal)`: returns `{ sources, truncated }`, where each source
+  is `{ url, title?, snippet?, publishedAt? }`. Empty fields are omitted rather
+  than written as `''`, and sources are deduplicated by URL. When every engine
+  fails, it throws an `Error` whose message contains each engine's failure
+  reason. A blank query is rejected, and caller cancellation surfaces as an
+  error rather than an empty list.
 
-分两档，保证被墙或变慢的引擎不会拖累已经能出结果的引擎。每个引擎还带 `region`
-（`global` / `cn`）决定合并顺序，以及 `weight` 决定它在合并时占的槽位比例：
+## Install
 
-| id | 档位 | 区域 | 权重 | 出网方式 | 说明 |
-| --- | --- | --- | --- | --- | --- |
-| `anysearch` | primary | **both** | 2 | 直连优先 | AnySearch 官方 JSON API（`POST api.anysearch.com/v1/search`，可匿名）。**精度最高，中英文都主导**：英文给官方文档与深度文章，中文给原版文档/译本而不是 SEO 农场；且不依赖隧道 |
-| `ddg-html` | primary | global | 1 | 必须走隧道 | DuckDuckGo HTML 端点。英文原版文档最全 |
-| `cn.bing` | primary | cn | 1 | 直连优先 | 中文查询主力，中英混合也能用，结果 URL 为直链 |
-| `so` | primary | cn | 1 | 直连优先 | 360 搜索。中文相关性好，真实 URL 在锚点 `data-mdurl` 里 |
-| `www.bing` | fallback | global | 1 | 必须走隧道 | Bing 国际版（`setmkt=en-US`）。**降级为兜底**：实测它对含停用词的英文查询只匹配单个 token（`how to set up postgres logical replication` 返回了拼图游戏站），只有前面全空时才值得一试 |
-| `ddg-lite` | fallback | global | 1 | 必须走隧道 | 仅在 primary 全部零结果时才走到；`ddg-html` 的备用端点 |
+Requirements: a DeepSeek Harness profile with the `web` service, and Node 22.18+
+(the source uses native TypeScript type stripping; the reference runtime here is
+Node 24). No API key is involved.
 
-primary 档**全部并发发出**；差别只在「等多久」，不发出就永远拿不到。
+From a checkout, compile first — `main` points at `lib/index.js`, which does not
+exist until the build has run:
 
-前两个 global 引擎都**不需要密钥**；`anysearch` 还能直连，所以即使没挂代理，
-英文查询也仍有结果（此时 `ddg-html` 因必须走隧道而被过滤掉，由 `anysearch` 单独承担）。
-AnySearch 匿名调用每次返回至多 10 条；申请 key 后免费额度 1,000 次/天。
-
-### 合并顺序：按查询语言分区域
-
-先按 `region` 分成「主导区」和「补充区」，主导区的结果先按权重交错填满 `limit`，
-只有主导区不够时才用补充区的结果补齐，最后按 URL 去重（`www.` 前缀与结尾 `/` 视为同一篇）：
-
-| 查询 | 主导区 | 效果（实测） |
-| --- | --- | --- |
-| 纯 ASCII（英文） | global + both | 前 8 条 8/8 全是国外资源，且全在题上（Postgres 官方文档、`tokio.rs`、`corrode.dev`、K8s 官方文档） |
-| 含中日文（CJK） | cn + both | 前 8 条含 AnySearch 的原版文档/译本，中文资源为主 |
-
-这样英文查询不会被按单个词匹配出的词典页/百科页/无关站占位——实测
-`how does tokio schedule tasks` 的国内结果是 "does" 的词典页，
-`how to set up postgres logical replication` 的 Bing 结果是拼图游戏站。
-
-### 为什么中文查询也要等 AnySearch（A/B 实测）
-
-同一查询跑两次：A 组只用国内引擎（`cn.bing` + `360`），B 组加上 AnySearch。
-
-| 查询 | A（只用国内引擎） | B（+AnySearch） |
-| --- | --- | --- |
-| `如何配置 postgres 逻辑复制` | 百度百科「如何（汉语词语）」、张悬《如何》歌词解析、知乎无关帖 ❌ | Cloud SQL 官方文档、cnblogs 配置教程、AWS 规范指导、Azure 文档、腾讯云、淘宝数据库月报 ✅ |
-| `Python GIL 是什么` | python.org 首页、下载页、菜鸟教程 —— **没有一条讲 GIL** ❌ | 知乎《谈谈 python 的 GIL》、`cenalulu.github.io` GIL 详解、CSDN 什么是 GIL、JetBrains 中文博客、维基「全域直譯器鎖」✅ |
-| `DeepSeek Harness 插件开发` | deepseek.com 首页、百度百科、App Store、GitHub 组织页 —— 全是首页噪声 ❌ | 知乎实战教程、`github.com/deepseek-ai/deepseek-harness`、官方 harness 页、dev.to 教程、bilibili 视频 ✅ |
-| `Rust 所有权 借用检查` | rust-lang 首页、菜鸟教程、百度百科 | `colobu.com` Effective Rust 中文版、reddit 讨论、rustwiki 绕例学 Rust、`rust-book.junmajinlong.com` ✅ |
-
-差别最大的正是**疑问句和含停用词**的中文查询：国内引擎会把「如何」「是什么」当检索词，
-返回词典页和百科页。代价是中文查询从 0.2–0.7s 变成 1.4–2.3s。
-
-### 等待策略（`wait`）
-
-一档的结束条件是四者之一：所有引擎都返回、主导区所有引擎都已返回（无论成败）、
-已凑够 `limit` 条且够「贡献者数」、或软截止到点。到点仍在跑的引擎会被中止。
-
-| `wait` | 行为 | 软截止 | 实测耗时 |
-| --- | --- | --- | --- |
-| `auto`（默认） | 英文等主导区（global）全部，中文等主导区（cn）全部 | 英文 6000ms / 中文 3500ms | 英文 2.6–3.8s / 中文 1.4–2.3s |
-| `fast` | 1 家引擎有结果即返回 | 3500ms | 最快，跨引擎合并最少 |
-| `all` | 等到**所有** primary 都返回 | 10000ms | 最全，但要等最慢的那家 |
-
-英文查询多等两秒换来的是文档覆盖率翻倍（实测 16–30 条、12–21 个域名），值得；中文查询
-多等一秒多换掉整页的词典页噪声，同样值得。
-
-## 被拦引擎的冷却
-
-抓公开结果页不是官方接口，请求密集时对方会回验证页（实测 360 回 `访问异常页面`
-+ captcha，神马回 `x5sec` punish 页）。这类失败会记入 5 分钟冷却，冷却期内该引擎
-不参与（失败列表里显示 `cooling down after a block page`），避免每次搜索都白试一遍
-并反复触发对方风控。冷却不会让引擎集合变空——全都在冷却时仍会照常尝试。
-
-国内引擎仍先直连、失败才改走隧道，所以挂着梯子时它们不会被绕道拖慢。
-
-### 反「限流页」校验
-
-搜索引擎对短时间内的连续无人值守请求可能不回结果页，而回一个「热门推荐」页——
-里面的条目属于别人的查询。实测中这些条目曾被当成用户查询的结果。
-每页都会回显查询词（搜索框里），所以每个引擎在解析前都要求页面里出现查询词的
-任一 ≥3 字符片段；不出现的页面记为失败，让位给下一个引擎。
-
-## 代理（`proxy.js`）
-
-`fetch` 不读 macOS 系统代理，也不读 `HTTPS_PROXY`：undici 只在进程以
-`NODE_USE_ENV_PROXY=1`（或 `--use-env-proxy`）启动时才认代理环境变量，
-而这个开关在进程启动后无法再打开（实测进程内设置变量后仍然 `ECONNRESET`），
-`undici.ProxyAgent` 也不可达（Node 不把 `undici` 暴露为模块）。
-所以需要代理时本插件自己连代理：发 `CONNECT`、对 `https:` 目标做 TLS 升级、
-再手写 HTTP 请求并解析响应（含 `Content-Length`/`chunked`/`gzip` 与 ≤4 次跳转）。
-代理只作用于本插件，应用其它流量走原来路径。
-
-代理来源顺序（`proxy.js` 的 `resolveProxy`）：
-
-1. 插件配置里的 `proxy`（形如 `http://127.0.0.1:7890`，需为 HTTP 代理）；
-2. 环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`；
-3. macOS 系统代理（`scutil --proxy`）——即 Clash 等「设为系统代理」时写入的地址；
-   仅在端口可连通时采用，结果缓存 60 秒。
-
-所以：**梯子开着且设为系统代理时，无需任何配置**；梯子关掉时端口连不上，
-自动退回直连，不会让搜索失败。也可以显式固定：
-
-```yaml
-- id: web-search-bing
-  name: dsh-web-search-bing
-  config:
-    proxy: "http://127.0.0.1:7890"
+```sh
+npm run build
 ```
 
-TUN / 增强模式下由内核透明接管 TCP，这个模块不会介入，行为与直连一致。
+The bundle declares its patch in `cordis.patch.yml`:
 
-## 配置
+```yaml
+- insert:
+    - id: web-search-bing
+      name: dsh-web-search-bing
+```
 
-在 profile 的 `cordis.patch.yml` 里覆盖 `web` 行：
+Then select the provider on the profile's `web` row:
 
 ```yaml
 - id: web
@@ -149,43 +80,264 @@ TUN / 增强模式下由内核透明接管 TCP，这个模块不会介入，行�
     fetchProvider: http
 ```
 
-插件自身可选字段：`hosts`（允许的引擎 id 数组）、`timeoutMs`（单引擎超时，默认 15000）、
-`wait`（`auto` | `all` | `fast`，默认 `auto`）、`proxy`（见上）。
-`limit` 与 `softMs` 由调用方/引擎内部决定，正常不需要配。
+Editing `src/*.ts` requires **rebuilding and restarting DSH**: an ESM module is
+evaluated once per process and a running host keeps the code it was loaded with.
+
+## Engines
+
+Each engine declares a tier, the query language side it leads, a weight and a
+transport. `primary` engines run concurrently; `fallback` engines run only when
+no primary produced a single source.
+
+| id | tier | region | weight | transport | notes |
+| --- | --- | --- | --- | --- | --- |
+| `anysearch` | primary | both | 2 | direct first, JSON `POST` | `api.anysearch.com/v1/search`, anonymous. Most precise; leads ASCII **and** CJK queries; two slots per fusion round. Caps at 10 results per anonymous call. |
+| `ddg-html` | primary | global | 1 | tunnel only (`viaProxy`) | `html.duckduckgo.com/html/`. Widest English original-document coverage. |
+| `cn.bing` | primary | cn | 1 | direct first, tunnel on failure | `cn.bing.com/search`. Domestic workhorse for Chinese queries; direct URLs. |
+| `so` | primary | cn | 1 | direct first, tunnel on failure | 360 (`www.so.com/s`). Good Chinese relevance; the real URL is in the anchor's `data-mdurl`. |
+| `www.bing` | fallback | global | 1 | tunnel only (`viaProxy`) | Bing international (`setmkt=en-US`). **Demoted to a fallback**: measured on stopword-heavy English it matched a single token (see below). |
+| `ddg-lite` | fallback | global | 1 | tunnel only (`viaProxy`) | `lite.duckduckgo.com/lite/`. Backup endpoint for `ddg-html`. |
+
+Every engine that is not `viaProxy` is tried directly first, because that is both
+faster and the path the site expects; only a direct failure is retried through
+the tunnel. The three `viaProxy` engines take part only when a proxy is
+available, so a machine without one still searches through `anysearch`,
+`cn.bing` and `so`.
+
+## Bilingual region policy
+
+Engines whose region matches the query script — or are marked `both` — form the
+leading group. It fills the caller's budget first; the other region only appends
+when the leading group came up short. The policy exists so an English query is
+not filled with dictionary pages from an engine that matched one word of it:
+
+- `how does tokio schedule tasks` — the domestic result was a dictionary page
+  for "does";
+- `how to set up postgres logical replication` — Bing returned jigsaw-puzzle
+  sites for "set".
+
+| Query script | Leading region | Measured effect |
+| --- | --- | --- |
+| ASCII only | `global` + `both` | first 8 sources were 8/8 foreign, on-topic resources: PostgreSQL manuals, `tokio.rs`, `corrode.dev`, Kubernetes documentation |
+| contains CJK | `cn` + `both` | first 8 sources were mostly Chinese resources, plus AnySearch's original documentation and translated books |
+
+### A/B evidence: CJK queries need AnySearch too
+
+Same queries, two runs: A with domestic engines only (`cn.bing` + 360), B with
+AnySearch added.
+
+| Query | A — domestic engines only | B — plus AnySearch |
+| --- | --- | --- |
+| `如何配置 postgres 逻辑复制` | Baidu Baike page for the word "如何", a 张悬 song-lyric analysis, an unrelated Zhihu thread ❌ | Cloud SQL documentation, a cnblogs walkthrough, the AWS specification guide, Azure documentation, Tencent Cloud, a Taobao database monthly ✅ |
+| `Python GIL 是什么` | python.org home page, download page, a tutorial site — **not one explains the GIL** ❌ | Zhihu's "谈谈 python 的 GIL", a GIL explainer on `cenalulu.github.io`, CSDN's "什么是 GIL", JetBrains' Chinese blog, Wikipedia's 全域直譯器鎖 ✅ |
+| `DeepSeek Harness 插件开发` | deepseek.com home page, Baidu Baike, App Store, a GitHub org page — all front-page noise ❌ | a Zhihu hands-on tutorial, `github.com/deepseek-ai/deepseek-harness`, the official harness page, a dev.to tutorial, a bilibili video ✅ |
+| `Rust 所有权 借用检查` | rust-lang home page, a tutorial site, Baidu Baike | `colobu.com`'s Chinese *Effective Rust*, a Reddit thread, rustwiki's learn-Rust-by-counterexample, `rust-book.junmajinlong.com` ✅ |
+
+The largest gap is exactly on **questions and stopword-heavy** Chinese queries,
+where domestic engines treat "如何"/"是什么" as search terms and return dictionary
+and encyclopedia pages. The price is visible: a Chinese query takes 1.4–2.3 s
+instead of 0.2–0.7 s with domestic engines alone.
+
+## Waiting policy (`wait`)
+
+A tier releases on the first of: every engine settled, every engine of the
+leading region settled (success or failure), enough sources from enough
+contributors, or the soft deadline. Engines still running at the deadline are
+aborted, and reported as `still running at deadline` (or `aborted once enough
+results had arrived`).
+
+| `wait` | Behaviour | Soft deadline | Measured |
+| --- | --- | --- | --- |
+| `auto` (default) | ASCII waits for the `global` side, CJK for the `cn` side | 6000 ms ASCII / 3500 ms CJK | 2.6–3.8 s English / 1.4–2.3 s Chinese |
+| `fast` | return as soon as one engine has results | 3500 ms | fastest, least cross-engine merging |
+| `all` | wait for **every** engine in the tier | 10000 ms | most complete, waits for the slowest engine |
+
+Waiting the extra couple of seconds for an English query roughly doubles
+document coverage — measured 16–30 sources across 12–21 distinct domains.
+
+## Ranking
+
+Answers are merged with **reciprocal rank fusion** (RRF). An engine exposes no
+comparable score, only its own ordering, so the merge reads the rank each source
+holds in every list that returned it. Weight cannot simply multiply that score:
+at `rrfConstant = 60` the distance between rank 1 and rank 10 is `1/61` against
+`1/70`, so a weight of 2 would beat every other engine at every rank and take the
+whole list by itself — measured, that is exactly what happened before this rule
+was fixed: on a CJK query AnySearch (weight 2) returned all 8 sources and no
+Chinese engine appeared at all.
+
+Weight therefore shapes **admission**, not score. The per-engine lists are walked
+in a weighted round robin — a weight-2 engine takes two consecutive rows per
+round, so it owns roughly twice the slots — and that interleaved order gives each
+candidate its 1-based `position`. A source then scores
+
+```
+score(source) = votes / (rrfConstant + position)
+```
+
+where `votes` is the number of **distinct engines** that returned it, so
+cross-engine agreement compounds while one engine's weight does not, and
+`rrfConstant` flattens the position curve (default 60). Measured with weights
+2/1/1 over lists of 10, 10 and 4 results at `limit: 8`, admission splits 4/2/2;
+the old weight-as-multiplier rule produced 8/0/0. Two multipliers ride on top:
+
+- **authority** — sources on an official documentation domain are multiplied by
+  `1 + authorityBoost` (default 0.25). The built-in list covers PostgreSQL,
+  Kubernetes, Rust, SQLite, Python, Node.js, MDN, AWS, Microsoft Learn, Google
+  Cloud, W3C, RFC Editor, man7, Docker, Git, MySQL, Redis and nginx; extra
+  domains can be added with `authorityDomains`.
+- **freshness** — a result published `ageDays` ago is multiplied by
+  `1 + freshnessBoost × (1 − ageDays / freshnessDays)` while it is younger than
+  `freshnessDays` (defaults 0.2 and 30). An unparsable date is ignored, never
+  penalised.
+
+Ties are deterministic: earlier engine index, then earlier rank within it, then
+the URL string. The bilingual region policy is applied before fusion, so the
+losing region can never reorder the head of the list.
+
+> No engine currently sets `publishedAt`: the scraped pages do not expose a
+> stable date, so results carry none and the freshness boost is inactive until
+> an engine supplies one.
+
+## Caching
+
+Successful, non-empty results are cached per logical request. The key is
+`lead|wait|limit|sorted engine ids|normalised query` — the query is trimmed,
+lowercased and has internal whitespace collapsed, and engine order never
+matters. The engine ids are the set the run would use *before* the cooldown
+filter, so an engine entering or leaving a cooldown cannot invalidate an entry
+that is still fresh. Entries expire after `cacheTtlMs` (default 10 minutes) and the least
+recently used entry is evicted beyond `cacheEntries` (default 100);
+`cacheTtlMs: 0` disables the cache. Cached arrays are copied in and out, so a
+caller cannot mutate the cache. A hit skips every request, so the failure list
+contains only the cooldown notices gathered before the lookup.
+
+## Cooldown
+
+Scraping a public result page is not a supported interface, so an engine that
+answered with a block page is rested instead of re-triggered on every search.
+The failure is classified, and the code decides what happens next:
+
+- `SEARCH_THROTTLED` (HTTP 429), `SEARCH_BLOCKED` (HTTP 403 or an echoed-query
+  mismatch), `SEARCH_TIMEOUT` and `SEARCH_NETWORK` cool the engine down;
+- `SEARCH_PARSE` (markup drift — retrying cannot help) and `SEARCH_ABORTED`
+  (the caller cancelled) never do.
+
+A cooldown lasts the service's own `Retry-After` when one was sent (delta
+seconds or an HTTP date, read from the final redirect hop), otherwise
+`baseCooldownMs` doubled per consecutive failure, capped at `maxCooldownMs` —
+5 minutes to 30 minutes by default. A success resets the streak. Cooldowns never
+empty the engine set: if every engine is cooling, the run uses them anyway. A
+skipped engine appears in the failure list as
+`cooling down for another 2m 10s after SEARCH_THROTTLED`.
+
+## Configuration
+
+The loader validates the config section against a schemastery schema before
+`apply` runs, so a bad value fails loudly with its path (`$.timeoutMs expected
+number >= 500 but got 10`) rather than silently falling back to a default.
+Unknown keys are not rejected, so spell the names from the table below exactly.
+
+| Key | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `hosts` | `string[]` | `[]` (all) | Restrict the run to these engine ids. |
+| `timeoutMs` | integer ≥ 500 | `15000` | Per-engine request deadline. |
+| `wait` | `auto`, `all`, `fast` | `auto` | How long a tier waits. |
+| `proxy` | string | `''` (detect) | Explicit tunnel URL, e.g. `http://127.0.0.1:7890`. |
+| `limit` | integer 1–20 | `8` | Upper bound on returned sources; the caller's `maxResults` wins when smaller. |
+| `rrfConstant` | integer ≥ 1 | `60` | RRF constant; larger flattens the rank curve. |
+| `authorityDomains` | `string[]` | `[]` | Extra domains earning the authority boost, on top of the built-in list. |
+| `authorityBoost` | number 0–10 | `0.25` | Added multiplier for an authoritative domain: `× (1 + boost)`. |
+| `freshnessBoost` | number 0–10 | `0.2` | Added multiplier for a result published today; fades linearly to zero. |
+| `freshnessDays` | integer ≥ 1 | `30` | Age at which the freshness boost has faded out. |
+| `cacheTtlMs` | integer ≥ 0 | `600000` | Cache lifetime; `0` disables the cache. |
+| `cacheEntries` | integer ≥ 0 | `100` | Cached queries before the least recently used is evicted. |
+| `baseCooldownMs` | integer ≥ 0 | `300000` | Cooldown after a failure that carried no wait hint. |
+| `maxCooldownMs` | integer ≥ 0 | `1800000` | Ceiling for the exponential cooldown. |
 
 ```yaml
 - id: web-search-bing
   name: dsh-web-search-bing
   config:
     wait: auto
-    proxy: "http://127.0.0.1:7890"   # 省略则自动探测 macOS 系统代理
+    limit: 8
+    proxy: "http://127.0.0.1:7890"   # omit to auto-detect
+    cacheTtlMs: 600000
 ```
 
-修改 `index.js`/`engines.js`/`proxy.js` 后必须**重启 DSH** 才会生效：
-Node 的 ESM 模块在进程内只求值一次，运行中的宿主仍然跑着装入时的旧代码。
+## Proxy
 
-## 已知限制
+Node's global `fetch` reads neither the macOS system proxy settings nor
+`HTTPS_PROXY`: undici honours them only when the process is started with
+`NODE_USE_ENV_PROXY=1`, and that cannot be enabled from inside a running
+process; `undici.ProxyAgent` is not reachable either. So when a proxy is needed
+this plugin speaks to it directly: it opens an HTTP `CONNECT` tunnel, upgrades it
+with TLS for `https:` targets, writes the request itself and decodes
+`Content-Length`, chunked, gzip, deflate and brotli bodies, following up to four
+redirects hop by hop. `307`/`308` keep the method and body; any other `3xx`
+downgrades a `POST` to a bodyless `GET`. Proxying is scoped to this plugin — the
+rest of the app keeps its ordinary network path.
 
-- 相关性取决于上游结果页，整体不如商业搜索 API；免密钥抓取会被上游限流
-  （实测 360 触发 `访问异常页面`、神马触发 `x5sec` 惩罚页），靠冷却与多引擎互补兜住。
-- Google 抓不到：走隧道请求 `www.google.com/search` 只回 JS 空壳（94KB、1–3 个链接），
-  无头 Chrome 则被重定向到 `google.com.hk` 并回 recaptcha 反爬页；`gbv=1`、consent
-  cookie、移动端 UA 均无法绕过。公共 SearXNG 实例同样不可用（8 个全部 429/403/非 JSON）。
-- 依赖上游 HTML 结构。上游改版会让解析失败——此时该引擎记一条失败原因并让位给下一个，
-  `web_search` 报出「试过的引擎及各自失败原因」，而不是静默返回空列表。
-- 结果里只有标题、链接、摘要，不含正文；正文交给 `web_fetch`。
-- 不会解析 `publishedAt`：结果页日期格式不稳定，宁缺勿错。
-- 代理只支持 HTTP 代理（`CONNECT`）；`socks5://` 需换成客户端的 HTTP/mixed 端口。
+Resolution order: explicit `proxy` config → the environment
+(`DSH_WEB_SEARCH_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, both casings)
+→ the macOS system proxy from `scutil --proxy`, which is only adopted when its
+port accepts a TCP connection (400 ms probe). The decision is cached for 60
+seconds. So with a tunnel running and set as the system proxy, no configuration
+is needed; with the tunnel off the port refuses and the run degrades to direct
+requests instead of failing. Under TUN/enhanced mode the kernel takes over TCP
+transparently and this module behaves like a direct request. Only HTTP proxies
+are supported — `socks5://` must be replaced with the client's HTTP/mixed port.
 
-## 自测
+See [docs/troubleshooting.md](docs/troubleshooting.md) when detection does not
+pick your proxy.
+
+## Development
 
 ```sh
-NODE=~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/node/bin/node
-$NODE -e "
-import('file://$HOME/.dsh/plugins/dsh-web-search-bing/index.js').then(async (m) => {
-  let p; m.apply({ web: { registerSearchProvider: (x) => { p = x } } }, {});
-  console.log(p.id, p.available());
-  const r = await p.search({ query: 'DeepSeek Harness 插件开发', maxResults: 3 });
-  for (const s of r.sources) console.log('-', s.title, s.url);
-});"
+node --test test/*.test.ts     # the whole suite
+node --test test/proxy.test.ts # one file
+npm run typecheck              # tsc --noEmit over src/**/*.ts
+npm run build                  # compile src/ to lib/
+npm run check                  # typecheck + tests
 ```
+
+The suite is offline: parser tests replay captured fixtures from
+`test/fixtures/`, transport tests never open a socket, and proxy tests exercise
+`parseProxy`, `proxyFromEnv` and the pure response framer.
+
+CI (`.github/workflows/ci.yml`) runs the same steps on Node 24 for Ubuntu and
+macOS: `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and a check
+that the build emitted the declared `lib/index.js` entry point.
+
+## Known limitations
+
+- Relevance depends on upstream result pages, so it is below a commercial search
+  API; key-free scraping is rate limited in return (measured: 360 served its
+  `访问异常页面` with a captcha, another domestic engine a `x5sec` punish page).
+  Cooldowns and multiple engines cover for that.
+- **Google is unreachable from this network.** A tunnelled
+  `www.google.com/search` returns a JavaScript shell (94 KB, 1–3 links), and
+  headless Chrome is redirected to `google.com.hk` with a reCAPTCHA page;
+  `gbv=1`, a consent cookie and a mobile user agent all failed. Eight public
+  SearXNG instances were also unusable (429/403/not JSON).
+- Upstream markup changes break a parser. That degrades to a failure reason and
+  the next engine; `web_search` reports which engines were tried and why each
+  failed rather than returning a silently empty list.
+- Titles, links and snippets only — no page text. Use `web_fetch` for that.
+- No `publishedAt` is produced today (see [Ranking](#ranking)).
+- Anonymous AnySearch caps at 10 results per call.
+- Only HTTP proxies are supported (see [Proxy](#proxy)).
+
+## Documentation
+
+- [docs/architecture.md](docs/architecture.md) — module map and the data flow
+  from the `web` seam to a source list.
+- [docs/engines.md](docs/engines.md) — each engine's request shape, parser
+  quirks and what was measured.
+- [docs/troubleshooting.md](docs/troubleshooting.md) — no results, proxy not
+  detected, provider not selected, cooldown stuck.
+- [README.zh-CN.md](README.zh-CN.md) — the Chinese guide.
+
+## Licence
+
+MIT © 2026 fangchenghao. See [LICENSE](LICENSE).
