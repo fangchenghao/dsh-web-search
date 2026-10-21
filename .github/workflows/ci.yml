@@ -45,3 +45,5 @@ jobs:
           test -f lib/index.js
           test -f lib/index.d.ts
           node -e "import('./lib/index.js').then(m => { if (typeof m.apply !== 'function') throw new Error('apply is not exported'); if (typeof m.Config !== 'function') throw new Error('Config is not a schema'); console.log('entry point ok'); })"
+
+# trigger probe
