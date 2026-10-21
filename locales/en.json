@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Web Search (Bing)",
+    "description": "Edits the key-free Bing and AnySearch provider: engine allow-list, wait policy, proxy, result budget, ranking, cache and cooldown settings."
+  }
+}

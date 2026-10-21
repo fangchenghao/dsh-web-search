@@ -10,13 +10,14 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./client": "./client.js",
+    "./locale/*.json": "./locales/*.json",
     "./package.json": "./package.json"
   },
   "files": [
-    "index.js",
-    "engines.js",
-    "proxy.js",
     "lib",
+    "client.js",
+    "locales/*.json",
     "cordis.patch.yml",
     "README.md",
     "README.zh-CN.md",
@@ -43,6 +44,14 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
     }
   },
   "dependencies": {
