@@ -56,8 +56,8 @@ export type ApplyConfig = PluginConfig;
  * @param ctx - plugin context carrying the `web` service.
  * @param config - the validated configuration section.
  */
-export function apply(ctx: PluginContext, config: PluginConfig = Config({})): void {
-  const resolved = resolveConfig(config, undefined);
+export function apply(ctx: PluginContext, config: unknown = {}): void {
+  const resolved = resolveConfig(config as PluginConfig, undefined);
   // One cache and one health tracker per mounted plugin, so a config change
   // through a restart starts from a clean slate instead of inheriting the
   // cooldowns of a previous instance.
@@ -79,6 +79,7 @@ export function apply(ctx: PluginContext, config: PluginConfig = Config({})): vo
       const limit = Math.min(asked ?? resolved.limit, resolved.limit);
       const { sources, failures } = await search(query, signal, {
         limit,
+        wait: resolved.wait,
         timeoutMs: resolved.timeoutMs,
         ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
         ...(resolved.hostIds === undefined ? {} : { hostIds: resolved.hostIds }),

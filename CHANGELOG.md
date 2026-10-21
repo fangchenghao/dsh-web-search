@@ -62,6 +62,13 @@ measured, and stricter where it was previously guesswork.
 
 ### Fixed
 
+- The `wait` setting now reaches the engine run. It was documented, validated and
+  offered by the settings card, but `resolveConfig` never carried it into
+  `search`, so every call silently used `auto`.
+- A partially specified config no longer throws on activation: `resolveConfig`
+  runs its input through the schema first, so a row written as `config: {}` (or
+  edited by hand into a fragment) resolves to the documented defaults instead of
+  dereferencing an absent key.
 - Weight no longer multiplies every row of an engine. The previous rule let
   AnySearch (weight 2) outscore every other engine at every rank, so a CJK query
   returned 8/8 AnySearch sources and no Chinese results at all; the measured

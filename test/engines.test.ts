@@ -193,6 +193,38 @@ test('when every engine answers with nothing the search reports failures instead
   assert.ok(failures.length > 0);
 });
 
+test('the configured wait policy decides whether a slow engine is still worth waiting for', async () => {
+  const anysearch = await fixture('anysearch.json');
+  const bing = await fixture('bing-global.html');
+  const so = await fixture('so.html');
+  // A CJK query puts cn.bing, so and anysearch in the same leading group. Two
+  // answer at once and `so` answers 300ms later.
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const host = new URL(url).hostname;
+    if (host === ANYSEARCH) return new Response(anysearch, { status: 200, headers: { 'content-type': 'application/json' } });
+    if (host === CN_BING) return new Response(bing, { status: 200 });
+    if (host === SO) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return new Response(so, { status: 200 });
+    }
+    throw new Error(`unstubbed host ${host}`);
+  }) as typeof fetch;
+
+  const timeIt = async (wait: 'fast' | 'auto'): Promise<number> => {
+    const started = Date.now();
+    await search('如何配置 postgres 逻辑复制', undefined, { limit: 8, useProxy: false, timeoutMs: 2000, wait });
+    return Date.now() - started;
+  };
+
+  const fast = await timeIt('fast');
+  const auto = await timeIt('auto');
+  // `fast` releases the tier as soon as one engine has answered; `auto` waits
+  // for all of them, so the gap is the 300ms `so` takes.
+  assert.ok(fast < 250, `wait: fast should not wait for the slow engine, took ${fast}ms`);
+  assert.ok(auto >= 280, `wait: auto should have waited for the slow engine, took ${auto}ms`);
+});
+
 test('cancellation propagates as SEARCH_ABORTED instead of a partial answer', async () => {
   stubFetch({
     [ANYSEARCH]: () => ({ error: new DOMException('aborted', 'AbortError') }),

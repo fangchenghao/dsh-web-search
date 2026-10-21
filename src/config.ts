@@ -10,7 +10,7 @@
  * @module dsh-web-search-bing/config
  */
 import z from '@deepseek-ai/schemastery';
-import type { RankOptions } from './types.ts';
+import type { RankOptions, WaitPolicy } from './types.ts';
 
 /** Schema of the plugin's configuration section. */
 export const Config = z.object({
@@ -55,6 +55,8 @@ export interface ResolvedConfig {
   proxy: string | undefined;
   /** Caller budget cap. */
   limit: number;
+  /** Release policy, deciding how long a tier waits for slow engines. */
+  wait: WaitPolicy;
   /** Ranking knobs. */
   rank: RankOptions;
   /** Cache lifetime in milliseconds. */
@@ -73,25 +75,31 @@ export interface ResolvedConfig {
  * @param callLimit - the caller's own budget, used when the config sets none.
  * @returns the normalised configuration.
  */
-export function resolveConfig(config: PluginConfig, callLimit: number | undefined): ResolvedConfig {
-  const hosts = config.hosts.filter((id) => id.trim().length > 0);
-  const proxy = config.proxy.trim();
-  const limit = Math.min(callLimit ?? config.limit, config.limit);
+export function resolveConfig(config: PluginConfig | Readonly<Record<string, unknown>>, callLimit: number | undefined): ResolvedConfig {
+  // The loader validates a row's config before activation, but this function is
+  // also reachable from the settings card and from a hand-edited composition,
+  // where the value can be a partial object. Running it through the schema first
+  // makes the defaults apply instead of dereferencing an absent key.
+  const settings = Config(config as PluginConfig);
+  const hosts = settings.hosts.filter((id) => id.trim().length > 0);
+  const proxy = settings.proxy.trim();
+  const limit = Math.min(callLimit ?? settings.limit, settings.limit);
   return {
     hostIds: hosts.length > 0 ? hosts : undefined,
-    timeoutMs: config.timeoutMs,
+    timeoutMs: settings.timeoutMs,
     proxy: proxy.length > 0 ? proxy : undefined,
     limit,
+    wait: settings.wait,
     rank: {
-      rrfConstant: config.rrfConstant,
-      ...(config.authorityDomains.length > 0 ? { authorityDomains: config.authorityDomains } : {}),
-      authorityBoost: config.authorityBoost,
-      freshnessBoost: config.freshnessBoost,
-      freshnessDays: config.freshnessDays,
+      rrfConstant: settings.rrfConstant,
+      ...(settings.authorityDomains.length > 0 ? { authorityDomains: settings.authorityDomains } : {}),
+      authorityBoost: settings.authorityBoost,
+      freshnessBoost: settings.freshnessBoost,
+      freshnessDays: settings.freshnessDays,
     },
-    cacheTtlMs: config.cacheTtlMs,
-    cacheEntries: config.cacheEntries,
-    baseCooldownMs: config.baseCooldownMs,
-    maxCooldownMs: config.maxCooldownMs,
+    cacheTtlMs: settings.cacheTtlMs,
+    cacheEntries: settings.cacheEntries,
+    baseCooldownMs: settings.baseCooldownMs,
+    maxCooldownMs: settings.maxCooldownMs,
   };
 }

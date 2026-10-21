@@ -1,3 +1,7 @@
+# The empty config node keeps the row discoverable to ConfigForms, so the
+# settings card can read and write it instead of reporting "unavailable".
+# Every key is optional and falls back to the documented default.
 - insert:
     - id: web-search-bing
       name: dsh-web-search-bing
+      config: {}
