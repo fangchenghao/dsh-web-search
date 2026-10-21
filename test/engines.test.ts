@@ -140,8 +140,11 @@ test('a 429 with a Retry-After cools the engine down without emptying the engine
   const health = new EngineHealth();
   const first = await runDirect('如何配置 postgres 逻辑复制', { health, limit: 8 });
   assert.ok(first.sources.length > 0, 'anysearch still answered');
-  assert.ok(health.isCooling(CN_BING.replace('.com', '.com') === CN_BING ? 'cn.bing' : 'cn.bing'));
-  assert.equal(health.snapshot()['cn.bing'], 120_000);
+  assert.ok(health.isCooling('cn.bing'), 'the 429 put the engine on cooldown');
+  // The countdown is recomputed against a live clock, so a strict equality on
+  // 120000 races the millisecond that elapsed since the Deadline was set.
+  const remaining = health.snapshot()['cn.bing'] ?? 0;
+  assert.ok(remaining > 118_000 && remaining <= 120_000, `the service's own hint must win, saw ${remaining}ms`);
   const second = await runDirect('如何配置 postgres 逻辑复制', { health, limit: 8 });
   assert.ok(
     second.failures.some((failure) => failure.startsWith('cn.bing: cooling down')),
