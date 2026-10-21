@@ -1,0 +1,747 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=1;">
+  <meta name="referrer" content="origin">
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>postgres logical replication at DuckDuckGo</title>
+  <link title="DuckDuckGo (Lite)" type="application/opensearchdescription+xml" rel="search" href="//duckduckgo.com/opensearch_lite_v2.xml">
+  <link href="//duckduckgo.com/favicon.ico" rel="shortcut icon" />
+  <link rel="icon" href="//duckduckgo.com/favicon.ico" type="image/x-icon" />
+  <link id="icon60" rel="apple-touch-icon" href="//duckduckgo.com/assets/icons/meta/DDG-iOS-icon_60x60.png?v=2"/>
+  <link id="icon76" rel="apple-touch-icon" sizes="76x76" href="//duckduckgo.com/assets/icons/meta/DDG-iOS-icon_76x76.png?v=2"/>
+  <link id="icon120" rel="apple-touch-icon" sizes="120x120" href="//duckduckgo.com/assets/icons/meta/DDG-iOS-icon_120x120.png?v=2"/>
+  <link id="icon152" rel="apple-touch-icon" sizes="152x152" href="//duckduckgo.com/assets/icons/meta/DDG-iOS-icon_152x152.png?v=2"/>
+  <link rel="image_src" href="//duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png">
+  <link rel="stylesheet" media="handheld, all" href="//duckduckgo.com/dist/lr.48ddfe4eadf6a534e93f.css" type="text/css"/>
+</head>
+
+<body>
+  <p class='extra'>&nbsp;</p>
+  <div class="header">
+    DuckDuckGo
+  </div>
+  <p class='extra'>&nbsp;</p>
+
+  <form action="/lite/" method="post">
+      <input class='query' type="text" size="40" name="q" value="postgres logical replication">
+      <input class='submit' type="submit" value="Search">
+      
+      
+      
+      
+
+      <div class="filters">
+        <select class="submit" name="kl">
+          
+            <option value="" >All Regions</option>
+          
+            <option value="ar-es" >Argentina</option>
+          
+            <option value="au-en" >Australia</option>
+          
+            <option value="at-de" >Austria</option>
+          
+            <option value="be-fr" >Belgium (fr)</option>
+          
+            <option value="be-nl" >Belgium (nl)</option>
+          
+            <option value="br-pt" >Brazil</option>
+          
+            <option value="bg-bg" >Bulgaria</option>
+          
+            <option value="ca-en" >Canada (en)</option>
+          
+            <option value="ca-fr" >Canada (fr)</option>
+          
+            <option value="ct-ca" >Catalonia</option>
+          
+            <option value="cl-es" >Chile</option>
+          
+            <option value="cn-zh" >China</option>
+          
+            <option value="co-es" >Colombia</option>
+          
+            <option value="hr-hr" >Croatia</option>
+          
+            <option value="cz-cs" >Czech Republic</option>
+          
+            <option value="dk-da" >Denmark</option>
+          
+            <option value="ee-et" >Estonia</option>
+          
+            <option value="fi-fi" >Finland</option>
+          
+            <option value="fr-fr" >France</option>
+          
+            <option value="de-de" >Germany</option>
+          
+            <option value="gr-el" >Greece</option>
+          
+            <option value="hk-tzh" >Hong Kong</option>
+          
+            <option value="hu-hu" >Hungary</option>
+          
+            <option value="is-is" >Iceland</option>
+          
+            <option value="in-en" >India (en)</option>
+          
+            <option value="id-en" >Indonesia (en)</option>
+          
+            <option value="ie-en" >Ireland</option>
+          
+            <option value="il-en" >Israel (en)</option>
+          
+            <option value="it-it" >Italy</option>
+          
+            <option value="jp-jp" >Japan</option>
+          
+            <option value="kr-kr" >Korea</option>
+          
+            <option value="lv-lv" >Latvia</option>
+          
+            <option value="lt-lt" >Lithuania</option>
+          
+            <option value="my-en" >Malaysia (en)</option>
+          
+            <option value="mx-es" >Mexico</option>
+          
+            <option value="nl-nl" >Netherlands</option>
+          
+            <option value="nz-en" >New Zealand</option>
+          
+            <option value="no-no" >Norway</option>
+          
+            <option value="pk-en" >Pakistan (en)</option>
+          
+            <option value="pe-es" >Peru</option>
+          
+            <option value="ph-en" >Philippines (en)</option>
+          
+            <option value="pl-pl" >Poland</option>
+          
+            <option value="pt-pt" >Portugal</option>
+          
+            <option value="ro-ro" >Romania</option>
+          
+            <option value="ru-ru" >Russia</option>
+          
+            <option value="xa-ar" >Saudi Arabia</option>
+          
+            <option value="sg-en" >Singapore</option>
+          
+            <option value="sk-sk" >Slovakia</option>
+          
+            <option value="sl-sl" >Slovenia</option>
+          
+            <option value="za-en" >South Africa</option>
+          
+            <option value="es-ca" >Spain (ca)</option>
+          
+            <option value="es-es" >Spain (es)</option>
+          
+            <option value="se-sv" >Sweden</option>
+          
+            <option value="ch-de" >Switzerland (de)</option>
+          
+            <option value="ch-fr" >Switzerland (fr)</option>
+          
+            <option value="tw-tzh" >Taiwan</option>
+          
+            <option value="th-en" >Thailand (en)</option>
+          
+            <option value="tr-tr" >Turkey</option>
+          
+            <option value="us-en" >US (English)</option>
+          
+            <option value="us-es" >US (Spanish)</option>
+          
+            <option value="ua-uk" >Ukraine</option>
+          
+            <option value="uk-en" >United Kingdom</option>
+          
+            <option value="vn-en" >Vietnam (en)</option>
+          
+        </select>
+
+        <select class="submit" name="df">
+          
+            <option value="" selected>Any Time</option>
+          
+            <option value="d" >Past Day</option>
+          
+            <option value="w" >Past Week</option>
+          
+            <option value="m" >Past Month</option>
+          
+            <option value="y" >Past Year</option>
+          
+        </select>
+      </div>
+  </form>
+
+  
+    <p class="extra">&nbsp;</p>
+    <table border="0">
+      <tr>
+        <td>
+          
+        </td>
+        <td>
+          
+            <!-- Next Page Button Sub-template -->
+<form class="next_form" action="/lite/" method="post">
+    <input type="submit" class='navbutton' value="Next Page &gt;">
+    <input type="hidden" name="q" value="postgres logical replication">
+    <input type="hidden" name="s" value="10">
+    <input type="hidden" name="nextParams" value="">
+    <input type="hidden" name="v" value="l">
+    <input type="hidden" name="o" value="json">
+    <input type="hidden" name="dc" value="11">
+    <input type="hidden" name="api" value="d.js">
+    <input type="hidden" name="vqd" value="4-82039186375898657654726069406493058875">
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    
+    
+    
+      <input name="kl" value="wt-wt" type="hidden">
+    
+    
+    
+    
+</form>
+          
+        </td>
+      </tr>
+    </table>
+  
+
+  &nbsp;&nbsp;&nbsp;&nbsp;
+    
+
+    <br>
+    
+    <span class='did-you-mean'>
+      
+        <div class="msg msg--spelling">
+          <div id="did_you_mean">
+            
+              Including results for <a href="/lite/?q=postgresql%20logical%20replication"><b>postgresql</b> logical replication</a>.
+              <br>
+              Search only for <a href="/lite/?q=%22postgres%22%20logical%20replication&norw=1">&quot;postgres&quot; logical replication</a>?
+            
+
+            
+
+            
+
+          </div>
+        </div>
+      
+
+    </span>
+  
+
+  <p class='extra'>&nbsp;</p>
+
+  <table border="0">
+    
+  </table>
+
+  <table border="0">
+    
+      
+      <!-- Web results are present -->
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    1.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://www.postgresql.org/docs/current/logical-replication.html" class='result-link'>PostgreSQL: Documentation: 18: Chapter 29. Logical Replication</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    <b>Logical</b> <b>replication</b> is a method of replicating data objects and their changes, based upon their <b>replication</b> identity (usually a primary key). We use the term <b>logical</b> in contrast to physical <b>replication</b>, which uses exact block addresses and byte-by-byte <b>replication</b>. PostgreSQL supports both mechanisms concurrently, see Chapter 26. <b>Logical</b> <b>replication</b> allows fine-grained control over both data ...
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>www.postgresql.org/docs/current/logical-replication.html</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    2.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://dev.to/raselmahmuddev/how-to-set-up-postgresql-logical-replication-use-cases-and-step-by-step-guide-536b" class='result-link'>How to Set Up PostgreSQL Logical Replication: Use Cases and Step-by ...</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    PostgreSQL <b>logical</b> <b>replication</b> is an essential tool for modern data-driven applications, offering flexibility, performance, and high availability. By selectively replicating tables and rows, <b>logical</b> <b>replication</b> addresses unique challenges in use cases like toll booth management and e-commerce analytics.
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>dev.to/raselmahmuddev/how-to-set-up-postgresql-logical-replication-use-cases-and-step-by-step-guide-536b</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    3.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://www.postgresql.org/docs/current/logical-replication-architecture.html" class='result-link'>PostgreSQL: Documentation: 18: 29.9. Architecture</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    <b>Logical</b> <b>replication</b> is built with an architecture similar to physical streaming <b>replication</b> (see Section 26.2.5). It is implemented by walsender and apply processes. The walsender process starts <b>logical</b> decoding (described in Chapter 47) of the WAL and loads the standard <b>logical</b> decoding output plugin (pgoutput). The plugin transforms the changes read from WAL to the <b>logical</b> <b>replication</b> ...
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>www.postgresql.org/docs/current/logical-replication-architecture.html</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    4.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://learnomate.org/postgresql-logical-replication-step-by-step/" class='result-link'>PostgreSQL Logical Replication Setup: A Step-by-Step Guide</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    Set up PostgreSQL <b>logical</b> <b>replication</b> with zero downtime! step-by-step guide to sync specific tables for real-time analytics and seamless upgrades
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>learnomate.org/postgresql-logical-replication-step-by-step/</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    5.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://www.howtouselinux.com/post/pglogical-complete-guide-to-postgresql-logical-replication" class='result-link'>pglogical: Complete Guide to PostgreSQL Logical Replication</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    Introduction pglogical is a powerful PostgreSQL extension that provides <b>logical</b> streaming <b>replication</b> using a publish/subscribe model. Developed by 2ndQuadrant (now part of EnterpriseDB), it enables selective <b>replication</b> of tables, columns, and rows between PostgreSQL instances, offering flexibility that traditional physical <b>replication</b> cannot provide. Unlike physical <b>replication</b>, which ...
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>www.howtouselinux.com/post/pglogical-complete-guide-to-postgresql-logical-replication</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    6.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://aws.amazon.com/blogs/database/postgresql-logical-replication-how-to-replicate-only-the-data-that-you-need/" class='result-link'>PostgreSQL logical replication: How to replicate only the data that you ...</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    In this post, we show how <b>logical</b> <b>replication</b> with fine-grained filtering works in PostgreSQL, when to use it, and how to implement it using a realistic healthcare compliance scenario. Whether you&#x27;re running Amazon RDS for PostgreSQL, Amazon Aurora PostgreSQL, or a self-managed PostgreSQL database on an Amazon EC2 instance, the approach is the same.
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>aws.amazon.com/blogs/database/postgresql-logical-replication-how-to-replicate-only-the-data-that-you-need/</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    7.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://www.enterprisedb.com/postgres-tutorials/logical-replication-postgresql-explained" class='result-link'>Logical Replication in PostgreSQL Explained | EDB</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    This post discusses <b>logical</b> <b>replication</b> in PostgreSQL. It reviews the differences between physical or binary <b>replication</b> and <b>logical</b> or transactional <b>replication</b>.
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>www.enterprisedb.com/postgres-tutorials/logical-replication-postgresql-explained</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    8.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://medium.com/@x0goe/postgresql-logical-replication-5-steps-to-set-up-real-time-data-sync-across-servers-c8e97a7656b1" class='result-link'>PostgreSQL logical replication — 5 steps to set up real-time ... - Medium</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    PostgreSQL has had <b>logical</b> <b>replication</b> built in since version 10, and it remains one of the most practical ways to keep data in sync between two or more servers. Unlike physical <b>replication</b>, which ...
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>medium.com/@x0goe/postgresql-logical-replication-5-steps-to-set-up-real-time-data-sync-across-servers-c8e97a7656b1</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    9.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://oneuptime.com/blog/post/2026-01-25-logical-replication-postgresql/view" class='result-link'>How to Use Logical Replication in PostgreSQL - oneuptime.com</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    Learn how to set up and manage <b>logical</b> <b>replication</b> in PostgreSQL for selective table <b>replication</b>, zero-downtime migrations, and cross-version upgrades with practical examples.
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>oneuptime.com/blog/post/2026-01-25-logical-replication-postgresql/view</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+        
+            <tr>
+              
+                <td valign="top">
+                  
+                    10.&nbsp;
+                  
+                </td>
+                <td>
+                  <a rel="nofollow" href="https://medium.com/@syedfahadkhalid93/mastering-postgresql-logical-replication-your-definitive-guide-for-seamless-upgrades-and-b619c3a23e3f" class='result-link'>PostgreSQL Logical Replication: Seamless Upgrades Guide | Medium</a>
+                </td>
+                
+            </tr>
+
+            
+              
+                <!-- Only show abstract separately if there's a click URL (not EOF) -->
+                <tr>
+                  <td>&nbsp;&nbsp;&nbsp;</td>
+                  <td class='result-snippet'>
+                    Unlock PostgreSQL <b>Logical</b> <b>Replication</b>! This killer guide details setup, preventing master overload from WAL, and vital network settings for massive table synchronization.
+                  </td>
+                </tr>
+              
+            
+
+            
+              <tr>
+                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>
+                  <span class='link-text'>medium.com/@syedfahadkhalid93/mastering-postgresql-logical-replication-your-definitive-guide-for-seamless-upgrades-and-b619c3a23e3f</span>
+                  
+                </td>
+              </tr>
+            
+
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+
+        
+      
+    
+
+    
+      
+      <tr>
+        <td colspan=2>
+          
+          
+            <!-- Next Page Button Sub-template -->
+<form class="next_form" action="/lite/" method="post">
+    <input type="submit" class='navbutton' value="Next Page &gt;">
+    <input type="hidden" name="q" value="postgres logical replication">
+    <input type="hidden" name="s" value="10">
+    <input type="hidden" name="nextParams" value="">
+    <input type="hidden" name="v" value="l">
+    <input type="hidden" name="o" value="json">
+    <input type="hidden" name="dc" value="11">
+    <input type="hidden" name="api" value="d.js">
+    <input type="hidden" name="vqd" value="4-82039186375898657654726069406493058875">
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    
+    
+    
+      <input name="kl" value="wt-wt" type="hidden">
+    
+    
+    
+    
+</form>
+          
+          
+        </td>
+      </tr>
+    
+  </table>
+
+  <p class='extra'>&nbsp;</p>
+
+  <form action="/lite/" method="post">
+      <input class='query' type="text" size="40" name="q" value="postgres logical replication" >
+      <input class='submit' type="submit" value="Search">
+      
+      
+      
+      
+      
+        <input name="kl" value="wt-wt" type="hidden">
+      
+  </form>
+
+  <p class='extra'>&nbsp;</p>
+
+  
+    <img src="//duckduckgo.com/t/sl_l"/>
+  
+  <div id='end-spacer'>&nbsp;</div>
+
+</body>
+</html>
