@@ -5,11 +5,11 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.11.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> Version 0.12.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
-With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and pull the page text into the conversation. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly.
+With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and get the page back as clean Markdown instead of a wall of HTML. When one question needs several separate searches, it can call `search_many` and get each query's results separately. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly.
 
 Three things change for you:
 
@@ -17,7 +17,7 @@ Three things change for you:
 - When a question is about a package, a repository or a paper, the model can ask the matching source directly instead of hoping a web search understands.
 - You do not need a search API key, and you do not pay for search separately.
 
-Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds one more tool, `domain_search`, for packages, repositories, papers, Q&A and reference entries. These names come up again below.
+Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds two more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, and `search_many` for several searches in one call. These names come up again below.
 
 ## The problem it solves
 
@@ -75,12 +75,12 @@ A **tool** is a fixed capability handed to the agent: search, read a page, run a
 This is the pair people mix up most. They solve different problems:
 
 - **`web_search` finds URLs.** Give it keywords; it returns a list with titles, links and a line or two of snippet.
-- **`web_fetch` reads a page.** Give it one URL; it brings back that page's content.
+- **`web_fetch` reads a page.** Give it one URL; it brings back that page's content, cleaned into readable Markdown.
 
 | | `web_search` | `web_fetch` |
 | --- | --- | --- |
 | You give it | A few keywords | One URL (`http://` or `https://`) |
-| It gives you | Eight candidates by default: title, link, snippet (fewer with a time window) | The page body (HTML or plain text) |
+| It gives you | Eight candidates by default: title, link, snippet (fewer with a time window) | The page body, cleaned into Markdown (or plain text) |
 | Can it answer the question | Only from snippets, often not enough | Yes — the text is right there |
 | When to use it | You don't know where to look, or want several sources | You know which page to read |
 | Which provider | `bing` (this plugin) | `http-proxy` (this plugin) |
@@ -93,6 +93,8 @@ In everyday terms:
 > **Fetch is taking the book off the shelf and opening it**: you get the whole text, but the book may be checked out (the site refuses), behind a members-only desk (a paywall), or the shelf number may be wrong (a 404).
 
 You need both. Search without fetch leaves the model reading blurbs forever. Fetch without search requires a URL — and the model usually does not have one.
+
+What fetch hands back is the **article**, not the page's furniture: navigation, ads, scripts, footers and forms are stripped, and headings, lists, code and tables survive as Markdown.
 
 ### Dedicated search (domain_search): sources, not pages
 
@@ -111,6 +113,8 @@ Analogy: `web_search` is asking passers-by where the hardware shop is and gettin
 | When one fails | The error names each engine's reason | The dead source goes into `failures`; the rest answer |
 
 They team up well: use `domain_search` to find the package or paper, then `web_fetch` to open its homepage or README and read the detail.
+
+One more helper sits beside them: **`search_many`**. When one question needs several distinct searches — one per candidate library, say — it runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch.
 
 ### DeepSeek messages and sessions
 
@@ -190,28 +194,40 @@ Each line is the plain version first, the technical note second. The technical n
    *Technical: `baseCooldownMs: 300000`, doubling per consecutive failure up to `maxCooldownMs: 1800000`; the service's own `Retry-After` wins; parse failures and cancellations never cool an engine down.*
 
 9. **It can read the page, not just the snippet.**
-   Search returns links; `web_fetch` returns text, and reroutes when a direct request fails.
-   *Technical: a three-rung ladder — direct (5 s cap) → local tunnel → AnySearch extraction (needs a key); each page keeps at most 1 MiB (`1048576` bytes), with the rest truncated and flagged.*
+   Search returns links; `web_fetch` returns readable text, and reroutes when a direct request fails.
+   *Technical: a three-rung ladder — direct (5 s cap) → local tunnel → AnySearch extraction (needs a key); the raw body keeps at most 1 MiB (`1048576` bytes), which is then converted (item 10) and cut to `fetchMaxLength`.*
 
-10. **It works on a restricted network.**
+10. **A fetched page comes back as readable Markdown, not raw HTML.**
+    Navigation, scripts, footers and forms are dropped; headings, paragraphs, lists, code blocks, quotes, links, images and tables stay — tables become Markdown tables. A page longer than the default 20,000 characters ends with one line naming the original length.
+    *Technical: `fetchFormat` (`markdown` by default, or `text`) and `fetchMaxLength` (default `20000`, range 1000–200000). Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of raw HTML became 40,891 characters of body Markdown, and the tool returned 20,080 characters plus one truncation line. The body is chosen from `<article>`, then `<main>`/`role=main`, then the densest text container; relative links become absolute. **No resume**: the host's `WebFetchRequest` carries only `url` — no offset, no maxLength, no format — so a page cannot be continued from the middle; raise `fetchMaxLength` or fetch a narrower page.*
+
+11. **It works on a restricted network.**
      With a tunnel running and set as the system proxy, nothing needs configuring. With the tunnel off, it falls back to direct requests instead of failing.
      *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
 
-11. **Every setting is editable in the UI.**
-     Twenty controls in four groups; a save takes effect on the next search.
-     *Technical: all twenty fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin.*
+12. **Every setting is editable in the UI.**
+     Twenty-four controls in five groups; a save takes effect on the next search, apart from the few the plugin reads once at mount.
+     *Technical: all twenty-four fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, while the fetch provider takes `proxy`, `timeoutMs`, `fetchFormat` and `fetchMaxLength` at mount and the cache wiring takes `cachePersist` and `cacheFile` there too.*
 
-12. **Failures are explained, not silently empty.**
+13. **Failures are explained, not silently empty.**
      When nothing succeeds, the error lists which engines were tried and why each one failed.
      *Technical: failures are classified `SEARCH_THROTTLED`, `SEARCH_BLOCKED`, `SEARCH_TIMEOUT`, `SEARCH_NETWORK`, `SEARCH_PARSE`, `SEARCH_ABORTED`; they are return values, not exceptions — only caller cancellation throws.*
 
-13. **Packages, repositories, papers and Q&A are one hop away.**
+14. **Packages, repositories, papers and Q&A are one hop away.**
      For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against eight dedicated sources instead of hoping a web search finds them.
      *Technical: eight keyless sources — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); arguments `query` (required), `sources` (optional array, default = every enabled source), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
 
-14. **You can look only at recently published results.**
+15. **You can look only at recently published results.**
      Choose "last 24 hours / 7 days / 30 days / 1 year" in Settings and only results inside that window stay — useful for news and releases.
      *Technical: `timeRange` takes `off` (default) / `day` / `week` / `month` / `year` — 24 hours, 7 days, 30 days, 1 year. Publication dates are parsed from each engine's results (Bing's snippet date and `news_dt`, 360's `发贴时间`, DuckDuckGo's timestamp and snippet, AnySearch's `date:` trailer). DuckDuckGo receives the window as `df=d/w/m/y`; Bing's and 360's parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two and AnySearch filter locally. With a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone.*
+
+16. **Several questions, one call.**
+     For "compare these three libraries", the model can hand `search_many` one to five queries and get each query's results back separately; up to three run at once, and one failed query does not take the others down.
+     *Technical: `queries` (1–5, required), `limit` (default 5, 1–20), `withSites` (default false; true attaches each result's hostname). `SEARCH_MANY_CONCURRENCY = 3`. Each query goes through the same engine layer, cache and cooldown tracker as `web_search`; a thrown search becomes that query's `failures` entry, never the batch's. Use `search_many` for several questions at once, `web_search` for one, `domain_search` for packages, papers or Q&A. The tool's deadline is 30 s and it is concurrency-safe. It registers as `web_search_many` if the name is taken, and is not registered at all when the host has no `ctx.tools`.*
+
+17. **The cache survives a restart.**
+     Ask the same question again after restarting DSH within ten minutes and the previous result is still there; nothing is sent to the engines.
+     *Technical: `cachePersist` (default `true`) and `cacheFile` (default empty = `~/.dsh/cache/dsh-web-search/cache.json`). Only the summary — `url` / `title` / `snippet` / `publishedAt` — is written, never page bodies. 4 MiB default budget, LRU eviction, atomic write (sibling temporary file + `rename`); a corrupt, foreign or unreadable file loads as an empty cache and never stops the plugin. Two processes writing the same file is last-writer-wins, and a file is never left half-written. `cacheTtlMs` and `cacheEntries` apply immediately, no restart.*
 
 ## Installing and enabling it
 
@@ -299,13 +315,13 @@ Optionally, add a config row:
 
 After changing code or profile config, **quit DSH entirely and open it again** (on macOS, quit from the menu or press `Cmd+Q`; closing the window is not enough). Modules are evaluated once per process, and a running process never sees a file you edited underneath it.
 
-Values saved from the Settings page do not need a restart; see the next section.
+Values saved from the Settings page apply immediately; only `cachePersist` and `cacheFile` need the plugin to reload.
 
 ### Step 5: confirm it works
 
 Any one of these:
 
-1. **Look at Settings**: Settings → "Web search (Bing)" should show four groups of controls. That means the plugin loaded and the Host accepted its schema.
+1. **Look at Settings**: Settings → "Web search (Bing)" should show five groups of controls, 24 in all. That means the plugin loaded and the Host accepted its schema.
 2. **Look at the log**: no warning such as `1 entry did not activate`.
 3. **Just try it**: ask something that obviously needs the network, such as "search for a DSH plugin tutorial and give me the links". Watch whether `web_search` is called and whether the links are real.
 
@@ -313,14 +329,15 @@ If the Settings card appears but search still fails, start with [docs/troublesho
 
 ## Using the Settings page
 
-Open Settings → "Web search (Bing)". Twenty controls, arranged in four groups. Each group owns one kind of decision:
+Open Settings → "Web search (Bing)". Twenty-four controls, arranged in five groups. Each group owns one kind of decision:
 
 | Group | Controls | What it decides |
 | --- | --- | --- |
 | Engines and transport | 6 | Which engines run, how long to wait, whether to use a proxy, AnySearch credentials and vertical domain |
 | Results and ranking | 7 | How many results, how far back to look, how they merge and sort, how much official docs and fresh content count |
 | Dedicated search | 3 | Which sources `domain_search` queries, results per source, deadline per source |
-| Cache and cooldowns | 4 | How long results are remembered, how many, and how long a throttled engine rests |
+| Fetching | 2 | What `web_fetch` returns — Markdown or plain text — and how many characters |
+| Cache and cooldowns | 6 | How long results are remembered, how many, whether the cache is saved to disk, and how long a throttled engine rests |
 
 ### Engines and transport (6)
 
@@ -353,29 +370,41 @@ Open Settings → "Web search (Bing)". Twenty controls, arranged in four groups.
 | Results per source | `domainLimit` | `5` | How many results `domain_search` takes from each source, 1–20 |
 | Deadline per source | `domainTimeoutMs` | `8000` | Per-source deadline in ms, at least 500; raise it to 15000 on a slow network |
 
-### Cache and cooldowns (4)
+### Fetching (2)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
-| Cache lifetime | `cacheTtlMs` | `600000` | Ten minutes; `0` disables the cache |
-| Cache size | `cacheEntries` | `100` | How many queries to remember; the least recently used goes first |
+| Output format | `fetchFormat` | `markdown` | `markdown` keeps headings, lists, tables, links and code; `text` keeps only the words. Leave it on `markdown` for reading; choose `text` for a smaller, plainer result. Applies immediately |
+| Characters kept | `fetchMaxLength` | `20000` | How much converted text one fetch returns, 1000–200000; the cut is announced with the original length. Raise it to `50000` for long documentation. Applies immediately |
+
+### Cache and cooldowns (6)
+
+| Control | Key | Default | Plain meaning |
+| --- | --- | --- | --- |
+| Cache lifetime | `cacheTtlMs` | `600000` | Ten minutes; `0` disables the cache. A change applies to the next search |
+| Cache size | `cacheEntries` | `100` | How many queries to remember; the least recently used goes first. A change applies to the next search |
+| Save the cache to disk | `cachePersist` | `true` | Keep the cache in a file so a restart can still hit it; turn it off to leave no trace on disk or when the disk is read-only. Applies immediately |
+| Cache file | `cacheFile` | empty (default path) | Where the snapshot goes; empty means `~/.dsh/cache/dsh-web-search/cache.json`. Read when the plugin mounts |
 | Cooldown (ms) | `baseCooldownMs` | `300000` | First rest after throttling, five minutes |
 | Max cooldown (ms) | `maxCooldownMs` | `1800000` | Ceiling for the doubling backoff, thirty minutes |
 
 ### My advice
 
-**For normal use: leave all twenty alone. The defaults are the tuned values.**
+**For normal use: leave all twenty-four alone. The defaults are the tuned values.**
 
-Only three situations are worth changing:
+Only these situations are worth changing:
 
 - **Your proxy is not detected**: put the local proxy address in `proxy`, for example `http://127.0.0.1:7890`. HTTP proxies only — swap `socks5://` for the client's HTTP/mixed port.
 - **You want AnySearch's higher limits or page extraction**: fill in `anysearchApiKey`, and add `anysearchDomain` if you want one vertical index.
 - **You only want `domain_search` to hit a few sources**: narrow `domainSources` to a set such as `github,npm`; empty means all eight.
+- **A fetched page is cut too early, or you want plain text**: raise `fetchMaxLength` to `50000`, or set `fetchFormat` to `text`.
+- **You do not want a cache file on disk**: turn `cachePersist` off, or point `cacheFile` somewhere else.
 
-Two things to keep in mind:
+Three things to keep in mind:
 
-- A save is immediate and applies to the next search, no restart.
-- **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
+- A save is immediate and applies to the next search, no restart — except the controls the plugin reads at mount (`fetchFormat`, `fetchMaxLength`, `cachePersist`, `cacheFile`), which need a restart.
+- **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order — and with persistence on, restarting DSH does not clear it. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
+- **A page cannot be continued from the middle**: `web_fetch` makes one request per URL, so if the tail is missing, raise `fetchMaxLength` or fetch a narrower page.
 
 ## FAQ
 
@@ -403,6 +432,16 @@ Four usual causes:
 3. **It needs a login or a subscription**: fetching carries no session of yours.
 4. **Direct requests time out**: 5 seconds direct, then the tunnel; if neither works and no key is configured you get an error, and with a key there is one more rung, server-side extraction. The message names each rung's failure.
 
+### Why does fetched content differ from what the browser shows?
+
+Because `web_fetch` is not a browser:
+
+- It keeps the **article**, not the page: navigation, ads, scripts, footers, forms and hidden nodes are dropped before conversion. Headings, paragraphs, lists, code, quotes, links, images and tables survive.
+- It does **not run JavaScript**: a page that renders its body client-side comes back nearly empty, while the browser fills it in.
+- It **cuts the tail**: converted text beyond `fetchMaxLength` (20000 characters by default) is replaced by one line naming the original length, so a long page stops early.
+
+If the text stops too soon, raise `fetchMaxLength` (`50000` is a reasonable value). If what comes back is an empty shell, the page probably needs a browser — try its print view, a static mirror or the site's API instead.
+
 ### Why do the results differ from what I get searching by hand?
 
 Because it is not the same operation:
@@ -419,6 +458,14 @@ Because a window removes results whose date falls outside it. With a window on, 
 
 The one exception is the fallback: if not a single **dated** result falls inside the window, the undated results come back so you are not left empty-handed. So a windowed search returns somewhere between zero and eight results, not a fixed eight.
 
+### Will the cache give me the same old answer forever?
+
+No. Each entry expires `cacheTtlMs` after it was written — ten minutes by default — so a repeated question inside that window gets the old answer, and the next one goes back to the engines. Three things keep it bounded:
+
+- `cacheTtlMs: 0` turns the cache off, and `cacheEntries` (default 100) caps how many answers are kept, evicting the least recently used;
+- the disk snapshot stores **summaries only** (`url`, `title`, `snippet`, `publishedAt`), never page text;
+- expiry is absolute: an entry reloaded from disk keeps its original deadline, and an expired one is dropped at load, so restarting DSH cannot extend an entry's life.
+
 ### `domain_search` or `web_search` — which one?
 
 Depends on whether you want a **page** or an **entry**:
@@ -428,11 +475,15 @@ Depends on whether you want a **page** or an **entry**:
 
 They chain: `domain_search` finds the package or paper entry, then `web_fetch` opens its homepage or README for the detail.
 
+### What is the fastest way to ask several questions?
+
+Use `search_many`. One call carries one to five `queries`, runs three at a time, and returns each query's results separately; `limit` (default 5) caps results per query, and `withSites: true` adds each result's hostname. A failed query becomes its own `failures` line instead of ending the batch. Use `web_search` for a single question, and `domain_search` when the target is a package, a repository, a paper or a Q&A thread.
+
 ### I changed a setting, why did nothing happen?
 
 Three cases:
 
-- **Changed on the Settings page**: saved immediately and read on the next search. But if you ask the same question again within ten minutes you may hit the cache and see no difference — try rephrasing.
+- **Changed on the Settings page**: saved immediately and read on the next search, except `fetchFormat`, `fetchMaxLength`, `cachePersist` and `cacheFile`, which are read when the plugin mounts. But if you ask the same question again within ten minutes you may hit the cache and see no difference — try rephrasing; with persistence on, a restart does not clear the cache either.
 - **Changed the profile's `cordis.patch.yml`**: requires a full restart of the harness.
 - **Changed `src/*.ts`**: requires `npm run build` and then a restart. Source edits without a build still run the old code in `lib/`.
 
@@ -442,7 +493,7 @@ A little, and it is usually worth it:
 
 - A measured search takes 1.4–3.8 s (English waits a bit longer, Chinese is faster); a cache hit is nearly instant.
 - The model is waiting for a tool result during that time, not hanging; if the deadline arrives, it gets whatever has already come in.
-- The real cost is context: search results and page text both consume the model's input, so longer pages make the turn more expensive and leave less room for everything else. That is why search returns eight results by default and a page is capped at 1 MiB.
+- The real cost is context: search results and page text both consume the model's input, so longer pages make the turn more expensive and leave less room for everything else. That is why search returns eight results by default and a fetched page is converted and then cut at 20,000 characters (the raw body is capped at 1 MiB first).
 
 ### Why does the model sometimes not search at all?
 
@@ -461,13 +512,13 @@ web_search call
   → filter by the hosts allow-list; drop viaProxy engines when no proxy exists
   → skip engines in cooldown (but never end up with none)
   → decide the leading region from the query script (ASCII → global, CJK → cn)
-  → look up the cache (key: lead|wait|limit|sorted engine ids|time window|normalised query)
+  → look up the cache in memory, then the on-disk snapshot (key: lead|wait|limit|sorted engine ids|time window|normalised query)
   → run the primary tier concurrently, release on the first satisfied condition
   → if nothing came back, run the fallback tier
   → each engine filters locally by timeRange (DuckDuckGo also gets df pushdown)
   → fuse per region, rank with RRF, slice to limit
   → filter once more after the merge (undated rows return only when nothing dated is inside)
-  → store in the cache, return { sources, failures, proxy }
+  → store in the cache, mark the snapshot dirty, return { sources, failures, proxy }
 ```
 
 A tier releases on whichever comes first: every engine settled; every engine of the leading region settled (success or failure); enough sources from enough contributors; the soft deadline. Engines still running are aborted and reported as `still running at deadline` or `aborted once enough results had arrived`.
@@ -518,6 +569,17 @@ Details:
 
 **Cooldowns** exist because scraping public result pages is not a supported interface. `SEARCH_THROTTLED` (429), `SEARCH_BLOCKED` (403, other 4xx, a failed echoed-query check), `SEARCH_TIMEOUT` and `SEARCH_NETWORK` put an engine to rest. `SEARCH_PARSE` (upstream markup drift — retrying cannot help) and `SEARCH_ABORTED` (the caller cancelled) never do. The duration prefers the service's own `Retry-After` (delta seconds or an HTTP date, read from the final redirect hop); otherwise `baseCooldownMs × 2^(consecutive failures − 1)`, capped at `maxCooldownMs`. One success clears the streak. If every engine is cooling, the run still uses them, so the engine set is never empty.
 
+### The cache on disk
+
+`cachePersist` (default `true`) turns the file on; `cacheFile` defaults to empty, which resolves to `~/.dsh/cache/dsh-web-search/cache.json` (a leading `~` expands). The document is `{ version: 1, savedAt, entries: [{ key, expiresAt, sources }] }`, and each entry carries only the summary — `url`, `title`, `snippet`, `publishedAt`; any other property a source picked up is dropped at the serialisation boundary, and page bodies never reach the file.
+
+- **Write**: the snapshot goes to a sibling temporary file (`<file>.<pid>.<n>.tmp`) and is then `rename`d over the target, which is atomic on one filesystem; a failure before the rename leaves the previous document intact and removes the temporary file. Writes are throttled (2 s) and also flushed on dispose and on process exit.
+- **Read**: an absent, unreadable, malformed or foreign-`version` file, and any individually invalid entry, all collapse to an empty cache; loading never throws and never stops the plugin from mounting.
+- **Bound**: the serialised document is trimmed in LRU order until it fits 4 MiB (`DEFAULT_CACHE_FILE_MAX_BYTES`), and `cacheEntries` still caps the in-memory map.
+- **Expiry**: `expiresAt` is absolute, so an entry reloaded from disk keeps its original deadline; expired entries are dropped at load, and a restart cannot extend a cache entry's life.
+- **Two processes**: last writer wins. One process may replace another's newer snapshot with an older one, but a half-written file is impossible.
+- **Live reading**: `cacheTtlMs` and `cacheEntries` are functions read on every use, so a Settings edit applies to the next search; `cachePersist` and `cacheFile` decide the wiring at mount, so changing those two needs a restart.
+
 ### The three-rung web_fetch ladder
 
 The `http-proxy` fetch provider tries three routes in order, each only after the previous one failed:
@@ -530,7 +592,18 @@ The `http-proxy` fetch provider tries three routes in order, each only after the
 
 The direct deadline is deliberately shorter than the tunnel's: a blocked host usually fails by timing out, and spending the whole budget on a route that cannot work leaves the route that can with nothing.
 
-Other details: only `http(s)` URLs are accepted; each page keeps at most `1 MiB` (`1048576` bytes), the rest truncated and flagged `truncated`; a non-2xx response is a **result**, not a failure, and comes back with its status code and body; only when all three rungs fail does the provider throw, and the message names each rung's reason.
+Other details: only `http(s)` URLs are accepted; the raw body keeps at most `1 MiB` (`1048576` bytes) before conversion, the rest truncated and flagged `truncated`; a non-2xx response is a **result**, not a failure, and comes back with its status code and body; only when all three rungs fail does the provider throw, and the message names each rung's reason.
+
+### From HTML to Markdown
+
+The conversion is dependency-free (`src/markdown.ts`): a tolerant tokenizer and tree builder, because real pages are not XML; a pruning pass that drops chrome tags, comments and hidden nodes; a body-selection pass that prefers `<article>`, then `<main>` / `role=main`, then the densest text container; and a renderer for headings, paragraphs, lists, code, quotes, rules, links, images and tables.
+
+- `markdown` keeps the syntax; `text` keeps only the words. Entities are decoded and relative URLs become absolute.
+- Tables become Markdown tables; a table outside the chosen article root is dropped with the rest of the furniture.
+- The character budget applies **after** conversion: `truncateFetchText` cuts at `fetchMaxLength`, trims trailing whitespace, avoids splitting a surrogate pair, and appends `[truncated at 20000 chars; original length 40891 chars; the rest is not shown]`.
+- Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of HTML → 40,891 characters of Markdown → 20,080 characters returned.
+- The provider is built with `fetchFormat` and `fetchMaxLength` at mount, so changing either on the Settings page needs a restart; search-side settings are re-read per call.
+- **No resume**: the host's `WebFetchRequest` has exactly one field, `url` — no offset, no maxLength, no format. A fetch therefore always starts at the top; the only remedies are raising `fetchMaxLength` or fetching a narrower page.
 
 ### The domain_search pipeline
 
@@ -553,6 +626,20 @@ Two sources need a word of their own:
 
 Registration goes through the host's real tool registry, read with `ctx.get('tools')` rather than `inject` — an inject entry is a hard dependency, so a deployment without a tool service would fail to mount the plugin and `web_search` would disappear with it. When the registry is absent the tool is not registered and the rest of the plugin works as usual. If another plugin already owns the name, it registers as `web_domain_search`.
 
+### The search_many pipeline
+
+```
+search_many call
+  → queries 1–5 (required), limit default 5 (valid 1–20), withSites default false
+  → mapLimit over the queries with SEARCH_MANY_CONCURRENCY = 3
+  → each query: the same engine layer, cache and cooldown tracker as web_search
+  → a thrown query becomes { sources: [], failures: [message] }; the batch continues
+  → results keep input order; withSites adds the lower-cased hostname as `site`
+  → return { results, truncated }
+```
+
+Each query sees the configured `limit` as its ceiling: a caller may ask for fewer results, never for more. The tool's own deadline is 30 s, it declares itself concurrency-safe, and it registers as `web_search_many` when another plugin owns `search_many`. Like `domain_search`, it is read from `ctx.get('tools')`: a host without a registry does not register it, and the rest of the plugin keeps working.
+
 ### Proxy
 
 Node's global `fetch` reads neither the macOS system proxy nor `HTTPS_PROXY` — unless the process started with `NODE_USE_ENV_PROXY=1`, which cannot be switched on from inside a running process. So when a proxy is needed, the plugin speaks to it directly: send `CONNECT`, upgrade with TLS for `https:` targets, write the request by hand, and decode `Content-Length`, chunked, gzip, deflate and brotli, following up to four redirects. `307`/`308` keep the method and body; any other `3xx` downgrades a `POST` to a bodyless `GET`.
@@ -565,6 +652,10 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 - **Google is unreachable from this network.** A tunnelled `www.google.com/search` returns a JavaScript shell (94 KB, 1–3 links); headless Chrome is redirected to `google.com.hk` with a reCAPTCHA. `gbv=1`, a consent cookie and a mobile user agent all failed. Eight public SearXNG instances were unusable too (429/403/not JSON).
 - **It depends on upstream HTML structure.** A redesign breaks a parser; that engine records a reason and yields to the next one rather than silently returning nothing.
 - **Titles, links and snippets only** — no page text. That is `web_fetch`'s job.
+- **A fetched page cannot be resumed from an offset**: the host's `WebFetchRequest` carries only `url`, so text beyond `fetchMaxLength` needs a higher limit or a narrower page.
+- **Extraction keeps only what looks like the article**: a page built entirely by JavaScript comes back nearly empty, and content outside the chosen article root — a sidebar table, say — is dropped with the navigation.
+- **`search_many` is capped at five queries and three in flight.**
+- **Two processes sharing one cache file write last-writer-wins**: neither can corrupt the file, but one process's newer snapshot can be replaced by another's older one.
 - **A time window can only filter results that carry a date**: dates are parsed from result pages, so an engine that prints none leaves that row without an age; when nothing dated falls inside the window the undated list comes back. Bing's and 360's time parameters were measured to have no effect; only DuckDuckGo's `df=` is a real pushdown.
 - **PyPI matches exact package names only**: it has no public search API, so the plugin uses the first word of the query; a typo yields an empty answer.
 - **Wikipedia searches one language only**: `zh` for CJK queries, `en` otherwise.
@@ -583,9 +674,16 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 | Per-source deadline `domainTimeoutMs` | `8000` ms |
 | Cache TTL `cacheTtlMs` | `600000` ms = 600 s |
 | Cache entries `cacheEntries` | `100` |
+| Cache persisted `cachePersist` | `true` |
+| Cache file `cacheFile` | empty = `~/.dsh/cache/dsh-web-search/cache.json` |
+| Persisted cache budget | `4194304` bytes = 4 MiB |
 | Per-engine timeout `timeoutMs` | `15000` ms |
 | `web_fetch` direct deadline | `5000` ms |
-| Bytes kept per page | `1048576` (1 MiB) |
+| Raw bytes kept per page | `1048576` (1 MiB) |
+| Fetch format `fetchFormat` | `markdown` (or `text`) |
+| Characters kept per fetch `fetchMaxLength` | `20000` (1000–200000) |
+| `search_many` queries / concurrency | 1–5 / 3 |
+| `search_many` limit | `5` (1–20) |
 | RRF constant `rrfConstant` | `60` |
 | Base cooldown `baseCooldownMs` | `300000` ms = 5 min |
 | Max cooldown `maxCooldownMs` | `1800000` ms = 30 min |
@@ -593,14 +691,14 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 ### Development and tests
 
 ```sh
-node --test test/*.test.ts     # the whole suite (239 tests)
+node --test test/*.test.ts     # the whole suite (283 tests)
 node --test test/proxy.test.ts # one file
 npm run typecheck              # tsc --noEmit
 npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline — 239 tests: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, and time-window tests pin the date with an injected `now`.
+The suite runs offline — 283 tests: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`) and the disk snapshot (`cache-persist.test.ts`).
 
 CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 

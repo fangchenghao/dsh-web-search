@@ -154,3 +154,18 @@ test('a non-2xx HTML response is converted but keeps its status', async () => {
     globalThis.fetch = original;
   }
 });
+
+test('a live format and length reader applies without rebuilding the provider', async () => {
+  let format: 'markdown' | 'text' = 'markdown';
+  let maxLength = 200;
+  stubFetch('<html><body><article><h1>Title</h1><p>Body text.</p></article></body></html>');
+  const provider = createFetchProvider({ id: 'http-proxy', format: () => format, maxLength: () => maxLength });
+  const first = await provider.fetch({ url: 'https://example.com/live' });
+  assert.match(first.body.content, /^# Title/m, 'markdown under the mounted reader');
+
+  format = 'text';
+  maxLength = 5;
+  const second = await provider.fetch({ url: 'https://example.com/live' });
+  assert.ok(!second.body.content.includes('# Title'), 'the new format applies immediately');
+  assert.ok(second.truncated, 'the new budget applies immediately');
+});

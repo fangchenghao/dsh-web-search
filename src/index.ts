@@ -225,8 +225,8 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
     createFetchProvider({
       id: FETCH_PROVIDER_ID,
       timeoutMs: mounted.timeoutMs,
-      format: mounted.fetchFormat,
-      maxLength: mounted.fetchMaxLength,
+      format: () => resolveConfig(section, undefined).fetchFormat,
+      maxLength: () => resolveConfig(section, undefined).fetchMaxLength,
       ...(mounted.proxy === undefined ? {} : { proxy: mounted.proxy }),
       ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
     }),

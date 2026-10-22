@@ -19,6 +19,10 @@
   a Settings edit takes effect without a remount, like every other volatile
   field.
 
+- `fetchFormat` / `fetchMaxLength` are resolved per request, so the Settings page
+  no longer needs a reload for them either; only the cache file path and the
+  persist switch are read at mount.
+
 ### Known limits
 - The host fetch request carries only a url, so a page cannot be resumed at an
   offset: raise `fetchMaxLength` or fetch a narrower page.

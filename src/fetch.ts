@@ -58,9 +58,11 @@ export interface FetchProviderOptions {
   /** Bytes kept from a response; the Host applies its own cap too. */
   maxBytes?: number;
   /** Output style for an HTML body; `markdown` keeps structure. */
-  format?: FetchFormat;
+  /** Renderer, or a reader for it so a Settings edit applies without a remount. */
+  format?: FetchFormat | (() => FetchFormat);
   /** Character budget for the returned text. */
-  maxLength?: number;
+  /** Character budget, or a reader for it. */
+  maxLength?: number | (() => number);
   /** User agent sent on every rung. */
   userAgent?: string;
 }
@@ -203,14 +205,25 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const userAgent = options.userAgent ?? USER_AGENT;
   const apiKey = (options.anysearchApiKey ?? '').trim();
-  const format = options.format ?? 'markdown';
-  const maxLength = options.maxLength ?? DEFAULT_FETCH_MAX_LENGTH;
+  /**
+   * Resolve the two volatile Settings fields per request. Reading them here
+   * rather than at construction is what lets a saved edit apply without a
+   * remount; caching them made the Settings page lie.
+   */
+  const liveFormat = (): FetchFormat =>
+    typeof options.format === 'function' ? options.format() : (options.format ?? 'markdown');
+  const liveMaxLength = (): number => {
+    const raw = typeof options.maxLength === 'function' ? options.maxLength() : options.maxLength;
+    return raw ?? DEFAULT_FETCH_MAX_LENGTH;
+  };
 
   // Every rung funnels through here: an HTML body becomes Markdown (or plain
   // text), a text body keeps its content, and both obey the character budget.
   // The Host's own renderer then sees `kind: 'text'`, so it does not convert the
   // same page a second time.
   const finalize = (outcome: FetchOutcome): FetchOutcome => {
+    const format = liveFormat();
+    const maxLength = liveMaxLength();
     if (outcome.body.kind === 'html') {
       const rendered = renderFetchText(outcome.body.content, { format, maxLength, baseUrl: outcome.url });
       return {
