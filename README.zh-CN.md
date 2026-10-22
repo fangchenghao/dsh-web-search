@@ -151,7 +151,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 4. **排序不只看排名，还看「是不是官方」和「够不够新」。**
    `kubernetes.io`、`developer.mozilla.org`、`rfc-editor.org` 这类域名会被加权；30 天内发布的内容也会被加权。
-   *技术补充：`score = votes / (rrfConstant + position)`，再乘 `1 + authorityBoost` 和新鲜度系数；默认 `rrfConstant: 60`、`authorityBoost: 0.25`、`freshnessBoost: 0.2`、`freshnessDays: 30`。*
+   *技术补充：`score = votes / (rrfConstant + position)`，再乘 `1 + authorityBoost` 和新鲜度系数；默认 `rrfConstant: 60`、`authorityBoost: 0.25`、`freshnessBoost: 0.2`、`freshnessDays: 30`。发布日期目前没有引擎提供，所以新鲜度这一项暂时空转。*
 
 5. **中英文分开处理。**
    英文问题先看国外来源，中文问题先看中文来源，避免「how to …」被某个中文引擎按单词 `how` 匹配成词典页。

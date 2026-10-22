@@ -5,7 +5,7 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.9.1. What follows starts with what this means for you; the technical detail is collected in the last section.
+> Version 0.9.1. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
@@ -151,7 +151,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 4. **Ranking looks beyond position — at official status and freshness.**
    Domains such as `kubernetes.io`, `developer.mozilla.org` and `rfc-editor.org` get a boost, as does anything published within 30 days.
-   *Technical: `score = votes / (rrfConstant + position)`, then `× (1 + authorityBoost)` and a freshness factor; defaults `rrfConstant: 60`, `authorityBoost: 0.25`, `freshnessBoost: 0.2`, `freshnessDays: 30`.*
+   *Technical: `score = votes / (rrfConstant + position)`, then `× (1 + authorityBoost)` and a freshness factor; defaults `rrfConstant: 60`, `authorityBoost: 0.25`, `freshnessBoost: 0.2`, `freshnessDays: 30`. No engine supplies a publication date yet, so the freshness term is currently idle.*
 
 5. **Chinese and English are handled separately.**
    English queries lead with global sources, Chinese queries with Chinese sources, so "how to …" is not answered with a dictionary page for the word `how`.
