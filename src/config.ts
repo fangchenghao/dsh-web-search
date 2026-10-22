@@ -18,57 +18,40 @@ export const Config = z.object({
     .array(z.string())
     .default([])
     .description('Restrict the run to these engine ids (empty means every engine).'),
-  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.').volatile(),
+  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.'),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
-    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.').volatile(),
+    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.'),
   proxy: z
     .string()
     .default('')
-    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.').volatile(),
-  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.').volatile(),
-  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.').volatile(),
+    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.'),
+  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.'),
+  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.'),
   authorityDomains: z
     .array(z.string())
     .default([])
     .description('Extra domains that earn the authority boost, on top of the built-in list.'),
-  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.').volatile(),
-  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.').volatile(),
-  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.').volatile(),
-  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.').volatile(),
-  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.').volatile(),
+  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.'),
+  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.'),
+  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.'),
+  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.'),
+  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.'),
   anysearchApiKey: z
     .string()
     .default('')
-    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.').volatile(),
+    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.'),
   anysearchDomain: z
     .string()
     .default('')
-    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.').volatile(),
-  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.').volatile(),
-  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.').volatile(),
+    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.'),
+  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.'),
+  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.'),
 });
 
 /** The resolved configuration object handed to `apply`. */
-export interface PluginConfig {
-  hosts: string[];
-  timeoutMs: number;
-  wait: WaitPolicy;
-  proxy: string;
-  limit: number;
-  rrfConstant: number;
-  authorityDomains: string[];
-  authorityBoost: number;
-  freshnessBoost: number;
-  freshnessDays: number;
-  cacheTtlMs: number;
-  cacheEntries: number;
-  anysearchApiKey: string;
-  anysearchDomain: string;
-  baseCooldownMs: number;
-  maxCooldownMs: number;
-}
+export type PluginConfig = ReturnType<typeof Config>;
 
 /** Configuration normalised for the engine layer. */
 export interface ResolvedConfig {
@@ -109,17 +92,7 @@ export function resolveConfig(config: PluginConfig | Readonly<Record<string, unk
   // also reachable from the settings card and from a hand-edited composition,
   // where the value can be a partial object. Running it through the schema first
   // makes the defaults apply instead of dereferencing an absent key.
-  // A `.volatile()` field is how the Host knows the value belongs in Settings,
-  // but the schema then resolves it to a `{ get }` holder instead of the value
-  // itself. Read the current value out of the holder before using it.
-  const raw = Config(config as never) as unknown as Record<string, unknown>;
-  const unwrap = (value: unknown): unknown => {
-    const holder = value as { get?: unknown } | null;
-    return typeof holder?.get === 'function' ? (holder.get as () => unknown)() : value;
-  };
-  const settings = Object.fromEntries(
-    Object.entries(raw).map(([key, value]) => [key, unwrap(value)]),
-  ) as unknown as PluginConfig;
+  const settings = Config(config as PluginConfig);
   const hosts = settings.hosts.filter((id) => id.trim().length > 0);
   const proxy = settings.proxy.trim();
   const limit = Math.min(callLimit ?? settings.limit, settings.limit);
