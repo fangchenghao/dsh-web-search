@@ -20,6 +20,8 @@ import { registerDomainTool } from './domain-tool.ts';
 import type { DomainToolSettings, ToolRegistryLike } from './domain-tool.ts';
 import { registerSearchManyTool } from './search-many.ts';
 import type { SearchManyOutcome, SearchManyRegistryLike } from './search-many.ts';
+import { registerReadPageTool } from './read-page.ts';
+import type { ReadPageRegistryLike } from './read-page.ts';
 import type { Source } from './types.ts';
 
 export const name = 'dsh-web-search';
@@ -234,7 +236,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
     }),
   );
 
-  // Optional half: `domain_search` and `search_many`. Fail-safe by
+  // Optional half: `domain_search`, `search_many` and `read_page`. Fail-safe by
   // construction — a deployment without `ctx.tools` still loads this plugin and
   // keeps `web_search`; the registration path is the host's
   // `ToolRuntime.register(definition)`.
@@ -265,6 +267,29 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       );
       if (batch !== undefined) {
         onDispose(ctx, batch.dispose);
+      }
+
+      // Resumable reading: `web_fetch` cannot continue from an offset because
+      // the host request carries only `url`, but a plugin-owned tool can. It
+      // reuses the same fetch ladder and the same live Settings readers.
+      const paged = registerReadPageTool(
+        tools as unknown as ReadPageRegistryLike,
+        () => {
+          const live = resolveConfig(section, undefined);
+          return {
+            maxLength: live.fetchMaxLength,
+            format: live.fetchFormat,
+            timeoutMs: live.timeoutMs,
+            renderJs: live.renderJs,
+            renderTimeoutMs: live.renderTimeoutMs,
+            ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
+            ...(live.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: live.anysearchApiKey }),
+          };
+        },
+        { warn: warnTool },
+      );
+      if (paged !== undefined) {
+        onDispose(ctx, paged.dispose);
       }
     }
   } catch (error) {
@@ -368,4 +393,26 @@ export type {
   SearchManySource,
   SearchManyValue,
 } from './search-many.ts';
+export {
+  READ_PAGE_TOOL_NAME,
+  READ_PAGE_TOOL_FALLBACK_NAME,
+  READ_PAGE_MIN_LENGTH,
+  READ_PAGE_MAX_LENGTH,
+  READ_PAGE_DEFAULT_LENGTH,
+  READ_PAGE_INTERNAL_MAX_CHARS,
+  READ_PAGE_CACHE_ENTRIES,
+  READ_PAGE_PROVIDER_ID,
+  createReadPageDefinition,
+  registerReadPageTool,
+  pickReadPageToolName,
+  formatReadPageValue,
+} from './read-page.ts';
+export type {
+  ReadPageDefinition,
+  ReadPageOptions,
+  ReadPageRegistration,
+  ReadPageRegistryLike,
+  ReadPageSettings,
+  ReadPageValue,
+} from './read-page.ts';
 export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, TimeRange, WaitPolicy } from './types.ts';

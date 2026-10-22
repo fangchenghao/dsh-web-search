@@ -5,11 +5,11 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.12.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> Version 0.13.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
-With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and get the page back as clean Markdown instead of a wall of HTML. When one question needs several separate searches, it can call `search_many` and get each query's results separately. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly.
+With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and get the page back as clean Markdown instead of a wall of HTML. When one question needs several separate searches, it can call `search_many` and get each query's results separately. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly. And when a page is too long to read in one pass, it can call `read_page` and continue from where the last chunk stopped.
 
 Three things change for you:
 
@@ -17,7 +17,7 @@ Three things change for you:
 - When a question is about a package, a repository or a paper, the model can ask the matching source directly instead of hoping a web search understands.
 - You do not need a search API key, and you do not pay for search separately.
 
-Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds two more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, and `search_many` for several searches in one call. These names come up again below.
+Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds three more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, `search_many` for several searches in one call, and `read_page` for walking a long page in chunks. These names come up again below.
 
 ## The problem it solves
 
@@ -44,7 +44,7 @@ You upgraded a library. A config field was renamed. You ask the model:
 | Situation | Without it | With it |
 | --- | --- | --- |
 | A question about something released weeks ago | Memory only; often stale | Searched and read now, with sources |
-| You paste a link and say "read this" | A direct request that times out (`github.com`, for example) is the end of it | Direct first, then the local proxy, then AnySearch extraction |
+| You paste a link and say "read this" | A direct request that times out (`github.com`, for example) is the end of it | Direct first, then the local proxy; with Playwright installed a browser can render it, and AnySearch extraction comes last |
 | Where results come from | One backend, depending on credentials | Up to six sources, cross-checked and de-duplicated |
 | A question in Chinese | Dictionary and encyclopedia pages creep in | Chinese sources lead, without losing English documentation |
 | A question about an npm package, a repository or a paper | A web search at best, often landing on second-hand pages | `domain_search` queries the matching source for the package, repository or paper entry |
@@ -114,7 +114,32 @@ Analogy: `web_search` is asking passers-by where the hardware shop is and gettin
 
 They team up well: use `domain_search` to find the package or paper, then `web_fetch` to open its homepage or README and read the detail.
 
-One more helper sits beside them: **`search_many`**. When one question needs several distinct searches — one per candidate library, say — it runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch.
+Two more helpers sit beside them: **`search_many`** and **`read_page`**. When one question needs several distinct searches — one per candidate library, say — `search_many` runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch; when a page is too long for one fetch, `read_page` continues from where the previous chunk stopped.
+
+### Reading a long page in chunks (read_page): when one pass is not enough
+
+`web_fetch` has two built-in limits: it fetches one page per call, and anything past `fetchMaxLength` (20,000 characters by default) is cut off. The missing tail is not "slow to arrive" — it never arrives. The host's fetch request has exactly one field, `url` (`WebFetchRequest = { url }`), with no offset and no maxLength, so the host's own tool cannot continue from the middle.
+
+The plugin therefore registers its own `read_page` tool to fill that gap. It walks the same fetch ladder as `web_fetch`, but adds an `offset`:
+
+| Argument | Required | Default | Meaning |
+| --- | --- | --- | --- |
+| `url` | yes | — | Absolute `http://` or `https://` URL to read |
+| `offset` | no | `0` | First character to return, zero-based |
+| `maxLength` | no | the configured `fetchMaxLength` | Characters in this chunk, 1000–200000 |
+| `format` | no | the configured `fetchFormat` | `markdown` keeps headings, lists, tables and links; `text` keeps only the words |
+
+Usage is one loop: start at `offset=0`, read `nextOffset` from the response, pass it back as `offset` on the next call, and stop when `nextOffset` is `null`. The `content` of a chunk is only this chunk's text; the "how many characters remain, use this offset next" line is generated separately and is not part of `content`, so concatenating every chunk's `content` reproduces the complete body character for character.
+
+Bodies are cached per URL and format inside the plugin (up to eight pages, least recently used evicted), so continuing does not download the whole page again: the first fetch is followed by slices from memory. That one internal fetch also ignores `fetchMaxLength`; a 2,000,000-character cap bounds the converted body.
+
+Boundary behaviour:
+
+- An `offset` past the end of the page is an error; an `offset` exactly equal to the length means "already finished" and returns empty content with `nextOffset: null`;
+- `truncated` describes the **source**: it is true only when the full body exceeded 2,000,000 characters (or the transport cut it), and it does not mean "there is another chunk" — `nextOffset` answers that;
+- A fetch failure (network, HTTP status, blocked) comes back as a structured `failures` entry instead of breaking the whole tool call.
+
+Measured on `https://docs.python.org/3/library/asyncio-task.html`: reading with `offset=0` and then each `nextOffset`, the joined chunks equal the one-shot body **character for character** (live network, 1.3 s).
 
 ### DeepSeek messages and sessions
 
@@ -162,8 +187,8 @@ Why does a code change need a restart? Because Node.js evaluates a module once p
 Each line is the plain version first, the technical note second. The technical note is safe to skip.
 
 1. **Ask several search engines at once.**
-   Four primaries run together (AnySearch, DuckDuckGo HTML, Bing China, 360). If none of them returns anything, Bing International and DuckDuckGo Lite step in. Six sources in total.
-   *Technical: `tier: primary` and `tier: fallback` in `HOSTS`; the three `viaProxy` engines (`ddg-html`, `www.bing`, `ddg-lite`) only join when a proxy is detected.*
+   Three primaries run together (AnySearch, DuckDuckGo HTML, Bing China). If none of them returns anything, Bing International, 360 and DuckDuckGo Lite step in. Six sources in total.
+   *Technical: `tier: primary` and `tier: fallback` in `HOSTS`; 360 is a fallback because of its verification wall; the three `viaProxy` engines (`ddg-html`, `www.bing`, `ddg-lite`) only join when a proxy is detected.*
 
 2. **No API key at all.**
    AnySearch answers anonymously; the domestic engines and DuckDuckGo are scraped from public result pages. No sign-up needed.
@@ -195,39 +220,57 @@ Each line is the plain version first, the technical note second. The technical n
 
 9. **It can read the page, not just the snippet.**
    Search returns links; `web_fetch` returns readable text, and reroutes when a direct request fails.
-   *Technical: a three-rung ladder — direct (5 s cap) → local tunnel → AnySearch extraction (needs a key); the raw body keeps at most 1 MiB (`1048576` bytes), which is then converted (item 10) and cut to `fetchMaxLength`.*
+   *Technical: a four-rung ladder — direct (5 s cap) → local tunnel → browser render (optional, only when you installed Playwright) → AnySearch extraction (needs a key); the raw body keeps at most 1 MiB (`1048576` bytes), which is then converted (item 10) and cut to `fetchMaxLength`.*
 
 10. **A fetched page comes back as readable Markdown, not raw HTML.**
     Navigation, scripts, footers and forms are dropped; headings, paragraphs, lists, code blocks, quotes, links, images and tables stay — tables become Markdown tables. A page longer than the default 20,000 characters ends with one line naming the original length.
-    *Technical: `fetchFormat` (`markdown` by default, or `text`) and `fetchMaxLength` (default `20000`, range 1000–200000). Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of raw HTML became 40,891 characters of body Markdown, and the tool returned 20,080 characters plus one truncation line. The body is chosen from `<article>`, then `<main>`/`role=main`, then the densest text container; relative links become absolute. **No resume**: the host's `WebFetchRequest` carries only `url` — no offset, no maxLength, no format — so a page cannot be continued from the middle; raise `fetchMaxLength` or fetch a narrower page.*
+    *Technical: `fetchFormat` (`markdown` by default, or `text`) and `fetchMaxLength` (default `20000`, range 1000–200000). Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of raw HTML became 40,891 characters of body Markdown, and the tool returned 20,080 characters plus one truncation line. The body is chosen from `<article>`, then `<main>`/`role=main`, then the densest text container; relative links become absolute. **`web_fetch` itself cannot resume**: the host's `WebFetchRequest` carries only `url` — no offset, no maxLength, no format — so it always starts at the top; to read the other half, use `read_page` (next item).*
 
-11. **It works on a restricted network.**
+11. **A page too long for one pass can be read in chunks.**
+    When a page exceeds `fetchMaxLength`, `web_fetch` returns only the first part; `read_page` continues from `nextOffset` until the whole page is read.
+    *Technical: `read_page` is a tool the plugin registers itself (the host's `WebFetchRequest` has only `url`, so the host tool cannot continue); arguments `url` (required), `offset` (default 0), `maxLength` (default = the configured `fetchMaxLength`, 1000–200000), `format` (`markdown`/`text`, default = `fetchFormat`); it returns `url`, `content`, `offset`, `nextOffset` (`null` when finished), `totalLength`, `truncated`, `chunk` and `failures`. One internal fetch is not cut to `fetchMaxLength` (a 2,000,000-character cap bounds the whole page), and slices are taken from that body, so continuing never re-downloads the page; the body is cached per URL and format (8 pages, LRU). An `offset` past `totalLength` is an error, `offset === totalLength` counts as finished, a non-http(s) URL is an error, and fetch failures come back in `failures`. It registers as `web_read_page` when the name is taken, and is not registered when the host has no `ctx.tools`. Measured on `docs.python.org/3/library/asyncio-task.html`: joined chunks equal the one-shot body character for character (live network, 1.3 s).*
+
+12. **When a page is only a shell, a real browser can finish the job.**
+    Some pages ship an HTML shell — a title, a loading script, and nothing to read until their JavaScript runs. With Playwright installed, the plugin can open a headless Chromium, let the page finish, and read the result.
+    *Technical: Playwright is **not bundled** and is not a dependency. At runtime the plugin tries `import('playwright')`, then `import('playwright-core')`; when neither is installed it skips silently, records the reason in the result's `render` field, and never throws. The ladder is direct → local tunnel → browser render → AnySearch extraction; the browser runs locally, needs no key and sends the URL to no third party, which is why it sits before extraction. `renderJs` has three values: `auto` (default, render only a suspected shell), `always` (use the browser for every fetch), `off` (never). `renderTimeoutMs` defaults to `15000` ms (1000–120000). A "suspected shell" is: zero readable characters; a 403/429 that still carries content; fewer than 500 readable characters; or fewer than 1200 with a client-render marker such as `__NEXT_DATA__`, `id="root"`, `__NUXT__` or `ng-version`. A 404 or 5xx is never rendered. A render that fails, times out or is aborted returns whatever the earlier rung already fetched, so the whole fetch does not fail. Install with `npm i -g playwright && npx playwright install chromium` (or inside the project) and **reload the plugin**; not installing it changes nothing else. **Honest note**: the development environment for this project has no Playwright, so there is no measured "rendered body"; what is verified is that shell pages are recognised and that a missing renderer falls back silently — measured on `excalidraw.com`: 6862 bytes of HTML, 10 readable characters, an `id="root"` marker, judged a shell, and skipped because Playwright was absent.*
+
+13. **It works on a restricted network.**
      With a tunnel running and set as the system proxy, nothing needs configuring. With the tunnel off, it falls back to direct requests instead of failing.
      *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
 
-12. **Every setting is editable in the UI.**
-     Twenty-four controls in five groups; a save takes effect on the next search, apart from the few the plugin reads once at mount.
-     *Technical: all twenty-four fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, while the fetch provider takes `proxy`, `timeoutMs`, `fetchFormat` and `fetchMaxLength` at mount and the cache wiring takes `cachePersist` and `cacheFile` there too.*
+14. **Every setting is editable in the UI.**
+     Twenty-six controls in five groups; a save takes effect on the next search, apart from the few the plugin reads once at mount.
+     *Technical: all twenty-six fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, while the fetch provider takes `proxy`, `timeoutMs`, `fetchFormat` and `fetchMaxLength` at mount; `renderJs` and `renderTimeoutMs` are re-read on every fetch; the cache wiring takes `cachePersist` and `cacheFile` there too.*
 
-13. **Failures are explained, not silently empty.**
+15. **Failures are explained, not silently empty.**
      When nothing succeeds, the error lists which engines were tried and why each one failed.
      *Technical: failures are classified `SEARCH_THROTTLED`, `SEARCH_BLOCKED`, `SEARCH_TIMEOUT`, `SEARCH_NETWORK`, `SEARCH_PARSE`, `SEARCH_ABORTED`; they are return values, not exceptions — only caller cancellation throws.*
 
-14. **Packages, repositories, papers and Q&A are one hop away.**
+16. **A captcha page is reported as a failure, not as "no results".**
+     From some networks 360 answers with a verification page, yet the HTTP status is still 200. The old code treated that as "zero results" and swallowed it: the engine effectively vanished and its cooldown never fired. Such pages are now recognised as a failure, and 360 has moved to the fallback tier.
+     *Technical: `looksLikeBotWall` checks for `qcaptcha`, `访问异常`, `unusual traffic`, `verify you are human` and `安全验证` before parsing; a hit returns `SEARCH_BLOCKED` (retryable and subject to cooldown) instead of an empty list. `so` moved from `tier: primary` to `tier: fallback`, so it is tried only when no primary engine returned anything and no longer slows every search. Measured: querying that engine alone now returns the failure `so: bot verification page`, not zero results.*
+
+17. **Packages, repositories, papers and Q&A are one hop away.**
      For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against eight dedicated sources instead of hoping a web search finds them.
      *Technical: eight keyless sources — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); arguments `query` (required), `sources` (optional array, default = every enabled source), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
 
-15. **You can look only at recently published results.**
+18. **You can look only at recently published results.**
      Choose "last 24 hours / 7 days / 30 days / 1 year" in Settings and only results inside that window stay — useful for news and releases.
      *Technical: `timeRange` takes `off` (default) / `day` / `week` / `month` / `year` — 24 hours, 7 days, 30 days, 1 year. Publication dates are parsed from each engine's results (Bing's snippet date and `news_dt`, 360's `发贴时间`, DuckDuckGo's timestamp and snippet, AnySearch's `date:` trailer). DuckDuckGo receives the window as `df=d/w/m/y`; Bing's and 360's parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two and AnySearch filter locally. With a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone.*
 
-16. **Several questions, one call.**
+19. **Several questions, one call.**
      For "compare these three libraries", the model can hand `search_many` one to five queries and get each query's results back separately; up to three run at once, and one failed query does not take the others down.
      *Technical: `queries` (1–5, required), `limit` (default 5, 1–20), `withSites` (default false; true attaches each result's hostname). `SEARCH_MANY_CONCURRENCY = 3`. Each query goes through the same engine layer, cache and cooldown tracker as `web_search`; a thrown search becomes that query's `failures` entry, never the batch's. Use `search_many` for several questions at once, `web_search` for one, `domain_search` for packages, papers or Q&A. The tool's deadline is 30 s and it is concurrency-safe. It registers as `web_search_many` if the name is taken, and is not registered at all when the host has no `ctx.tools`.*
 
-17. **The cache survives a restart.**
+20. **The cache survives a restart.**
      Ask the same question again after restarting DSH within ten minutes and the previous result is still there; nothing is sent to the engines.
      *Technical: `cachePersist` (default `true`) and `cacheFile` (default empty = `~/.dsh/cache/dsh-web-search/cache.json`). Only the summary — `url` / `title` / `snippet` / `publishedAt` — is written, never page bodies. 4 MiB default budget, LRU eviction, atomic write (sibling temporary file + `rename`); a corrupt, foreign or unreadable file loads as an empty cache and never stops the plugin. Two processes writing the same file is last-writer-wins, and a file is never left half-written. `cacheTtlMs` and `cacheEntries` apply immediately, no restart.*
+
+21. **Search quality has a repeatable benchmark.**
+    Ranking changes are no longer judged by feel: a fixed set of 20 queries produces the same scores every time.
+    *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Baseline for 0.13.0: P@8 `0.3625`, R@8 `0.7417`, MRR@8 `0.7600`; Chinese `0.3250 / 0.7333 / 0.6700`, English `0.4000 / 0.7500 / 0.8500`. The controlled experiments and known gaps are in the appendix.*
+
+> **What 0.13.0 fixes (a real defect)**: from some networks 360 (`so`) returns a verification page — a 302 to the qcaptcha "unexpected access" page — while the HTTP status is still 200. The old code read that as "zero results" and swallowed it: the engine effectively disappeared and its cooldown never fired. Such pages now fail as `SEARCH_BLOCKED`, and 360 has been demoted to the **fallback tier** (tried only when the primary engines are empty), so it no longer slows every search. Measured: querying that engine alone now returns the failure `so: bot verification page` instead of zero results.
 
 ## Installing and enabling it
 
@@ -236,6 +279,7 @@ Each line is the plain version first, the technical note second. The technical n
 - A DeepSeek Harness profile with the `web` service;
 - Node 22.18 or newer (the source uses Node's native TypeScript type stripping; CI runs Node 24);
 - Ordinary outbound network access. A tunnel is not required — you just get fewer engines without one.
+- Optional: to read pages whose body is built by JavaScript, install Playwright yourself (item 12 above); not installing it changes nothing else.
 
 ### Step 1: build
 
@@ -305,6 +349,8 @@ Optionally, add a config row:
     anysearchApiKey: ""  # empty means anonymous access
     anysearchDomain: ""  # or finance / academic / security / legal / code
     timeRange: off       # off / day / week / month / year
+    renderJs: auto       # auto / always / off
+    renderTimeoutMs: 15000
     domainLimit: 5       # results per domain_search source
     domainTimeoutMs: 8000
 ```
@@ -321,7 +367,7 @@ Values saved from the Settings page apply immediately; only `cachePersist` and `
 
 Any one of these:
 
-1. **Look at Settings**: Settings → "Web search (Bing)" should show five groups of controls, 24 in all. That means the plugin loaded and the Host accepted its schema.
+1. **Look at Settings**: Settings → "Web search (Bing)" should show five groups of controls, 26 in all. That means the plugin loaded and the Host accepted its schema.
 2. **Look at the log**: no warning such as `1 entry did not activate`.
 3. **Just try it**: ask something that obviously needs the network, such as "search for a DSH plugin tutorial and give me the links". Watch whether `web_search` is called and whether the links are real.
 
@@ -329,14 +375,14 @@ If the Settings card appears but search still fails, start with [docs/troublesho
 
 ## Using the Settings page
 
-Open Settings → "Web search (Bing)". Twenty-four controls, arranged in five groups. Each group owns one kind of decision:
+Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five groups. Each group owns one kind of decision:
 
 | Group | Controls | What it decides |
 | --- | --- | --- |
 | Engines and transport | 6 | Which engines run, how long to wait, whether to use a proxy, AnySearch credentials and vertical domain |
 | Results and ranking | 7 | How many results, how far back to look, how they merge and sort, how much official docs and fresh content count |
 | Dedicated search | 3 | Which sources `domain_search` queries, results per source, deadline per source |
-| Fetching | 2 | What `web_fetch` returns — Markdown or plain text — and how many characters |
+| Fetching | 4 | What `web_fetch` returns — Markdown or plain text, how many characters, whether a browser may render a shell, and how long that render may take |
 | Cache and cooldowns | 6 | How long results are remembered, how many, whether the cache is saved to disk, and how long a throttled engine rests |
 
 ### Engines and transport (6)
@@ -370,12 +416,14 @@ Open Settings → "Web search (Bing)". Twenty-four controls, arranged in five gr
 | Results per source | `domainLimit` | `5` | How many results `domain_search` takes from each source, 1–20 |
 | Deadline per source | `domainTimeoutMs` | `8000` | Per-source deadline in ms, at least 500; raise it to 15000 on a slow network |
 
-### Fetching (2)
+### Fetching (4)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
 | Output format | `fetchFormat` | `markdown` | `markdown` keeps headings, lists, tables, links and code; `text` keeps only the words. Leave it on `markdown` for reading; choose `text` for a smaller, plainer result. Applies immediately |
 | Characters kept | `fetchMaxLength` | `20000` | How much converted text one fetch returns, 1000–200000; the cut is announced with the original length. Raise it to `50000` for long documentation. Applies immediately |
+| JavaScript rendering | `renderJs` | `auto` | `auto` uses the browser only when a page looks like an empty shell; `always` renders every fetch; `off` never does. Needs Playwright installed separately; without it the page is skipped silently and returned unrendered. Applies immediately |
+| Render wait limit (ms) | `renderTimeoutMs` | `15000` | How long one browser render may take, 1000–120000; raise it to `30000` for heavy pages. Applies immediately |
 
 ### Cache and cooldowns (6)
 
@@ -390,27 +438,29 @@ Open Settings → "Web search (Bing)". Twenty-four controls, arranged in five gr
 
 ### My advice
 
-**For normal use: leave all twenty-four alone. The defaults are the tuned values.**
+**For normal use: leave all twenty-six alone. The defaults are the tuned values.**
 
 Only these situations are worth changing:
 
 - **Your proxy is not detected**: put the local proxy address in `proxy`, for example `http://127.0.0.1:7890`. HTTP proxies only — swap `socks5://` for the client's HTTP/mixed port.
 - **You want AnySearch's higher limits or page extraction**: fill in `anysearchApiKey`, and add `anysearchDomain` if you want one vertical index.
 - **You only want `domain_search` to hit a few sources**: narrow `domainSources` to a set such as `github,npm`; empty means all eight.
-- **A fetched page is cut too early, or you want plain text**: raise `fetchMaxLength` to `50000`, or set `fetchFormat` to `text`.
+- **A fetched page is cut too early, or you want plain text**: raise `fetchMaxLength` to `50000`, or set `fetchFormat` to `text`; if that is still not enough and you need the other half, use `read_page` (item 11 above).
+- **A fetched page is an empty shell**: first check whether its body is built by JavaScript. If Playwright is installed, leave `renderJs` on `auto` and reload the plugin, then retry; without it, try another source (a print view, a static mirror, the site's API). Raising `fetchMaxLength` only helps when text was fetched but cut at the tail — it cannot turn a shell into an article.
+- **Browser rendering is too slow**: set `renderJs` to `off`, or lower `renderTimeoutMs`.
 - **You do not want a cache file on disk**: turn `cachePersist` off, or point `cacheFile` somewhere else.
 
 Three things to keep in mind:
 
 - A save is immediate and applies to the next search, no restart — except the controls the plugin reads at mount (`fetchFormat`, `fetchMaxLength`, `cachePersist`, `cacheFile`), which need a restart.
 - **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order — and with persistence on, restarting DSH does not clear it. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
-- **A page cannot be continued from the middle**: `web_fetch` makes one request per URL, so if the tail is missing, raise `fetchMaxLength` or fetch a narrower page.
+- **`web_fetch` cannot continue from the middle**: it makes one request per URL, so if the tail is missing, raise `fetchMaxLength` or use `read_page` to continue from the break; fetching a narrower page still costs the least context.
 
 ## FAQ
 
 ### Do I need an API key?
 
-No. Search runs entirely over public routes: AnySearch anonymously, Bing and 360 by scraping result pages, DuckDuckGo by scraping HTML. `anysearchApiKey` is optional; with a key you get higher limits, and `web_fetch` gains a third rung — server-side extraction — when both direct and tunnel fail.
+No. Search runs entirely over public routes: AnySearch anonymously, Bing and 360 by scraping result pages, DuckDuckGo by scraping HTML. `anysearchApiKey` is optional; with a key you get higher limits, and `web_fetch` gains a final rung — server-side extraction — when both direct and tunnel fail.
 
 ### Will it cost me money?
 
@@ -421,26 +471,56 @@ The plugin is MIT-licensed and free. It calls no paid search API and contains no
 
 ### Does it send my searches to anyone?
 
-Yes — to the engines taking part in that search, which is what searching means. Concretely: `api.anysearch.com`, `cn.bing.com`, `www.so.com`, plus DuckDuckGo and Bing International when a proxy is in play. With a key configured, a page that fails to fetch may be sent to `api.anysearch.com`'s extraction endpoint. The plugin has no server of its own and contains no usage-reporting code.
+Yes — to the engines taking part in that search, which is what searching means. Concretely: `api.anysearch.com`, `cn.bing.com`, `www.so.com`, plus DuckDuckGo and Bing International when a proxy is in play. With a key configured, a page that fails to fetch may be sent to `api.anysearch.com`'s extraction endpoint. The plugin has no server of its own and contains no usage-reporting code. With Playwright installed, a rendered page is opened in your local browser and its URL goes to no third party outside that page's own site.
 
 ### Why can't it fetch a particular site?
 
 Four usual causes:
 
-1. **The site refuses automated access**: a 403 or a verification page. If direct and tunnel both fail, only an AnySearch key enables server-side extraction.
-2. **The content is rendered by JavaScript**: what comes back is an empty shell.
+1. **The site refuses automated access**: a 403 or a verification page. With Playwright installed and content still on the page, `renderJs: auto` tries the local browser first; otherwise, if direct and tunnel both fail, only an AnySearch key enables server-side extraction.
+2. **The content is rendered by JavaScript**: what comes back is an empty shell. With Playwright installed it is rendered automatically; without it, you see the shell.
 3. **It needs a login or a subscription**: fetching carries no session of yours.
 4. **Direct requests time out**: 5 seconds direct, then the tunnel; if neither works and no key is configured you get an error, and with a key there is one more rung, server-side extraction. The message names each rung's failure.
+
+360's captcha belongs to the first cause, but it used to be especially quiet: from some networks the request 302s to the qcaptcha "unexpected access" page while the HTTP status is still 200. The plugin now records that as `SEARCH_BLOCKED`; querying that engine alone shows `so: bot verification page` instead of zero results, and 360 has been demoted to the fallback tier.
 
 ### Why does fetched content differ from what the browser shows?
 
 Because `web_fetch` is not a browser:
 
 - It keeps the **article**, not the page: navigation, ads, scripts, footers, forms and hidden nodes are dropped before conversion. Headings, paragraphs, lists, code, quotes, links, images and tables survive.
-- It does **not run JavaScript**: a page that renders its body client-side comes back nearly empty, while the browser fills it in.
-- It **cuts the tail**: converted text beyond `fetchMaxLength` (20000 characters by default) is replaced by one line naming the original length, so a long page stops early.
+- It **does not run JavaScript by default**: a page that renders its body client-side comes back nearly empty. Once you install Playwright and enable rendering, that no longer holds — the browser fills the body in; the switch, deadline and "what counts as a shell" are in item 12 above.
+- It **cuts the tail**: converted text beyond `fetchMaxLength` (20000 characters by default) is replaced by one line naming the original length, so a long page stops early. To read the other half, use `read_page` (next question).
 
-If the text stops too soon, raise `fetchMaxLength` (`50000` is a reasonable value). If what comes back is an empty shell, the page probably needs a browser — try its print view, a static mirror or the site's API instead.
+If the text stops too soon, use `read_page` to continue (see the next question); you can also raise `fetchMaxLength` (`50000` is a reasonable value). If what comes back is an empty shell, follow "What can I do when a fetched page is empty?" below; without a browser, try its print view, a static mirror or the site's API.
+
+### What if a page is too long to read in one go?
+
+Use `read_page`. Fetch it as usual (omit `offset` or pass `0`); the result carries `nextOffset`; pass it back as `offset` on the next call until `nextOffset` is `null`.
+
+- To read one particular slice, pass its `offset` directly, for example starting at character 40000;
+- For larger chunks, raise `maxLength` (it defaults to the configured `fetchMaxLength`, up to 200000);
+- For plain text, pass `format: "text"` (the default comes from the configured `fetchFormat`).
+
+`totalLength` is the whole page's length, and `chunk.index` / `chunk.count` tell you which chunk you are on. The page is cached, so continuing does not download it again; `truncated: true` only means the source itself was cut (past the 2,000,000-character safety cap, or by the transport), not that another chunk exists — `nextOffset` answers that.
+
+If the page is short enough for `web_fetch` in one pass, you do not need `read_page`. It walks the same four-rung fetch ladder, so your proxy, rendering and AnySearch extraction settings apply just as they do to `web_fetch`.
+
+### What can I do when a fetched page is empty?
+
+First decide whether it is a shell page — HTML with a title and a loading script, whose body appears only after JavaScript runs. Then, in order:
+
+1. **If you installed Playwright yourself** (`npm i -g playwright && npx playwright install chromium`): leave `renderJs` on `auto` and reload the plugin, then retry. The plugin recognises the shell and renders it in headless Chromium; `always` forces a render on every fetch, and `off` disables rendering.
+2. **Without Playwright**: nothing is installed automatically and nothing errors; the result says why rendering was skipped and returns the shell. Try another source (a print view, a static mirror, the site's API), or raise `fetchMaxLength` — but that only helps when the text was actually fetched and cut at the tail; it cannot create a body.
+3. **If the page needs a login or a subscription**: rendering cannot rescue it either; fetching carries no session of yours.
+
+### Does the plugin secretly install a browser?
+
+No. `package.json` does not list Playwright, and the plugin never downloads or installs anything at runtime. Rendering turns on only when you have already installed `playwright` or `playwright-core`; otherwise it is skipped silently, the fetch returns the unrendered page, and the reason is recorded in the result. Reload the plugin after installing, because the loader caches the "not installed" verdict for the rest of that mount.
+
+### How do you know search quality improved?
+
+From the fixed query set in `bench/`, not from intuition. There are 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline and prints P@8 / R@8 / MRR@8. The 0.13.0 baseline is **0.3625 / 0.7417 / 0.7600**; Chinese 0.3250 / 0.7333 / 0.6700, English 0.4000 / 0.7500 / 0.8500. Run it before and after a ranking change and the direction is a number. Twenty queries are not statistical significance; news recall is only 0.367 and `zh-linux-612` still misses everything — the appendix says so.
 
 ### Why do the results differ from what I get searching by hand?
 
@@ -580,19 +660,28 @@ Details:
 - **Two processes**: last writer wins. One process may replace another's newer snapshot with an older one, but a half-written file is impossible.
 - **Live reading**: `cacheTtlMs` and `cacheEntries` are functions read on every use, so a Settings edit applies to the next search; `cachePersist` and `cacheFile` decide the wiring at mount, so changing those two needs a restart.
 
-### The three-rung web_fetch ladder
+### The four-rung web_fetch ladder
 
-The `http-proxy` fetch provider tries three routes in order, each only after the previous one failed:
+The `http-proxy` fetch provider has four routes: two transports, an optional browser render, and AnySearch extraction.
 
 | Rung | What it does | Deadline | When it helps |
 | --- | --- | --- | --- |
 | 1. Direct | Requests the target URL itself | 5 s at most (`DIRECT_DEADLINE_MS = 5000`) | Fastest on an open network, and costs no tunnel round trip |
 | 2. Local tunnel | Requests through an HTTP `CONNECT` proxy | `timeoutMs`, default 15 s | Hosts like `github.com` and `html.duckduckgo.com` that time out directly |
-| 3. AnySearch extraction | `POST https://api.anysearch.com/v1/extract`; content rendered server-side | Same, default 15 s | Needs a key. Rescues a page that answers 403 to a bare request |
+| 3. Browser render (optional) | Launches headless Chromium through Playwright, runs the page, then returns the DOM | `renderTimeoutMs`, default 15 s; up to 2 s more for `networkidle` after the DOM | When you installed Playwright yourself and the page is a shell, or a 403/429 that still has content. Runs locally, no key, and the URL goes to no third party |
+| 4. AnySearch extraction | `POST https://api.anysearch.com/v1/extract`; content rendered server-side | Same, default 15 s | Needs a key. Rescues a page that answers 403 to a bare request |
 
 The direct deadline is deliberately shorter than the tunnel's: a blocked host usually fails by timing out, and spending the whole budget on a route that cannot work leaves the route that can with nothing.
 
-Other details: only `http(s)` URLs are accepted; the raw body keeps at most `1 MiB` (`1048576` bytes) before conversion, the rest truncated and flagged `truncated`; a non-2xx response is a **result**, not a failure, and comes back with its status code and body; only when all three rungs fail does the provider throw, and the message names each rung's reason.
+Rung 3 does not run every time. `renderJs: auto` first asks whether the page looks like a shell: zero readable characters; a 403/429 that still carries content; fewer than 500 readable characters; or fewer than 1200 with a client-render marker such as `__NEXT_DATA__`, `id="root"`, `__NUXT__` or `ng-version`. A 404 or other 5xx is an error page, not a shell, and is never rendered; a non-HTML body (JSON, plain text) is never a shell either. `always` skips the question and renders every fetch, including a standalone rescue when every transport failed; `off` disables the rung.
+
+Playwright is neither a dependency nor imported at startup: the fetch provider performs one guarded dynamic `import()` the first time a render is needed, trying `playwright` and then `playwright-core`, and a missing pair is a silent skip with the reason recorded in the `render` report. Install with `npm i -g playwright && npx playwright install chromium` (or inside the project) and reload the plugin — the loader caches the "not installed" verdict until that mount ends.
+
+A failed, timed-out or aborted render does not fail the fetch: the earlier rung's page is returned unchanged with the reason in `render`; only caller cancellation throws. With an AnySearch key configured, a failed render still gets one extraction attempt first, and only a failed extraction falls back to the earlier page.
+
+**Honest note**: the development environment for this project has no Playwright, so rendered output itself is unmeasured. What is verified is shell detection and the silent fallback — measured on `excalidraw.com`: 6862 bytes of HTML, 10 readable characters, an `id="root"` marker, judged a shell, and skipped because Playwright was absent.
+
+Other details: only `http(s)` URLs are accepted; the raw body keeps at most `1 MiB` (`1048576` bytes) before conversion, the rest truncated and flagged `truncated`; a non-2xx response is a **result**, not a failure, and comes back with its status code and body; the provider throws only when every transport and extraction failed and there is no earlier page to return, and the message names each rung's reason. A rendered DOM goes through the same Markdown conversion and is still capped by `fetchMaxLength`.
 
 ### From HTML to Markdown
 
@@ -603,7 +692,7 @@ The conversion is dependency-free (`src/markdown.ts`): a tolerant tokenizer and 
 - The character budget applies **after** conversion: `truncateFetchText` cuts at `fetchMaxLength`, trims trailing whitespace, avoids splitting a surrogate pair, and appends `[truncated at 20000 chars; original length 40891 chars; the rest is not shown]`.
 - Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of HTML → 40,891 characters of Markdown → 20,080 characters returned.
 - The provider is built with `fetchFormat` and `fetchMaxLength` at mount, so changing either on the Settings page needs a restart; search-side settings are re-read per call.
-- **No resume**: the host's `WebFetchRequest` has exactly one field, `url` — no offset, no maxLength, no format. A fetch therefore always starts at the top; the only remedies are raising `fetchMaxLength` or fetching a narrower page.
+- **`web_fetch` cannot resume**: the host's `WebFetchRequest` has exactly one field, `url` — no offset, no maxLength, no format, so every fetch starts at the top. The plugin's separate `read_page` tool fills that gap (see "The read_page pipeline"); without switching tools, the remedies are still raising `fetchMaxLength` or fetching a narrower page.
 
 ### The domain_search pipeline
 
@@ -640,6 +729,70 @@ search_many call
 
 Each query sees the configured `limit` as its ceiling: a caller may ask for fewer results, never for more. The tool's own deadline is 30 s, it declares itself concurrency-safe, and it registers as `web_search_many` when another plugin owns `search_many`. Like `domain_search`, it is read from `ctx.get('tools')`: a host without a registry does not register it, and the rest of the plugin keeps working.
 
+### The read_page pipeline
+
+```
+read_page call
+  → read config (fetchMaxLength / fetchFormat / fetch-affecting settings, re-read per call)
+  → validate: url http(s) only; offset default 0; maxLength 1000–200000; format markdown/text
+  → look up the in-plugin body cache (key: URL + format + fetch-affecting settings; 8 pages, LRU)
+  → miss: one fetch through the same ladder as web_fetch, then convert
+      (not cut to fetchMaxLength; a 2,000,000-character cap bounds the whole body, marked truncated)
+  → slice at offset / maxLength (the cut moves back one code unit when it would split a surrogate pair)
+  → return { url, content, offset, nextOffset, totalLength, truncated, chunk, failures }
+```
+
+Arguments: `url` (required), `offset` (optional, default `0`, zero-based), `maxLength` (optional, default = the configured `fetchMaxLength`; an invalid setting falls back to `20000`; range 1000–200000), `format` (optional `markdown` / `text`, default = `fetchFormat`).
+
+Returns: `url`, `content` (this chunk's text), `offset`, `nextOffset` (the offset to pass next; `null` when finished), `totalLength` (whole-body length), `truncated` (whether the source itself was cut: the 2,000,000-character cap or the transport), `chunk` (`index` is 1-based, `count` is estimated for this call's `maxLength`), and `failures` (fetch failures, shaped like `domain_search` / `search_many`).
+
+Cache: a successful body is cached per URL, output format and fetch-affecting settings, up to eight pages with least-recently-used eviction; walking a page chunk by chunk therefore fetches it once, and only a format change or a change to proxy, timeout or render settings fetches it again. Failures are not cached. `content` excludes the "characters remain" hint, so concatenating the chunks reproduces the body exactly.
+
+Boundaries: an `offset` past `totalLength` throws; `offset === totalLength` counts as finished and returns empty `content` with `nextOffset: null`; a non-http(s) URL throws; network, HTTP or blocked failures come back in `failures` instead of reaching the host; caller cancellation still throws. Offsets and lengths count JavaScript string code units, and a cut that would split a surrogate pair moves back one code unit, with `nextOffset` following the adjusted boundary.
+
+Registration and fallback: with no `ctx.tools` the tool is not registered at all and `web_search` plus everything else keeps working; when another plugin owns `read_page`, it registers as `web_read_page`; a registry rejection is warned about and skipped.
+
+Measured on `https://docs.python.org/3/library/asyncio-task.html`: starting at `offset=0` and following `nextOffset`, the joined chunks equal the one-shot body character for character (live network, 1.3 s). The corresponding live test is skipped by default; set `READ_PAGE_LIVE=1` to run it.
+
+### The retrieval benchmark (bench/)
+
+`bench/queries.json` fixes 20 queries: 10 Chinese, 10 English; five each in docs / release / package / news; 1–3 expected domains per query. `bench/fixtures/<id>.json` stores each engine's raw list, and evaluation replays it at the fixture's `recordedAt`, so freshness cannot drift with wall-clock time.
+
+| Command | What it does |
+| --- | --- |
+| `node scripts/bench.mjs` | Offline evaluation: reads the fixtures, reruns the current ranker, prints P@8 / R@8 / MRR@8, engine contributions and consensus votes |
+| `node scripts/bench.mjs --record` | Re-records the fixtures live, 1.5 s between queries, one retry on failure |
+| `node scripts/bench.mjs --json` | Machine-readable output for version comparisons; past results live in `bench/results/` |
+| `node scripts/bench.mjs --compare <file>` | Compares every metric against an earlier result |
+| `node scripts/bench.mjs --rrf 40 --weight anysearch=1 --authority-boost 0` | Runs a controlled single-knob experiment without editing source |
+
+Metrics: P@8 = matched rows in the top 8 ÷ 8 (fixed denominator; a short list is not excused); R@8 = distinct expected domains found in the top 8 ÷ all expected domains; MRR@8 = the mean reciprocal rank of the first match over 20 queries, with a miss scoring 0. Domain matching is one-way from subdomain to parent: `docs.python.org` matches expected `python.org`, but the reverse does not.
+
+**0.13.0 baseline**:
+
+| Scope | P@8 | R@8 | MRR@8 |
+| --- | --- | --- | --- |
+| All 20 queries | 0.3625 | 0.7417 | 0.7600 |
+| Chinese (10) | 0.3250 | 0.7333 | 0.6700 |
+| English (10) | 0.4000 | 0.7500 | 0.8500 |
+
+**Controlled experiments** (same fixtures, one knob changed):
+
+| Configuration | P@8 | R@8 | MRR@8 |
+| --- | --- | --- | --- |
+| Default (rrf 60, AnySearch weight 2) | 0.3625 | 0.7417 | 0.7600 |
+| AnySearch weight 1 | 0.3875 | 0.7417 | 0.7433 |
+| rrf 40 | 0.3500 | 0.7417 | 0.7767 |
+| rrf 120 | 0.3875 | 0.7417 | 0.7338 |
+| Authority domains off (authority 0) | 0.2813 | 0.6917 | 0.6950 |
+
+Conclusions:
+
+- The default `rrfConstant=60` has an MRR of 0.7600, above `rrf 120`'s 0.7338. `rrf 40` has a higher MRR (0.7767), but P@8 falls from 0.3625 to 0.3500 while R@8 stays put — precision traded for a better first hit, so the default remains 60.
+- Authority weighting clearly works: turning it off drops P@8 from 0.3625 to 0.2813, R@8 from 0.7417 to 0.6917 and MRR from 0.7600 to 0.6950; Chinese collapses and `zh-postgres-logical` scores zero hits.
+- AnySearch at weight 2 takes 76% of the top-8 slots (122 of 160 rows); at weight 1, P@8 rises to 0.3875 but MRR falls to 0.7433, so heavier and lighter both cost something. These settings differ by only 1–4 hits on 20 queries, so the defaults stay.
+- Known gaps: news recall is only 0.3667 (about 0.367); `zh-linux-612` has zero hits (AWS docs and a runoob tutorial outrank kernel.org and LWN); and 20 queries carry no statistical significance. The numbers show direction, not a claim that quality has arrived.
+
 ### Proxy
 
 Node's global `fetch` reads neither the macOS system proxy nor `HTTPS_PROXY` — unless the process started with `NODE_USE_ENV_PROXY=1`, which cannot be switched on from inside a running process. So when a proxy is needed, the plugin speaks to it directly: send `CONNECT`, upgrade with TLS for `https:` targets, write the request by hand, and decode `Content-Length`, chunked, gzip, deflate and brotli, following up to four redirects. `307`/`308` keep the method and body; any other `3xx` downgrades a `POST` to a bodyless `GET`.
@@ -648,18 +801,21 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 
 ### Known limitations
 
-- **Relevance is capped by upstream result pages** and is below a commercial search API. Key-free scraping gets throttled in return: measured, 360 served `访问异常页面` with a captcha and another domestic engine a `x5sec` punish page. Cooldowns and multiple engines cover for it, not all of it.
+- **Relevance is capped by upstream result pages** and is below a commercial search API. Key-free scraping gets throttled in return: measured, 360 served `访问异常页面` with a captcha and another domestic engine a `x5sec` punish page. Such pages are now classified as `SEARCH_BLOCKED` instead of masquerading as zero results, and 360 is a fallback; cooldowns and multiple engines still only cover for it, not all of it.
 - **Google is unreachable from this network.** A tunnelled `www.google.com/search` returns a JavaScript shell (94 KB, 1–3 links); headless Chrome is redirected to `google.com.hk` with a reCAPTCHA. `gbv=1`, a consent cookie and a mobile user agent all failed. Eight public SearXNG instances were unusable too (429/403/not JSON).
 - **It depends on upstream HTML structure.** A redesign breaks a parser; that engine records a reason and yields to the next one rather than silently returning nothing.
 - **Titles, links and snippets only** — no page text. That is `web_fetch`'s job.
-- **A fetched page cannot be resumed from an offset**: the host's `WebFetchRequest` carries only `url`, so text beyond `fetchMaxLength` needs a higher limit or a narrower page.
-- **Extraction keeps only what looks like the article**: a page built entirely by JavaScript comes back nearly empty, and content outside the chosen article root — a sidebar table, say — is dropped with the navigation.
+- **`web_fetch` cannot resume a fetched page from an offset**: the host's `WebFetchRequest` carries only `url`, so text beyond `fetchMaxLength` needs `read_page`, a higher limit or a narrower page.
+- **`read_page` keeps at most 2,000,000 characters per page**: anything beyond the cap is cut and flagged `truncated`; the plugin caches at most eight bodies, so a ninth page evicts the least recently used one.
+- **Extraction keeps only what looks like the article**: a page built entirely by JavaScript comes back nearly empty by default; it is rendered only when you installed Playwright and enabled `renderJs`. Content outside the chosen article root — a sidebar table, say — is still dropped with the navigation.
+- **Browser rendering has no measured real-page body**: the development environment for this project has no Playwright. What is verified is shell detection, the silent fallback when no renderer exists, and the render/timeout/fallback paths against an injected fake renderer (`render-js.test.ts`). Rendered text from a real site is still unmeasured.
+- **The benchmark is only 20 queries**: news recall is 0.367 and `zh-linux-612` has zero hits; a difference of 1–4 hits cannot separate versions. It shows direction, not statistical significance.
 - **`search_many` is capped at five queries and three in flight.**
 - **Two processes sharing one cache file write last-writer-wins**: neither can corrupt the file, but one process's newer snapshot can be replaced by another's older one.
 - **A time window can only filter results that carry a date**: dates are parsed from result pages, so an engine that prints none leaves that row without an age; when nothing dated falls inside the window the undated list comes back. Bing's and 360's time parameters were measured to have no effect; only DuckDuckGo's `df=` is a real pushdown.
 - **PyPI matches exact package names only**: it has no public search API, so the plugin uses the first word of the query; a typo yields an empty answer.
 - **Wikipedia searches one language only**: `zh` for CJK queries, `en` otherwise.
-- **`domain_search` needs a host tool registry**: without `ctx.tools` it is not registered, and `web_search` is unaffected.
+- **`domain_search`, `search_many` and `read_page` need a host tool registry**: without `ctx.tools` they are not registered, and `web_search` is unaffected.
 - **Anonymous AnySearch caps at 10 results per call.**
 - **HTTP proxies only** — no `socks5://`.
 - **`limit` is capped at 20, and so is `domainLimit`.**
@@ -682,6 +838,12 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 | Raw bytes kept per page | `1048576` (1 MiB) |
 | Fetch format `fetchFormat` | `markdown` (or `text`) |
 | Characters kept per fetch `fetchMaxLength` | `20000` (1000–200000) |
+| `read_page` chunk `maxLength` | the configured `fetchMaxLength` (`20000` by default, 1000–200000) |
+| `read_page` starting `offset` | `0` |
+| `read_page` whole-body cap | `2000000` characters |
+| `read_page` body cache | 8 pages, least recently used evicted |
+| JavaScript rendering `renderJs` | `auto` (or `always` / `off`) |
+| Render deadline `renderTimeoutMs` | `15000` ms (1000–120000) |
 | `search_many` queries / concurrency | 1–5 / 3 |
 | `search_many` limit | `5` (1–20) |
 | RRF constant `rrfConstant` | `60` |
@@ -691,14 +853,14 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 ### Development and tests
 
 ```sh
-node --test test/*.test.ts     # the whole suite (283 tests)
+node --test test/*.test.ts     # the offline suite (349 tests, one live case skipped by default)
 node --test test/proxy.test.ts # one file
 npm run typecheck              # tsc --noEmit
 npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline — 283 tests: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`) and the disk snapshot (`cache-persist.test.ts`).
+The suite runs offline by default, 349 tests, 348 passing — the 349th is the live paging check, skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
 
 CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 
@@ -711,6 +873,7 @@ After editing `src/*.ts`, build and restart — otherwise you are still running 
 - [docs/architecture.md](docs/architecture.md): the module map and the data flow from the `web` service to a source list.
 - [docs/engines.md](docs/engines.md): each engine's request shape, parser quirks and measured results.
 - [docs/troubleshooting.md](docs/troubleshooting.md): no results, proxy not detected, provider not selected, cooldown stuck.
+- [bench/README.md](bench/README.md): how the 20-query retrieval benchmark records fixtures, scores them and compares versions.
 - [README.zh-CN.md](README.zh-CN.md): the Chinese guide, section for section.
 
 MIT © 2026 fangchenghao. See [LICENSE](LICENSE).

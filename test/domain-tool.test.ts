@@ -192,9 +192,10 @@ test('apply registers domain_search when the host exposes ctx.get("tools")', () 
   const { ctx, providers } = pluginContext(tools);
   assert.doesNotThrow(() => apply(ctx, {}));
   assert.equal(providers.length, 1, 'web_search is registered either way');
-  assert.equal(definitions.length, 2, 'domain_search and search_many share the optional registry');
+  assert.equal(definitions.length, 3, 'domain_search, search_many and read_page share the optional registry');
   assert.equal(definitions[0]?.name, DOMAIN_TOOL_NAME);
   assert.equal(definitions[1]?.name, 'search_many');
+  assert.equal(definitions[2]?.name, 'read_page');
 });
 
 test('apply uses web_domain_search when another plugin owns the preferred name', () => {
