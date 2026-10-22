@@ -5,18 +5,19 @@
 - [English README](README.md)
 - [更新日志](CHANGELOG.md) · [设置页为什么不显示：四层判定链](docs/plugin-settings-form.md)
 
-> 当前版本 0.10.0。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
+> 当前版本 0.11.0。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
 
 ## 一句话说明
 
-装好这个插件，你在对话里问「上周发布的那版怎么配置」，模型可以自己调用 `web_search` 去公开搜索引擎查，拿回排好序的标题、链接和摘要；摘要不够用时，它还能调用 `web_fetch` 打开其中一条链接，把网页正文读进对话。
+装好这个插件，你在对话里问「上周发布的那版怎么配置」，模型可以自己调用 `web_search` 去公开搜索引擎查，拿回排好序的标题、链接和摘要；摘要不够用时，它还能调用 `web_fetch` 打开其中一条链接，把网页正文读进对话。如果问题问的是某个 npm 包、GitHub 仓库、论文或问答帖，它还可以调用 `domain_search`，直接去那几类专门的数据源里查。
 
-对你的实际影响就两条：
+对你的实际影响就三条：
 
 - 问题里带「搜一下」「最新」「官网」「文档」时，模型真的有机会去查，而不是回你一句「我的知识截止到某年」。
+- 问包、仓库、论文、问答时，模型能直接查对应的数据源，不用拿网页搜索去碰运气。
 - 你不需要准备搜索 API key，也不需要为搜索单独付费。
 
-说白了就一句话：它给 Harness 的 `web` 服务插上两个「提供方」——搜索用 `bing`，抓网页用 `http-proxy`。这两个名字后面会反复出现，先混个脸熟就行。
+说白了就一句话：它给 Harness 的 `web` 服务插上两个「提供方」——搜索用 `bing`，抓网页用 `http-proxy`；再给模型加一个工具 `domain_search`，专查包、代码仓库、论文、问答和百科。这几个名字后面会反复出现，先混个脸熟就行。
 
 ## 它解决什么问题
 
@@ -34,7 +35,7 @@
 
 **有了这个插件之后**：
 
-1. 模型调用 `web_search`，插件同时问几家搜索引擎，把重复的网址去掉，按「是不是多家都排得靠前、是不是官方文档、是否够新」重新排序，返回 8 条左右的候选；
+1. 模型调用 `web_search`，插件同时问几家搜索引擎，把重复的网址去掉，按「是不是多家都排得靠前、是不是官方文档、是否够新」重新排序，返回 8 条左右的候选（开了时间过滤会少一些，只留窗口内的）；
 2. 模型看到某条是 `kubernetes.io` 的文档，调用 `web_fetch` 把这一页的正文读回来；
 3. 它拿着正文回答你，还能顺手把链接给你。
 
@@ -46,6 +47,7 @@
 | 你扔给它一条链接说「读一下」 | 直连超时（如 `github.com`）就失败 | 先直连，再走本地代理，还能用 AnySearch 抽取正文 |
 | 搜索结果来源 | 单一后端，取决于凭据 | 最多六个来源交叉验证，去重后排序 |
 | 中文提问 | 容易返回词典页、百科页 | 中文问题优先用中文来源，英文文档也不会被挤掉 |
+| 问某个 npm 包、仓库或论文 | 只能拿网页搜索碰，常搜到二手介绍页 | `domain_search` 直接查对应数据源，拿到包名、仓库或论文条目 |
 | 被搜索引擎限流 | 每次都失败，每次都重试 | 让这家先歇 5–30 分钟，其余照常工作 |
 
 ### 它不解决什么
@@ -78,7 +80,7 @@ Agent 就是「会自己决定下一步做什么」的 AI。普通聊天是问�
 | | `web_search` | `web_fetch` |
 | --- | --- | --- |
 | 你给它什么 | 一句话关键词 | 一个具体网址（`http://` 或 `https://`） |
-| 它给你什么 | 8 条左右的候选：标题 + 链接 + 摘要 | 那一页的正文（HTML 或纯文本） |
+| 它给你什么 | 默认 8 条左右的候选：标题 + 链接 + 摘要（开了时间过滤则只留窗口内的） | 那一页的正文（HTML 或纯文本） |
 | 能不能直接回答你 | 只能看摘要，常常不够 | 能，正文就在里面 |
 | 什么时候用 | 不知道去哪找、要比较多个来源 | 已经知道该读哪一页 |
 | 走哪个提供方 | `bing`（本插件） | `http-proxy`（本插件） |
@@ -91,6 +93,24 @@ Agent 就是「会自己决定下一步做什么」的 AI。普通聊天是问�
 > **fetch 像你按书架号把书借回来、翻到正文**：内容全了，但可能被人借走（网站拒绝访问）、可能是一本需要会员才能看的书（付费墙），也可能目录写错了（链接 404）。
 
 所以两个要配合：先 search 拿到书单，再 fetch 挑中的那本。只 search 不 fetch，模型看到的永远是简介；只 fetch 不 search，模型得先知道网址——而它往往不知道。
+
+### 专用检索（domain_search）：查的不是网页，是数据源
+
+`web_search` 问的是「公开网页上有什么」。`domain_search` 问的是更窄的一件事：「这个包存在吗、这个仓库还维护吗、有没有这篇论文、这个问题有人答过吗」。
+
+它直接问八家公开数据源：GitHub、npm、PyPI、arXiv、Wikipedia、Hacker News、Stack Exchange、crates.io。每家都提供不用密钥的公开接口，拿回的是结构化条目（标题、链接、摘要），而不是一张搜索结果页。
+
+类比：`web_search` 像在街上问路人「这附近哪有五金店」，得到的是各种指路；`domain_search` 像直接走到五金店柜台报型号——问对了店，回答就干脆。
+
+| | `web_search` | `domain_search` |
+| --- | --- | --- |
+| 适合问什么 | 概念、新闻、官网、教程 | 包、代码仓库、论文、问答、百科条目 |
+| 数据从哪来 | 公开搜索引擎的结果页 | 八家数据源各自的公开接口 |
+| 一次给几条 | 默认 8 条，跨来源去重排序 | 每个源默认 5 条，按来源交错排 |
+| 要不要 key | 不要 | 不要 |
+| 失败时 | 报错列出每家的原因 | 单源失败只进 `failures`，其余照常 |
+
+两个一起用最顺：先用 `domain_search` 找到包或论文，再用 `web_fetch` 打开它的主页或 README 读细节。
 
 ### DeepSeek message 和会话（session）
 
@@ -151,7 +171,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 4. **排序不只看排名，还看「是不是官方」和「够不够新」。**
    `kubernetes.io`、`developer.mozilla.org`、`rfc-editor.org` 这类域名会被加权；30 天内发布的内容也会被加权。
-   *技术补充：`score = votes / (rrfConstant + position)`，再乘 `1 + authorityBoost` 和新鲜度系数；默认 `rrfConstant: 60`、`authorityBoost: 0.25`、`freshnessBoost: 0.2`、`freshnessDays: 30`。发布日期目前没有引擎提供，所以新鲜度这一项暂时空转。*
+   *技术补充：`score = votes / (rrfConstant + position)`，再乘 `1 + authorityBoost` 和新鲜度系数；默认 `rrfConstant: 60`、`authorityBoost: 0.25`、`freshnessBoost: 0.2`、`freshnessDays: 30`。发布日期由各引擎的结果解析而来，所以新鲜度这一项现在按真实日期计算，不再空转。*
 
 5. **中英文分开处理。**
    英文问题先看国外来源，中文问题先看中文来源，避免「how to …」被某个中文引擎按单词 `how` 匹配成词典页。
@@ -163,7 +183,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 7. **同一个问题不重复打扰搜索引擎。**
    十分钟内问同一个问题，直接用上次的结果，几乎瞬间返回。
-   *技术补充：TTL + LRU 缓存，`cacheTtlMs: 600000`（10 分钟）、`cacheEntries: 100`；键是 `lead|wait|limit|排序后的引擎 id|归一化 query`。*
+   *技术补充：TTL + LRU 缓存，`cacheTtlMs: 600000`（10 分钟）、`cacheEntries: 100`；键是 `lead|wait|limit|排序后的引擎 id|时间窗|归一化 query`，其中时间窗只在非 `off` 时出现，所以默认检索的缓存行为没变。*
 
 8. **被限流会自己歇一会儿。**
    某家回了验证页，就先不用它，过几分钟再试，其他家照常。
@@ -178,12 +198,20 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
     *技术补充：代理来源依次是配置里的 `proxy`、环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`、macOS 的 `scutil --proxy`；只支持 HTTP 代理（`CONNECT`），不支持 `socks5://`。*
 
 11. **所有设置都能在界面上改，不用编辑文件。**
-    设置页有 16 个控件，分三组；保存后下一次搜索就生效。
-    *技术补充：16 个字段全部标了 `.volatile()`，Host 以 live commit 方式原地更新，不重挂载插件。*
+    设置页有 20 个控件，分四组；保存后下一次搜索就生效。
+    *技术补充：20 个字段全部标了 `.volatile()`，Host 以 live commit 方式原地更新，不重挂载插件。*
 
 12. **失败会解释原因，不会静默返回空。**
     一家都没成功时，报错里会列出「试过哪些引擎、各自为什么失败」。
     *技术补充：失败按 `SEARCH_THROTTLED` / `SEARCH_BLOCKED` / `SEARCH_TIMEOUT` / `SEARCH_NETWORK` / `SEARCH_PARSE` / `SEARCH_ABORTED` 分类；失败是返回值，不是异常，只有调用方取消才抛出。*
+
+13. **包、仓库、论文、问答能直接查。**
+    问「这个 npm 包还维护吗」「有没有讲 RAG 的论文」时，模型可以用 `domain_search` 直接查八个专门的数据源，而不是拿网页搜索碰运气。
+    *技术补充：八个免密钥源——`github`、`npm`、`pypi`、`arxiv`、`wikipedia`、`hn`（Hacker News）、`stackexchange`、`crates`（crates.io）；参数 `query`（必填）、`sources`（可选数组，缺省 = 全部启用的源）、`limit`（可选，默认 5、上限 20）。每个源独立超时（默认 8000 毫秒），单源失败不影响其他源，失败名单从 `failures` 返回。实测 `react`、limit 3 时 github/npm/arxiv/wikipedia/hn/stackexchange/crates 各 3 条、pypi 1 条。已知限制：PyPI 没有公开搜索 API，只按**精确包名**查（取查询的第一个词）；Wikipedia 按提问语言只查单一语言（含中日韩字符查 `zh`，否则查 `en`）。宿主没有 `ctx.tools` 服务时，工具不注册，插件其余功能照常。*
+
+14. **可以只看最近发布的结果。**
+    设置里选「最近 24 小时 / 7 天 / 30 天 / 1 年」，就只留窗口内发布的结果，适合追新闻和版本更新。
+    *技术补充：`timeRange` 五值 `off`（默认）/ `day` / `week` / `month` / `year`，分别是 24 小时、7 天、30 天、1 年；发布日期从各引擎结果里解析（Bing 的摘要日期与 `news_dt`、360 的「发贴时间」、DuckDuckGo 的时间戳与摘要、AnySearch 正文末尾的 `date:`）。DuckDuckGo 把窗口下推成 `df=d/w/m/y` 参数；Bing 与 360 的参数实测无效（页面显示已选中但结果不变），因此这两家与 AnySearch 走本地过滤。开启后只保留窗口内的**带日期**结果；只有当一条带日期的都没落进窗口时，才退回无日期结果，避免空手而归。*
 
 ## 安装与启用
 
@@ -260,6 +288,9 @@ pnpm install
     proxy: ""            # 留空自动探测
     anysearchApiKey: ""  # 留空表示匿名访问
     anysearchDomain: ""  # 或 finance / academic / security / legal / code
+    timeRange: off       # off / day / week / month / year
+    domainLimit: 5       # domain_search 每个源返回几条
+    domainTimeoutMs: 8000
 ```
 
 **密钥放哪**：放在 profile 的 `cordis.patch.yml` 里，不要放进仓库。仓库里 bundle 的默认配置是空的，这样发布出去不会带上你的凭据。
@@ -274,7 +305,7 @@ pnpm install
 
 三个办法，任选：
 
-1. **看设置页**：设置 → 「网页搜索（Bing）」，能看到三组控件，说明插件被加载了，schema 也被 Host 收录了。
+1. **看设置页**：设置 → 「网页搜索（Bing）」，能看到四组控件，说明插件被加载了，schema 也被 Host 收录了。
 2. **看日志**：启动日志里没有 `1 entry did not activate` 这类警告。
 3. **直接试**：问一个明显需要联网的问题，比如「帮我搜一下 DSH 插件开发教程，给我链接」。看模型有没有调用 `web_search`，返回的链接是不是真实可达。
 
@@ -282,12 +313,13 @@ pnpm install
 
 ## 设置页怎么用
 
-打开 设置 → 「网页搜索（Bing）」。页面上一共 16 个控件，按三组排列。每组只管一类事：
+打开 设置 → 「网页搜索（Bing）」。页面上一共 20 个控件，按四组排列。每组只管一类事：
 
 | 组 | 控件数 | 这组管什么 |
 | --- | --- | --- |
 | 引擎与传输 | 6 | 用哪些搜索引擎、等多久、走不走代理、AnySearch 的凭据和垂直域 |
-| 结果与排序 | 6 | 返回几条、怎么合并排序、官方文档和新内容加权多少 |
+| 结果与排序 | 7 | 返回几条、只看多久内、怎么合并排序、官方文档和新内容加权多少 |
+| 专用检索 | 3 | `domain_search` 查哪些源、每个源返回几条、每个源等多久 |
 | 缓存与冷却 | 4 | 结果记多久、记多少条、被限流后歇多久 |
 
 ### 引擎与传输（6 个）
@@ -301,16 +333,25 @@ pnpm install
 | AnySearch 通行证 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取 |
 | 专业领域 | `anysearchDomain` | 空（通用） | 常见取值 `finance` / `academic` / `security` / `legal` / `code`，可带子域如 `finance.us_stock` |
 
-### 结果与排序（6 个）
+### 结果与排序（7 个）
 
 | 控件 | 配置键 | 默认 | 人话 |
 | --- | --- | --- | --- |
 | 返回几条 | `limit` | `8` | 最多返回几条，1–20；调用方要得更少时以调用方为准 |
+| 只看多久内 | `timeRange` | `off` | `off` 不限；`day` 最近 24 小时、`week` 7 天、`month` 30 天、`year` 1 年。开了只留窗口内的结果 |
 | 结果混合力度 | `rrfConstant` | `60` | 越大越平均，越小越偏向各引擎的头部结果 |
 | 可信网站名单 | `authorityDomains` | 空（用内置列表） | 在内置的官方文档域名之外，追加你想加权的域名 |
 | 可信网站加分 | `authorityBoost` | `0.25` | 命中可信域名时乘 `1 + 这个值`，0–10 |
 | 新内容加分 | `freshnessBoost` | `0.2` | 新发布内容的加成，0–10；随时间线性衰减到 0 |
 | 多少天内算新 | `freshnessDays` | `30` | 超过这个天数就不再加成 |
+
+### 专用检索（3 个）
+
+| 控件 | 配置键 | 默认 | 人话 |
+| --- | --- | --- | --- |
+| 查哪些专用源 | `domainSources` | 八个全开 | `github`、`npm`、`pypi`、`arxiv`、`wikipedia`、`hn`、`stackexchange`、`crates` 里只留几个，逗号分隔；留空表示全开 |
+| 每个源返回几条 | `domainLimit` | `5` | `domain_search` 每个源最多返回几条，1–20 |
+| 每个源等多久 | `domainTimeoutMs` | `8000` | 单个专用源最多等多久（毫秒），最小 500；网慢可调到 15000 |
 
 ### 缓存与冷却（4 个）
 
@@ -323,17 +364,18 @@ pnpm install
 
 ### 给你的建议
 
-**只想正常用：16 个控件全都别改，默认值就是调过的。**
+**只想正常用：20 个控件全都别改，默认值就是调过的。**
 
-只有两种情况值得动：
+只有三种情况值得动：
 
 - **代理没被自动探测到**：在 `proxy` 里填上你的本地代理地址，比如 `http://127.0.0.1:7890`。只支持 HTTP 代理，`socks5://` 要换成客户端的 HTTP/mixed 端口。
 - **你想要 AnySearch 的更高额度或正文抽取**：填 `anysearchApiKey`；想只搜某个垂直领域再填 `anysearchDomain`。
+- **你只想让 `domain_search` 查某几个源**：把 `domainSources` 收窄成 `github,npm` 这类组合；留空就是八个全开。
 
 两个提醒：
 
 - 保存是即时的，下一次搜索就按新值走，不用重启。
-- 但**排序类的改动可能被缓存挡住**：缓存键里只有 `lead|wait|limit|引擎集合|query`，没有排序参数。同一个问题十分钟内再问，拿到的还是旧顺序。换个问法，或者等十分钟。
+- 但**排序类的改动可能被缓存挡住**：缓存键里只有 `lead|wait|limit|引擎集合|时间窗|query`，没有排序参数。同一个问题十分钟内再问，拿到的还是旧顺序。换个问法，或者等十分钟。改时间窗会换一个键，所以不受旧缓存影响。
 
 ## 常见问题 FAQ
 
@@ -371,6 +413,21 @@ pnpm install
 - 它可能用到十分钟前的缓存，也可能某家正在冷却没参与；
 - 它没有你的账号、位置、浏览历史，不会个性化。
 
+### 为什么开了时间过滤结果变少了？
+
+因为时间过滤会拿掉「日期不在窗口内」的结果。开启后它只保留窗口内**带日期**的结果；没有日期的结果不算数，因为无法证明它够新——这是刻意的取舍：宁可少给几条，也不拿一篇不知道哪年的页面冒充「最近 24 小时」。
+
+唯一的例外是兜底：如果一条**带日期**的结果都没落进窗口，它会退回无日期的结果，免得你空手而归。所以看到的结果条数可能是 0 到 8 条之间，而不是固定的 8 条。
+
+### `domain_search` 和 `web_search` 该用哪个？
+
+看你要找的是**网页**还是**条目**：
+
+- 查概念、新闻、官网、教程、报错信息 → 用 `web_search`，它查的是公开网页；
+- 查包、代码仓库、论文、问答、百科条目 → 用 `domain_search`，它直接问 GitHub、npm、PyPI、arXiv、Wikipedia、Hacker News、Stack Exchange、crates.io。
+
+两者可以接力：`domain_search` 找到包或论文的条目，再用 `web_fetch` 打开主页或 README 读细节。
+
 ### 改了设置为什么没生效？
 
 分三种情况：
@@ -404,10 +461,12 @@ web_search 调用
   → 按 hosts 白名单过滤；没有代理时丢掉 viaProxy 引擎
   → 跳过正在冷却的引擎（但绝不会一个都不剩）
   → 按查询语言决定主导区（ASCII → global，CJK → cn）
-  → 查缓存（键：lead|wait|limit|排序后的引擎 id|归一化 query）
+  → 查缓存（键：lead|wait|limit|排序后的引擎 id|时间窗|归一化 query）
   → primary 档并发请求，达到释放条件即返回
   → 一条结果都没有时，跑 fallback 档
+  → 各引擎按 timeRange 本地过滤（DuckDuckGo 另有 df 下推）
   → 按区域融合 + RRF 排序，截到 limit
+  → 合并后再按时间窗收一次（一条带日期的都没落进窗口时退回无日期结果）
   → 写入缓存，返回 { sources, failures, proxy }
 ```
 
@@ -429,7 +488,29 @@ score(source) = votes / (rrfConstant + position)
 - 新鲜度系数：`1 + freshnessBoost × (1 − ageDays / freshnessDays)`，超过窗口就是 1；日期解析失败也按 1 处理，不惩罚。
 - 平局依次比较：引擎顺序 → 该引擎内的排名 → URL 字符串，所以同样的输入永远得到同样的顺序。
 
-**目前空转的一项**：没有任何引擎产出 `publishedAt`（结果页没有稳定的日期字段），所以新鲜度加成还没真正起作用。等某个引擎能给出日期，它才会开始生效。
+**新鲜度现在算的是真实日期**：`publishedAt` 从各引擎的结果里解析出来，`freshnessBoost` / `freshnessDays` 不再空转。解析失败、或者结果本来就没日期的，按 1 处理——不惩罚也不加分。时间窗过滤发生在引擎层和合并之后，排序本身只负责打分。
+
+### 发布时间与时间窗
+
+各引擎把日期写在不同的地方，解析器把它们统一成 ISO 8601 UTC：
+
+| 引擎 | 日期从哪来 |
+| --- | --- |
+| Bing | 摘要开头的日期（`2025年9月25日`、`2 天之前`），或 `news_dt` 时间戳元素 |
+| 360 | 单独的「发贴时间：2026年1月22日」 |
+| DuckDuckGo | `result-timestamp` / `result__timestamp` 元素，或摘要里的日期 |
+| AnySearch | 正文末尾追加的 `date: 22 hours ago` |
+
+细节：
+
+- 绝对日期一律用 `Date.UTC` 且锚定当天 **UTC 正午**，所以同一个日期在上海、柏林、洛杉矶都是同一时刻，不会因为机器时区漂到前一天。
+- 相对日期（`3 天前`、`22 hours ago`、`昨天`）按滚动时间算，不按日历天减，避开时区和夏令时问题。
+- `timeRange` 的五档对应 24 小时、7 天、30 天、365 天：`day` / `week` / `month` / `year`，`off` 表示不过滤。
+- **下推与本地过滤**：DuckDuckGo 的 `df=d/w/m/y` 是真参数，实测会改变结果集；Bing 和 360 的时间参数实测无效——页面把选项显示成已选中，返回的结果却不变——所以它们和 AnySearch 一样，在本地按解析出的日期过滤。
+- **无日期结果的处理**：开启窗口后只保留窗口内**带日期**的结果；只有当一条带日期的都没落进窗口时，才退回无日期结果，避免空手而归。解析失败与没有日期同等对待，因为「解析不出来」不等于「很旧」。
+- 未来日期不算越界：它仍在窗口内，排序时把年龄夹到 0。
+- 缓存键在窗口非 `off` 时会多带一段 `timeRange`，所以切换窗口不会命中旧窗口的缓存；`off` 的键与旧版完全一致。
+- 实测：查询 `latest AI news`，`off` 下返回 8 条（其中 5 条带日期）；`day` 下返回 5 条，且全部带日期。
 
 ### 缓存与冷却
 
@@ -451,6 +532,27 @@ score(source) = votes / (rrfConstant + position)
 
 其他细节：只接受 `http(s)` URL；单页最多保留 `1 MiB`（`1048576` 字节），超出截断并标记 `truncated`；非 2xx 是**结果**不是失败（会原样带回状态码和响应体）；三级全失败才抛错，错误消息里带每一级的原因。
 
+### domain_search 的管道
+
+```
+domain_search 调用
+  → 读配置（domainSources / domainLimit / domainTimeoutMs 每次调用重读）
+  → 解析代理（配置 → 环境变量 → 系统代理）
+  → sources 缺省 = 设置里启用的源；limit 夹到 1–20，缺省用 domainLimit
+  → 八个源并发 GET，各自独立超时（domainTimeoutMs）
+  → 按源交错合并，截到 limit
+  → 返回 { sources, failures, truncated }
+```
+
+八个源都是公开、免密钥的接口：GitHub 仓库搜索、npm registry、PyPI、arXiv Atom、Wikipedia API、Hacker News（Algolia）、Stack Exchange API、crates.io。每个源各有解析器，上游改版时该源退化成空结果，不会让整次调用失败；单个源超时、回 5xx 或网络不通，只记一条 `failures`，其余源照常返回。GitHub 与 crates.io 要求带 `User-Agent`，请求里已经带上。
+
+两个源的行为需要单独说明：
+
+- **PyPI 没有公开搜索 API**，所以它不是全文搜索：取查询的第一个词当**精确包名**去查，包不存在就按空结果处理（不是失败）。
+- **Wikipedia 只查单一语言**：查询里含中日韩字符（CJK）就查 `zh`，否则查 `en`。
+
+工具注册走宿主真实的工具注册表：用 `ctx.get('tools')` 读取，而不是 `inject`——`inject` 是硬依赖，没有工具服务的部署会连插件都挂不上，`web_search` 也会跟着消失。读不到就不注册 `domain_search`，插件其余功能照常。如果这个名字已被别的插件占用，会改用 `web_domain_search` 注册。
+
 ### 代理
 
 Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`——除非进程启动时带了 `NODE_USE_ENV_PROXY=1`，而这个开关在进程跑起来之后打不开。所以需要代理时，插件自己连：发 `CONNECT`、对 `https:` 目标做 TLS 升级、手写请求、自己解析 `Content-Length` / chunked / gzip / deflate / brotli，最多跟 4 次跳转。`307`/`308` 保留方法和请求体，其他 `3xx` 把 `POST` 降级成无 body 的 `GET`。
@@ -463,16 +565,22 @@ Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`—
 - **Google 在本网络下不可达**：走隧道请求 `www.google.com/search` 只回 JS 空壳（94 KB、1–3 个链接），无头 Chrome 被重定向到 `google.com.hk` 并回 reCAPTCHA；`gbv=1`、consent cookie、移动端 UA 都试过，均无效。8 个公共 SearXNG 实例同样不可用（429/403/非 JSON）。
 - **依赖上游 HTML 结构**。上游改版会让解析失败，此时该引擎记一条原因并让位，不会静默返回空列表。
 - **结果里只有标题、链接、摘要，没有正文**。正文要 `web_fetch`。
-- **目前不产出发布日期**，新鲜度加成处于空转状态。
+- **时间窗只能过滤「有日期」的结果**：日期从结果页解析，引擎不给日期时这条就没有年龄信息；窗口内一条带日期的都没有时会退回无日期结果。Bing 与 360 的时间参数实测无效，真正下推的只有 DuckDuckGo 的 `df=`。
+- **PyPI 只支持精确包名**：它没有公开搜索 API，插件取查询的第一个词当包名；拼错就是空结果。
+- **Wikipedia 只查单一语言**：含中日韩字符查 `zh`，否则查 `en`。
+- **`domain_search` 依赖宿主提供工具注册表**：没有 `ctx.tools` 时它不注册，`web_search` 不受影响。
 - **AnySearch 匿名调用每次最多 10 条。**
 - **只支持 HTTP 代理**，不支持 `socks5://`。
-- **`limit` 上限 20。**
+- **`limit` 上限 20；`domainLimit` 上限也是 20。**
 
 ### 默认值速查
 
 | 项 | 值 |
 | --- | --- |
 | 返回条数 `limit` | `8`（1–20） |
+| 时间窗 `timeRange` | `off`（不限；`day` / `week` / `month` / `year`） |
+| 专用源条数 `domainLimit` | `5`（1–20） |
+| 专用源超时 `domainTimeoutMs` | `8000` 毫秒 |
 | 缓存有效期 `cacheTtlMs` | `600000` 毫秒 = 600 秒 |
 | 缓存条数 `cacheEntries` | `100` |
 | 单引擎超时 `timeoutMs` | `15000` 毫秒 |
@@ -485,14 +593,14 @@ Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`—
 ### 开发与测试
 
 ```sh
-node --test test/*.test.ts     # 全部测试
+node --test test/*.test.ts     # 全部测试（239 条）
 node --test test/proxy.test.ts # 单个文件
 npm run typecheck              # tsc --noEmit
 npm run build                  # 编译 src/ 到 lib/
 npm run check                  # typecheck + 测试
 ```
 
-测试全程离线：解析器测试回放 `test/fixtures/` 里抓下来的真实响应，传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧。
+测试全程离线，共 239 条：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含八个专用源的正常/空响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期。
 
 CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu 与 macOS 上跑 `npm ci`、`npm run typecheck`、`npm test`、`npm run build`，并检查构建确实产出了 `lib/index.js` 和 `lib/index.d.ts`，且 `apply` 与 `Config` 都可导入。
 

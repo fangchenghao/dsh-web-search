@@ -5,18 +5,19 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.10.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> Version 0.11.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
-With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and pull the page text into the conversation.
+With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and pull the page text into the conversation. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly.
 
-Two things change for you:
+Three things change for you:
 
 - When a question involves "search for", "latest", "official docs" or "the docs", the model has a real chance to look it up instead of answering "my knowledge has a cutoff date".
+- When a question is about a package, a repository or a paper, the model can ask the matching source directly instead of hoping a web search understands.
 - You do not need a search API key, and you do not pay for search separately.
 
-Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages. Both names come up again below.
+Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds one more tool, `domain_search`, for packages, repositories, papers, Q&A and reference entries. These names come up again below.
 
 ## The problem it solves
 
@@ -34,7 +35,7 @@ You upgraded a library. A config field was renamed. You ask the model:
 
 **With this plugin**:
 
-1. The model calls `web_search`. The plugin queries several engines at once, drops duplicate URLs, re-ranks what is left by cross-engine agreement, official-documentation status and freshness, and returns roughly eight candidates;
+1. The model calls `web_search`. The plugin queries several engines at once, drops duplicate URLs, re-ranks what is left by cross-engine agreement, official-documentation status and freshness, and returns roughly eight candidates (fewer with a time window, which keeps only results inside it);
 2. It notices that one result is on `kubernetes.io`, calls `web_fetch`, and reads that page;
 3. It answers from the page text and can hand you the link.
 
@@ -46,6 +47,7 @@ You upgraded a library. A config field was renamed. You ask the model:
 | You paste a link and say "read this" | A direct request that times out (`github.com`, for example) is the end of it | Direct first, then the local proxy, then AnySearch extraction |
 | Where results come from | One backend, depending on credentials | Up to six sources, cross-checked and de-duplicated |
 | A question in Chinese | Dictionary and encyclopedia pages creep in | Chinese sources lead, without losing English documentation |
+| A question about an npm package, a repository or a paper | A web search at best, often landing on second-hand pages | `domain_search` queries the matching source for the package, repository or paper entry |
 | An engine starts throttling | Every call fails and retries | That engine rests for 5–30 minutes; the others carry on |
 
 ### What it does not do
@@ -78,7 +80,7 @@ This is the pair people mix up most. They solve different problems:
 | | `web_search` | `web_fetch` |
 | --- | --- | --- |
 | You give it | A few keywords | One URL (`http://` or `https://`) |
-| It gives you | Around eight candidates: title, link, snippet | The page body (HTML or plain text) |
+| It gives you | Eight candidates by default: title, link, snippet (fewer with a time window) | The page body (HTML or plain text) |
 | Can it answer the question | Only from snippets, often not enough | Yes — the text is right there |
 | When to use it | You don't know where to look, or want several sources | You know which page to read |
 | Which provider | `bing` (this plugin) | `http-proxy` (this plugin) |
@@ -91,6 +93,24 @@ In everyday terms:
 > **Fetch is taking the book off the shelf and opening it**: you get the whole text, but the book may be checked out (the site refuses), behind a members-only desk (a paywall), or the shelf number may be wrong (a 404).
 
 You need both. Search without fetch leaves the model reading blurbs forever. Fetch without search requires a URL — and the model usually does not have one.
+
+### Dedicated search (domain_search): sources, not pages
+
+`web_search` asks "what is on the open web". `domain_search` asks something narrower: "does this package exist, is this repository maintained, is there a paper on this, has someone answered this?"
+
+It queries eight public sources directly: GitHub, npm, PyPI, arXiv, Wikipedia, Hacker News, Stack Exchange and crates.io. Each offers a keyless public endpoint and returns structured records — title, link, snippet — rather than a page of search results.
+
+Analogy: `web_search` is asking passers-by where the hardware shop is and getting directions; `domain_search` is walking to the counter and quoting a part number. Ask the right shop and the answer is short.
+
+| | `web_search` | `domain_search` |
+| --- | --- | --- |
+| Good for | Concepts, news, official sites, tutorials | Packages, repositories, papers, Q&A, reference entries |
+| Where results come from | Public search-engine result pages | Each source's own public endpoint |
+| How many at once | Eight by default, de-duplicated and ranked | Five per source by default, interleaved by source |
+| Needs a key | No | No |
+| When one fails | The error names each engine's reason | The dead source goes into `failures`; the rest answer |
+
+They team up well: use `domain_search` to find the package or paper, then `web_fetch` to open its homepage or README and read the detail.
 
 ### DeepSeek messages and sessions
 
@@ -151,7 +171,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 4. **Ranking looks beyond position — at official status and freshness.**
    Domains such as `kubernetes.io`, `developer.mozilla.org` and `rfc-editor.org` get a boost, as does anything published within 30 days.
-   *Technical: `score = votes / (rrfConstant + position)`, then `× (1 + authorityBoost)` and a freshness factor; defaults `rrfConstant: 60`, `authorityBoost: 0.25`, `freshnessBoost: 0.2`, `freshnessDays: 30`. No engine supplies a publication date yet, so the freshness term is currently idle.*
+   *Technical: `score = votes / (rrfConstant + position)`, then `× (1 + authorityBoost)` and a freshness factor; defaults `rrfConstant: 60`, `authorityBoost: 0.25`, `freshnessBoost: 0.2`, `freshnessDays: 30`. Publication dates are now parsed from each engine's results, so the freshness term scores a real date instead of sitting idle.*
 
 5. **Chinese and English are handled separately.**
    English queries lead with global sources, Chinese queries with Chinese sources, so "how to …" is not answered with a dictionary page for the word `how`.
@@ -163,7 +183,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 7. **Repeating a question does not repeat the work.**
    The same query within ten minutes is answered from the previous run, almost instantly.
-   *Technical: TTL + LRU cache, `cacheTtlMs: 600000` (ten minutes) and `cacheEntries: 100`; the key is `lead|wait|limit|sorted engine ids|normalised query`.*
+   *Technical: TTL + LRU cache, `cacheTtlMs: 600000` (ten minutes) and `cacheEntries: 100`; the key is `lead|wait|limit|sorted engine ids|time window|normalised query`, where the window only appears when it is not `off`, so an unfiltered search keeps its old cache behaviour.*
 
 8. **A throttled engine takes a rest.**
    If one engine serves a verification page, it is skipped for a few minutes while the rest keep working.
@@ -178,12 +198,20 @@ Each line is the plain version first, the technical note second. The technical n
      *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
 
 11. **Every setting is editable in the UI.**
-     Sixteen controls in three groups; a save takes effect on the next search.
-     *Technical: all sixteen fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin.*
+     Twenty controls in four groups; a save takes effect on the next search.
+     *Technical: all twenty fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin.*
 
 12. **Failures are explained, not silently empty.**
      When nothing succeeds, the error lists which engines were tried and why each one failed.
      *Technical: failures are classified `SEARCH_THROTTLED`, `SEARCH_BLOCKED`, `SEARCH_TIMEOUT`, `SEARCH_NETWORK`, `SEARCH_PARSE`, `SEARCH_ABORTED`; they are return values, not exceptions — only caller cancellation throws.*
+
+13. **Packages, repositories, papers and Q&A are one hop away.**
+     For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against eight dedicated sources instead of hoping a web search finds them.
+     *Technical: eight keyless sources — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); arguments `query` (required), `sources` (optional array, default = every enabled source), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
+
+14. **You can look only at recently published results.**
+     Choose "last 24 hours / 7 days / 30 days / 1 year" in Settings and only results inside that window stay — useful for news and releases.
+     *Technical: `timeRange` takes `off` (default) / `day` / `week` / `month` / `year` — 24 hours, 7 days, 30 days, 1 year. Publication dates are parsed from each engine's results (Bing's snippet date and `news_dt`, 360's `发贴时间`, DuckDuckGo's timestamp and snippet, AnySearch's `date:` trailer). DuckDuckGo receives the window as `df=d/w/m/y`; Bing's and 360's parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two and AnySearch filter locally. With a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone.*
 
 ## Installing and enabling it
 
@@ -260,6 +288,9 @@ Optionally, add a config row:
     proxy: ""            # empty means auto-detect
     anysearchApiKey: ""  # empty means anonymous access
     anysearchDomain: ""  # or finance / academic / security / legal / code
+    timeRange: off       # off / day / week / month / year
+    domainLimit: 5       # results per domain_search source
+    domainTimeoutMs: 8000
 ```
 
 **Where the key goes**: into the profile's `cordis.patch.yml`, never into the repository. The bundle's default config is empty so that publishing it cannot carry your credential along.
@@ -274,7 +305,7 @@ Values saved from the Settings page do not need a restart; see the next section.
 
 Any one of these:
 
-1. **Look at Settings**: Settings → "Web search (Bing)" should show three groups of controls. That means the plugin loaded and the Host accepted its schema.
+1. **Look at Settings**: Settings → "Web search (Bing)" should show four groups of controls. That means the plugin loaded and the Host accepted its schema.
 2. **Look at the log**: no warning such as `1 entry did not activate`.
 3. **Just try it**: ask something that obviously needs the network, such as "search for a DSH plugin tutorial and give me the links". Watch whether `web_search` is called and whether the links are real.
 
@@ -282,12 +313,13 @@ If the Settings card appears but search still fails, start with [docs/troublesho
 
 ## Using the Settings page
 
-Open Settings → "Web search (Bing)". Sixteen controls, arranged in three groups. Each group owns one kind of decision:
+Open Settings → "Web search (Bing)". Twenty controls, arranged in four groups. Each group owns one kind of decision:
 
 | Group | Controls | What it decides |
 | --- | --- | --- |
 | Engines and transport | 6 | Which engines run, how long to wait, whether to use a proxy, AnySearch credentials and vertical domain |
-| Results and ranking | 6 | How many results, how they merge and sort, how much official docs and fresh content count |
+| Results and ranking | 7 | How many results, how far back to look, how they merge and sort, how much official docs and fresh content count |
+| Dedicated search | 3 | Which sources `domain_search` queries, results per source, deadline per source |
 | Cache and cooldowns | 4 | How long results are remembered, how many, and how long a throttled engine rests |
 
 ### Engines and transport (6)
@@ -301,16 +333,25 @@ Open Settings → "Web search (Bing)". Sixteen controls, arranged in three group
 | AnySearch key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction |
 | Vertical domain | `anysearchDomain` | empty (general) | Typical values: `finance` / `academic` / `security` / `legal` / `code`; a dotted value such as `finance.us_stock` selects a sub-domain |
 
-### Results and ranking (6)
+### Results and ranking (7)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
 | Results per search | `limit` | `8` | How many results at most, 1–20; a smaller caller budget still wins |
+| Date window | `timeRange` | `off` | `off` disables it; `day` 24 hours, `week` 7 days, `month` 30 days, `year` 1 year. A window keeps only results inside it |
 | Result blending | `rrfConstant` | `60` | Larger flattens the curve; smaller favours each engine's own top results |
 | Trusted sites | `authorityDomains` | empty (built-in list) | Extra domains to boost, on top of the built-in official-docs list |
 | Trusted-site boost | `authorityBoost` | `0.25` | Multiplies an authoritative result by `1 + this`, 0–10 |
 | Freshness boost | `freshnessBoost` | `0.2` | Boost for newly published content, 0–10, fading linearly to zero |
 | Freshness window (days) | `freshnessDays` | `30` | Age beyond which the freshness boost is gone |
+
+### Dedicated search (3)
+
+| Control | Key | Default | Plain meaning |
+| --- | --- | --- | --- |
+| Sources | `domainSources` | all eight | Keep only some of `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn`, `stackexchange`, `crates`, comma-separated; empty means all |
+| Results per source | `domainLimit` | `5` | How many results `domain_search` takes from each source, 1–20 |
+| Deadline per source | `domainTimeoutMs` | `8000` | Per-source deadline in ms, at least 500; raise it to 15000 on a slow network |
 
 ### Cache and cooldowns (4)
 
@@ -323,17 +364,18 @@ Open Settings → "Web search (Bing)". Sixteen controls, arranged in three group
 
 ### My advice
 
-**For normal use: leave all sixteen alone. The defaults are the tuned values.**
+**For normal use: leave all twenty alone. The defaults are the tuned values.**
 
-Only two situations are worth changing:
+Only three situations are worth changing:
 
 - **Your proxy is not detected**: put the local proxy address in `proxy`, for example `http://127.0.0.1:7890`. HTTP proxies only — swap `socks5://` for the client's HTTP/mixed port.
 - **You want AnySearch's higher limits or page extraction**: fill in `anysearchApiKey`, and add `anysearchDomain` if you want one vertical index.
+- **You only want `domain_search` to hit a few sources**: narrow `domainSources` to a set such as `github,npm`; empty means all eight.
 
 Two things to keep in mind:
 
 - A save is immediate and applies to the next search, no restart.
-- **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order. Rephrase it, or wait ten minutes.
+- **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
 
 ## FAQ
 
@@ -371,6 +413,21 @@ Because it is not the same operation:
 - It may serve a ten-minute-old cache, and an engine may be sitting out a cooldown;
 - It knows nothing about your account, location or browsing history, so there is no personalisation.
 
+### Why did turning on the time filter return fewer results?
+
+Because a window removes results whose date falls outside it. With a window on, only **dated** results inside it are kept; undated results do not count, because nothing proves they are recent — a deliberate trade: better a few results than a page of unknown age posing as "the last 24 hours".
+
+The one exception is the fallback: if not a single **dated** result falls inside the window, the undated results come back so you are not left empty-handed. So a windowed search returns somewhere between zero and eight results, not a fixed eight.
+
+### `domain_search` or `web_search` — which one?
+
+Depends on whether you want a **page** or an **entry**:
+
+- Concepts, news, official sites, tutorials, error messages → `web_search`, which reads the open web;
+- Packages, repositories, papers, Q&A, reference entries → `domain_search`, which asks GitHub, npm, PyPI, arXiv, Wikipedia, Hacker News, Stack Exchange and crates.io directly.
+
+They chain: `domain_search` finds the package or paper entry, then `web_fetch` opens its homepage or README for the detail.
+
 ### I changed a setting, why did nothing happen?
 
 Three cases:
@@ -404,10 +461,12 @@ web_search call
   → filter by the hosts allow-list; drop viaProxy engines when no proxy exists
   → skip engines in cooldown (but never end up with none)
   → decide the leading region from the query script (ASCII → global, CJK → cn)
-  → look up the cache (key: lead|wait|limit|sorted engine ids|normalised query)
+  → look up the cache (key: lead|wait|limit|sorted engine ids|time window|normalised query)
   → run the primary tier concurrently, release on the first satisfied condition
   → if nothing came back, run the fallback tier
+  → each engine filters locally by timeRange (DuckDuckGo also gets df pushdown)
   → fuse per region, rank with RRF, slice to limit
+  → filter once more after the merge (undated rows return only when nothing dated is inside)
   → store in the cache, return { sources, failures, proxy }
 ```
 
@@ -429,7 +488,29 @@ score(source) = votes / (rrfConstant + position)
 - Freshness factor: `1 + freshnessBoost × (1 − ageDays / freshnessDays)`, and exactly 1 outside the window. An unparsable date also counts as 1 — it is not penalised.
 - Ties break on engine order → rank within that engine → URL string, so identical input always produces an identical order.
 
-**The current gap**: no engine emits `publishedAt` (result pages expose no stable date field), so the freshness boost is effectively idle. It will start working once an engine can supply a date.
+**Freshness now scores real dates**: `publishedAt` is parsed from each engine's results, so `freshnessBoost` / `freshnessDays` are no longer idle. An unparsable or missing date counts as 1 — neither punished nor rewarded. Time-window filtering happens in the engine layer and again after the merge; ranking only scores.
+
+### Publication dates and the time window
+
+Each engine writes its date somewhere different; the parsers normalise all of them to ISO 8601 UTC:
+
+| Engine | Where the date comes from |
+| --- | --- |
+| Bing | A date at the head of the snippet (`2025年9月25日`, `2 天之前`), or a `news_dt` timestamp element |
+| 360 | Its own `发贴时间：2026年1月22日` stamp |
+| DuckDuckGo | A `result-timestamp` / `result__timestamp` element, or a date in the snippet |
+| AnySearch | The `date: 22 hours ago` trailer appended to the content |
+
+Details:
+
+- Every absolute date is built with `Date.UTC` and anchored at **noon UTC**, so one date is the same instant in Shanghai, Berlin and Los Angeles and cannot drift into the previous day through the machine's timezone.
+- Relative stamps (`3 days ago`, `3 天前`, `yesterday`) are rolling rather than calendar subtraction, which avoids timezone and daylight-saving questions.
+- The five `timeRange` values map to 24 hours, 7 days, 30 days and 365 days: `day` / `week` / `month` / `year`; `off` disables filtering.
+- **Pushdown versus local filtering**: DuckDuckGo's `df=d/w/m/y` is a real parameter — measured to change the result set. Bing's and 360's time parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two, like AnySearch, filter locally on the parsed date.
+- **What happens to undated results**: with a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone. An unparsable date is treated exactly like a missing one, because "could not parse" is not evidence of age.
+- A future date is not out of bounds: it is still inside the window, and ranking clamps its age to zero.
+- The cache key carries an extra `timeRange` segment when the window is not `off`, so switching windows cannot hit an entry from another window; the `off` key is identical to the previous release.
+- Measured: `latest AI news` returns 8 results with `off` (5 of them dated), and 5 with `day`, all dated.
 
 ### Cache and cooldowns
 
@@ -451,6 +532,27 @@ The direct deadline is deliberately shorter than the tunnel's: a blocked host us
 
 Other details: only `http(s)` URLs are accepted; each page keeps at most `1 MiB` (`1048576` bytes), the rest truncated and flagged `truncated`; a non-2xx response is a **result**, not a failure, and comes back with its status code and body; only when all three rungs fail does the provider throw, and the message names each rung's reason.
 
+### The domain_search pipeline
+
+```
+domain_search call
+  → read config (domainSources / domainLimit / domainTimeoutMs, re-read per call)
+  → resolve the proxy (config → environment → system proxy)
+  → sources default to the enabled set; limit clamped to 1–20, default domainLimit
+  → eight sources in parallel GET, each with its own deadline (domainTimeoutMs)
+  → interleave by source, slice to limit
+  → return { sources, failures, truncated }
+```
+
+All eight are public, keyless endpoints: GitHub repository search, the npm registry, PyPI, arXiv Atom, the Wikipedia API, Hacker News (Algolia), the Stack Exchange API and crates.io. Each has its own parser; when upstream markup drifts, that source degrades to an empty answer instead of failing the run. A timeout, a 5xx or an unreachable host on one source adds one `failures` line and leaves the others answering. GitHub and crates.io require a `User-Agent`, which every request carries.
+
+Two sources need a word of their own:
+
+- **PyPI has no public search API**, so this is not full-text search: it takes the first word of the query as an **exact package name**, and a missing package is an empty answer, not a failure.
+- **Wikipedia searches one language only**: a query containing CJK characters uses `zh`, everything else `en`.
+
+Registration goes through the host's real tool registry, read with `ctx.get('tools')` rather than `inject` — an inject entry is a hard dependency, so a deployment without a tool service would fail to mount the plugin and `web_search` would disappear with it. When the registry is absent the tool is not registered and the rest of the plugin works as usual. If another plugin already owns the name, it registers as `web_domain_search`.
+
 ### Proxy
 
 Node's global `fetch` reads neither the macOS system proxy nor `HTTPS_PROXY` — unless the process started with `NODE_USE_ENV_PROXY=1`, which cannot be switched on from inside a running process. So when a proxy is needed, the plugin speaks to it directly: send `CONNECT`, upgrade with TLS for `https:` targets, write the request by hand, and decode `Content-Length`, chunked, gzip, deflate and brotli, following up to four redirects. `307`/`308` keep the method and body; any other `3xx` downgrades a `POST` to a bodyless `GET`.
@@ -463,16 +565,22 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 - **Google is unreachable from this network.** A tunnelled `www.google.com/search` returns a JavaScript shell (94 KB, 1–3 links); headless Chrome is redirected to `google.com.hk` with a reCAPTCHA. `gbv=1`, a consent cookie and a mobile user agent all failed. Eight public SearXNG instances were unusable too (429/403/not JSON).
 - **It depends on upstream HTML structure.** A redesign breaks a parser; that engine records a reason and yields to the next one rather than silently returning nothing.
 - **Titles, links and snippets only** — no page text. That is `web_fetch`'s job.
-- **No publication date is produced today**, so the freshness boost sits idle.
+- **A time window can only filter results that carry a date**: dates are parsed from result pages, so an engine that prints none leaves that row without an age; when nothing dated falls inside the window the undated list comes back. Bing's and 360's time parameters were measured to have no effect; only DuckDuckGo's `df=` is a real pushdown.
+- **PyPI matches exact package names only**: it has no public search API, so the plugin uses the first word of the query; a typo yields an empty answer.
+- **Wikipedia searches one language only**: `zh` for CJK queries, `en` otherwise.
+- **`domain_search` needs a host tool registry**: without `ctx.tools` it is not registered, and `web_search` is unaffected.
 - **Anonymous AnySearch caps at 10 results per call.**
 - **HTTP proxies only** — no `socks5://`.
-- **`limit` is capped at 20.**
+- **`limit` is capped at 20, and so is `domainLimit`.**
 
 ### Defaults at a glance
 
 | Item | Value |
 | --- | --- |
 | Result budget `limit` | `8` (1–20) |
+| Time window `timeRange` | `off` (no limit; `day` / `week` / `month` / `year`) |
+| Results per source `domainLimit` | `5` (1–20) |
+| Per-source deadline `domainTimeoutMs` | `8000` ms |
 | Cache TTL `cacheTtlMs` | `600000` ms = 600 s |
 | Cache entries `cacheEntries` | `100` |
 | Per-engine timeout `timeoutMs` | `15000` ms |
@@ -485,14 +593,14 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 ### Development and tests
 
 ```sh
-node --test test/*.test.ts     # the whole suite
+node --test test/*.test.ts     # the whole suite (239 tests)
 node --test test/proxy.test.ts # one file
 npm run typecheck              # tsc --noEmit
 npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline: parser tests replay captured fixtures from `test/fixtures/`, transport tests open no sockets, and proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer.
+The suite runs offline — 239 tests: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, and time-window tests pin the date with an injected `now`.
 
 CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 

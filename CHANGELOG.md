@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.11.0
+
+### Added
+- **`domain_search`, a second tool for the sources a web search cannot reach.**
+  Eight keyless adapters — GitHub, npm, PyPI, arXiv, Wikipedia, Hacker News,
+  Stack Exchange, crates.io — each with its own timeout, each failing alone:
+  one dead source never empties the answer, and its name comes back in
+  `failures`.
+- **`timeRange`, and publication dates behind it.** Parsers now read dates from
+  Bing, 360, the DuckDuckGo timestamp and the AnySearch content trailer;
+  DuckDuckGo receives the window as `df=`, the rest are filtered locally, and
+  `freshnessBoost` / `freshnessDays` finally score something real instead of
+  sitting on a missing field.
+
+### Changed
+- Undated results no longer survive a time window by default. A window keeps the
+  dated rows inside it; only when nothing dated falls inside does the undated
+  list come back, so "the last day" is not answered with pages of unknown age.
+- The Settings card has twenty controls in four groups, including a new
+  dedicated-search group.
+
+### Known limits
+- PyPI publishes no search API, so its source matches the exact package name
+  taken from the first word of the query.
+- Wikipedia answers in one language: Chinese/Japanese/Korean questions use zh,
+  everything else en.
+- Bing and 360 accept time-filter parameters that the pages display as selected
+  while returning the same results, so those two are filtered locally.
+
 ## Unreleased
 
 ### Added
