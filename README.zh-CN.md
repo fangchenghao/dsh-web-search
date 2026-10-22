@@ -5,7 +5,7 @@
 - [English README](README.md)
 - [更新日志](CHANGELOG.md) · [设置页为什么不显示：四层判定链](docs/plugin-settings-form.md)
 
-> 当前版本 0.9.1。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
+> 当前版本 0.10.0。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
 
 ## 一句话说明
 
@@ -195,7 +195,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 ### 第一步：构建
 
-仓库里的 `main` 指向 `lib/index.js`，构建之前它并不存在：
+仓库里的 `main` 指向 `lib/index.js`，而 `lib/` 被 `.gitignore` 忽略——刚拿到代码时它并不存在，得先构建一次：
 
 ```sh
 cd ~/.dsh/plugins/dsh-web-search-bing
@@ -294,34 +294,32 @@ pnpm install
 
 | 控件 | 配置键 | 默认 | 人话 |
 | --- | --- | --- | --- |
-| 引擎白名单 | `hosts` | 空（全部） | 只让列出的引擎参与，逗号分隔，如 `anysearch, cn.bing` |
-| 等待策略 | `wait` | `auto` | `auto` 按提问语言等；`all` 等全部；`fast` 谁先回用谁 |
-| 超时（毫秒） | `timeoutMs` | `15000` | 单个引擎最多等多久，最小 500 |
-| 代理地址 | `proxy` | 空（自动探测） | 如 `http://127.0.0.1:7890`；留空先读环境变量再读系统代理 |
-| AnySearch 密钥 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取 |
-| AnySearch 垂直域 | `anysearchDomain` | 空（通用） | `finance` / `academic` / `security` / `legal` / `code`，可带子域如 `finance.us_stock` |
-
-> 如果最后两项的标题显示成 `field.anysearchApiKey` 这样的原始键名，是这一版漏了两行翻译，功能不受影响。
+| 只查哪些引擎 | `hosts` | 空（全部） | 只让列出的引擎参与，逗号分隔，如 `anysearch, cn.bing` |
+| 等多久 | `wait` | `auto` | `auto` 按提问语言等；`all` 等全部；`fast` 谁先回用谁 |
+| 等待上限（毫秒） | `timeoutMs` | `15000` | 单个引擎最多等多久，最小 500 |
+| 代理（中转站） | `proxy` | 空（自动探测） | 如 `http://127.0.0.1:7890`；留空先读环境变量再读系统代理 |
+| AnySearch 通行证 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取 |
+| 专业领域 | `anysearchDomain` | 空（通用） | 常见取值 `finance` / `academic` / `security` / `legal` / `code`，可带子域如 `finance.us_stock` |
 
 ### 结果与排序（6 个）
 
 | 控件 | 配置键 | 默认 | 人话 |
 | --- | --- | --- | --- |
-| 结果上限 | `limit` | `8` | 最多返回几条，1–20；调用方要得更少时以调用方为准 |
-| RRF 常数 | `rrfConstant` | `60` | 越大越平均，越小越偏向各引擎的头部结果 |
-| 权威域名 | `authorityDomains` | 空（用内置列表） | 在内置的官方文档域名之外，追加你想加权的域名 |
-| 权威加权 | `authorityBoost` | `0.25` | 命中权威域名时乘 `1 + 这个值`，0–10 |
-| 新鲜度加权 | `freshnessBoost` | `0.2` | 新发布内容的加成，0–10；随时间线性衰减到 0 |
-| 新鲜度窗口（天） | `freshnessDays` | `30` | 超过这个天数就不再加成 |
+| 返回几条 | `limit` | `8` | 最多返回几条，1–20；调用方要得更少时以调用方为准 |
+| 结果混合力度 | `rrfConstant` | `60` | 越大越平均，越小越偏向各引擎的头部结果 |
+| 可信网站名单 | `authorityDomains` | 空（用内置列表） | 在内置的官方文档域名之外，追加你想加权的域名 |
+| 可信网站加分 | `authorityBoost` | `0.25` | 命中可信域名时乘 `1 + 这个值`，0–10 |
+| 新内容加分 | `freshnessBoost` | `0.2` | 新发布内容的加成，0–10；随时间线性衰减到 0 |
+| 多少天内算新 | `freshnessDays` | `30` | 超过这个天数就不再加成 |
 
 ### 缓存与冷却（4 个）
 
 | 控件 | 配置键 | 默认 | 人话 |
 | --- | --- | --- | --- |
-| 缓存有效期（毫秒） | `cacheTtlMs` | `600000` | 10 分钟；填 `0` 关闭缓存 |
-| 缓存条目上限 | `cacheEntries` | `100` | 最多记多少个问题，超出淘汰最久没用的 |
-| 基础冷却（毫秒） | `baseCooldownMs` | `300000` | 被限流后第一次歇多久，5 分钟 |
-| 最大冷却（毫秒） | `maxCooldownMs` | `1800000` | 连续失败时冷却翻倍的上限，30 分钟 |
+| 缓存保留多久 | `cacheTtlMs` | `600000` | 10 分钟；填 `0` 关闭缓存 |
+| 缓存条数上限 | `cacheEntries` | `100` | 最多记多少个问题，超出淘汰最久没用的 |
+| 被拒后歇多久 | `baseCooldownMs` | `300000` | 被限流后第一次歇多久，5 分钟 |
+| 歇息上限 | `maxCooldownMs` | `1800000` | 连续失败时冷却翻倍的上限，30 分钟 |
 
 ### 给你的建议
 

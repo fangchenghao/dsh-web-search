@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0
+
+### Added
+- **Both READMEs are rewritten for people, not for compilers.** A worked
+  before/after scene, a concepts section (what a model knows, what an agent is,
+  `web_search` versus `web_fetch` with a library analogy, messages and sessions,
+  providers, bundles), twelve capability lines, eight FAQ entries, and the
+  technical material moved into an appendix.
+- Every Settings control carries a plain-language label and a one-line hint; the
+  hint line existed in the card but no dictionary entry ever filled it, and the
+  AnySearch fields had no label at all.
+
+### Fixed
+- The two array fields no longer claim to be read-only: they are editable from
+  the card as comma separated values.
+
 ## 0.9.1
 
 ### Fixed

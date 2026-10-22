@@ -5,7 +5,7 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.9.1. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> Version 0.10.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
@@ -195,7 +195,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 ### Step 1: build
 
-`main` points at `lib/index.js`, which does not exist until you build:
+`main` points at `lib/index.js`, and `lib/` is gitignored — a fresh checkout does not have it, so build once first:
 
 ```sh
 cd ~/.dsh/plugins/dsh-web-search-bing
@@ -294,23 +294,21 @@ Open Settings → "Web search (Bing)". Sixteen controls, arranged in three group
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
-| Engine allow-list | `hosts` | empty (all) | Only these engines may run; comma-separated, e.g. `anysearch, cn.bing` |
-| Wait policy | `wait` | `auto` | `auto` follows the query language; `all` waits for everyone; `fast` takes the first answer |
-| Timeout (ms) | `timeoutMs` | `15000` | Per-engine deadline, at least 500 |
-| Proxy URL | `proxy` | empty (detect) | e.g. `http://127.0.0.1:7890`; empty reads the environment, then the system proxy |
-| AnySearch API key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction |
-| AnySearch domain | `anysearchDomain` | empty (general) | `finance` / `academic` / `security` / `legal` / `code`; a dotted value such as `finance.us_stock` selects a sub-domain |
-
-> If the last two controls show a raw key such as `field.anysearchApiKey` as their title, this version is missing two translation lines. The controls still work.
+| Only these engines | `hosts` | empty (all) | Only these engines may run; comma-separated, e.g. `anysearch, cn.bing` |
+| How long to wait | `wait` | `auto` | `auto` follows the query language; `all` waits for everyone; `fast` takes the first answer |
+| Wait limit (ms) | `timeoutMs` | `15000` | Per-engine deadline, at least 500 |
+| Proxy (relay) | `proxy` | empty (detect) | e.g. `http://127.0.0.1:7890`; empty reads the environment, then the system proxy |
+| AnySearch key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction |
+| Vertical domain | `anysearchDomain` | empty (general) | Typical values: `finance` / `academic` / `security` / `legal` / `code`; a dotted value such as `finance.us_stock` selects a sub-domain |
 
 ### Results and ranking (6)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
-| Result budget | `limit` | `8` | How many results at most, 1–20; a smaller caller budget still wins |
-| RRF constant | `rrfConstant` | `60` | Larger flattens the curve; smaller favours each engine's own top results |
-| Authority domains | `authorityDomains` | empty (built-in list) | Extra domains to boost, on top of the built-in official-docs list |
-| Authority boost | `authorityBoost` | `0.25` | Multiplies an authoritative result by `1 + this`, 0–10 |
+| Results per search | `limit` | `8` | How many results at most, 1–20; a smaller caller budget still wins |
+| Result blending | `rrfConstant` | `60` | Larger flattens the curve; smaller favours each engine's own top results |
+| Trusted sites | `authorityDomains` | empty (built-in list) | Extra domains to boost, on top of the built-in official-docs list |
+| Trusted-site boost | `authorityBoost` | `0.25` | Multiplies an authoritative result by `1 + this`, 0–10 |
 | Freshness boost | `freshnessBoost` | `0.2` | Boost for newly published content, 0–10, fading linearly to zero |
 | Freshness window (days) | `freshnessDays` | `30` | Age beyond which the freshness boost is gone |
 
@@ -318,9 +316,9 @@ Open Settings → "Web search (Bing)". Sixteen controls, arranged in three group
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
-| Cache TTL (ms) | `cacheTtlMs` | `600000` | Ten minutes; `0` disables the cache |
-| Cache entries | `cacheEntries` | `100` | How many queries to remember; the least recently used goes first |
-| Base cooldown (ms) | `baseCooldownMs` | `300000` | First rest after throttling, five minutes |
+| Cache lifetime | `cacheTtlMs` | `600000` | Ten minutes; `0` disables the cache |
+| Cache size | `cacheEntries` | `100` | How many queries to remember; the least recently used goes first |
+| Cooldown (ms) | `baseCooldownMs` | `300000` | First rest after throttling, five minutes |
 | Max cooldown (ms) | `maxCooldownMs` | `1800000` | Ceiling for the doubling backoff, thirty minutes |
 
 ### My advice
