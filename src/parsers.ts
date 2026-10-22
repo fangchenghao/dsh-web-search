@@ -9,6 +9,7 @@
  * @module @fangchenghao/dsh-web-search/parsers
  */
 import type { Source } from './types.ts';
+import { extractPublishedAt, parsePublishedAt } from './freshness.ts';
 
 /** Named HTML entities that actually show up in result markup. */
 const ENTITIES: Record<string, string> = {
@@ -147,7 +148,17 @@ export function parseSo(payload: string, baseUrl: string): Source[] {
     const title = text(anchor[2]);
     const summary = /<span[^>]*class="res-list-summary[^"]*"[^>]*>([\s\S]*?)<\/span>/.exec(item);
     const snippet = summary ? text(summary[1]) : '';
-    sources.push({ url, ...(title ? { title } : {}), ...(snippet ? { snippet } : {}) });
+    // 360 prints the stamp in a separate span (`发贴时间：2026年1月22日`), not in
+    // the summary. Reading only that span avoids treating prose such as
+    // `但是我们今天讲的逻辑复制` as a publication date.
+    const stamp = /(?:发[贴布]|发布)时间[：:]\s*([^<]{0,60})/.exec(item);
+    const publishedAt = stamp ? parsePublishedAt(text(stamp[1])) : undefined;
+    sources.push({
+      url,
+      ...(title ? { title } : {}),
+      ...(snippet ? { snippet } : {}),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    });
   }
   return sources;
 }
@@ -170,7 +181,16 @@ export function parseBing(payload: string, baseUrl: string): Source[] {
     const title = text(anchor[2]);
     const paragraph = /<p[^>]*>([\s\S]*?)<\/p>/.exec(item);
     const snippet = paragraph ? text(paragraph[1]) : '';
-    sources.push({ url, ...(title ? { title } : {}), ...(snippet ? { snippet } : {}) });
+    // Bing puts the date at the head of the caption (`2025年9月25日 …`,
+    // `2 天之前 …`) or in a `news_dt` span; some captions end with an ISO date.
+    const newsDate = /<span[^>]*class="news_dt"[^>]*>([\s\S]*?)<\/span>/.exec(item);
+    const publishedAt = extractPublishedAt([newsDate ? text(newsDate[1]) : undefined, snippet]);
+    sources.push({
+      url,
+      ...(title ? { title } : {}),
+      ...(snippet ? { snippet } : {}),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    });
   }
   return sources;
 }
@@ -200,7 +220,19 @@ export function parseDdgLite(payload: string, baseUrl: string): Source[] {
     const snippet = text(
       /<td[^>]*class=['"]result-snippet['"][^>]*>([\s\S]*?)<\/td>/i.exec(payload.slice(start, end))?.[1] ?? '',
     );
-    sources.push({ url, ...(title ? { title } : {}), ...(snippet ? { snippet } : {}) });
+    // The lite page has no timestamp in today's markup; if one ever appears it
+    // is the authoritative stamp, otherwise a date mentioned in the snippet is
+    // the only evidence available.
+    const stamp = /<[a-z]+[^>]*class=['"]result-timestamp['"][^>]*>([\s\S]*?)<\/[a-z]+>/i.exec(
+      payload.slice(start, end),
+    );
+    const publishedAt = extractPublishedAt([stamp?.[1], snippet]);
+    sources.push({
+      url,
+      ...(title ? { title } : {}),
+      ...(snippet ? { snippet } : {}),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    });
   }
   return sources;
 }
@@ -231,7 +263,18 @@ export function parseDdgHtml(payload: string, baseUrl: string): Source[] {
     const snippet = text(
       /<[a-z]+[^>]*class=['"]result__snippet['"][^>]*>([\s\S]*?)<\/[a-z]+>/i.exec(payload.slice(start, end))?.[1] ?? '',
     );
-    sources.push({ url, ...(title ? { title } : {}), ...(snippet ? { snippet } : {}) });
+    // DuckDuckGo's HTML endpoint usually omits the date; when a timestamp span
+    // is present it is preferred over a date that only appears in the snippet.
+    const stamp = /<[a-z]+[^>]*class=['"]result__timestamp['"][^>]*>([\s\S]*?)<\/[a-z]+>/i.exec(
+      payload.slice(start, end),
+    );
+    const publishedAt = extractPublishedAt([stamp?.[1], snippet]);
+    sources.push({
+      url,
+      ...(title ? { title } : {}),
+      ...(snippet ? { snippet } : {}),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    });
   }
   return sources;
 }
@@ -272,7 +315,22 @@ export function parseAnySearch(payload: string, baseUrl: string): Source[] {
     if (url === undefined) continue;
     const title = typeof row.title === 'string' ? row.title.trim() : '';
     const snippet = typeof row.snippet === 'string' ? row.snippet.trim() : '';
-    sources.push({ url, ...(title ? { title } : {}), ...(snippet ? { snippet } : {}) });
+    // Measured against the live endpoint: rows carry title/url/snippet/content,
+    // and the publication stamp is appended to `content` as `date: 22 hours
+    // ago` rather than exposed as a top-level date field. A top-level `date`
+    // is accepted too, so a future API change does not need a parser rewrite.
+    // Only the marked value is parsed: the rest of `content` is article prose
+    // and may mention unrelated dates (`Retrieved June 2, 2024`).
+    const content = typeof row.content === 'string' ? row.content : '';
+    const marker = /(?:^|[\s|])date\s*[:：]\s*([^|\n]+?)\s*$/i.exec(content);
+    const topLevel = typeof row.date === 'string' ? row.date : undefined;
+    const publishedAt = extractPublishedAt([topLevel, marker?.[1]]);
+    sources.push({
+      url,
+      ...(title ? { title } : {}),
+      ...(snippet ? { snippet } : {}),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    });
   }
   return sources;
 }

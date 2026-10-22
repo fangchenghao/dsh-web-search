@@ -11,8 +11,9 @@
  *
  * @module @fangchenghao/dsh-web-search/engines
  */
-import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, WaitPolicy } from './types.ts';
+import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, TimeRange, WaitPolicy } from './types.ts';
 import { SearchError } from './errors.ts';
+import { filterByTimeRange, preferWindow } from './freshness.ts';
 import { resolveProxy } from './proxy.ts';
 import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseSo } from './parsers.ts';
 import { mergeRegions } from './rank.ts';
@@ -57,7 +58,8 @@ export const HOSTS: readonly HostSpec[] = [
     tier: 'primary',
     region: 'global',
     viaProxy: true,
-    build: (query) => `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+    build: (query, timeRange) =>
+      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}${ddgWindow(timeRange)}`,
     parse: parseDdgHtml,
   },
   {
@@ -69,6 +71,7 @@ export const HOSTS: readonly HostSpec[] = [
     tier: 'fallback',
     region: 'global',
     viaProxy: true,
+    // No `filters` parameter: see the measurement note before `HOSTS`.
     build: (query) => `https://www.bing.com/search?q=${encodeURIComponent(query)}&setmkt=en-US&setlang=en&cc=US`,
     parse: parseBing,
   },
@@ -76,6 +79,7 @@ export const HOSTS: readonly HostSpec[] = [
     id: 'cn.bing',
     tier: 'primary',
     region: 'cn',
+    // No `filters` parameter: see the measurement note before `HOSTS`.
     build: (query) => `https://cn.bing.com/search?q=${encodeURIComponent(query)}`,
     parse: parseBing,
   },
@@ -91,13 +95,52 @@ export const HOSTS: readonly HostSpec[] = [
     tier: 'fallback',
     region: 'global',
     viaProxy: true,
-    build: (query) => `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}`,
+    build: (query, timeRange) =>
+      `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}${ddgWindow(timeRange)}`,
     parse: parseDdgLite,
   },
 ];
 
 /** Scripts that make a query CJK rather than ASCII. */
 const CJK = /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/u;
+
+/**
+ * DuckDuckGo's own date filter, appended to a result-page URL.
+ *
+ * Measured live on both endpoints: adding `df=d`, `df=w` or `df=m` changed the
+ * returned result set, so this is a real pushdown rather than a decorative
+ * parameter. `off` (and the absent value) adds nothing.
+ *
+ * @param timeRange - active window, if any.
+ * @returns `&df=x` for a supported window, otherwise an empty string.
+ */
+function ddgWindow(timeRange: TimeRange | undefined): string {
+  switch (timeRange) {
+    case 'day':
+      return '&df=d';
+    case 'week':
+      return '&df=w';
+    case 'month':
+      return '&df=m';
+    case 'year':
+      return '&df=y';
+    case 'off':
+    case undefined:
+    default:
+      return '';
+  }
+}
+
+/*
+ * Why Bing has no time parameter.
+ *
+ * Measured on `cn.bing.com` and `www.bing.com` (which redirects to `cn.bing`):
+ * `filters=ex1:"ez1|ez2|ez3|ez5_…"` is accepted — the response marks the
+ * matching entry as selected — but the ten returned URLs were byte-for-byte
+ * identical to the unfiltered run for both a general and a news query. Bing's
+ * filter is therefore not written into the request; the engine layer filters
+ * Bing's parsed dates locally instead.
+ */
 
 /** Soft deadline per wait policy, in milliseconds. */
 const SOFT_DEADLINE: Record<WaitPolicy, (ascii: boolean) => number> = {
@@ -121,6 +164,8 @@ interface TierLimits {
   needed: number;
   /** Region that leads, or `all` to count every engine. */
   lead: Region | 'all';
+  /** Active publication window, pushed down to engines that support it. */
+  timeRange: TimeRange;
 }
 
 /**
@@ -181,7 +226,7 @@ async function runTier(
   };
 
   const running = hosts.map((host, index) =>
-    searchHost(host, query, controller.signal, timeoutMs, proxy).then(
+    searchHost(host, query, controller.signal, timeoutMs, proxy, limits.timeRange).then(
       (outcome) => {
         if (outcome.ok) {
           outcomes[index] = { host, sources: outcome.sources };
@@ -289,6 +334,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const limit = Math.max(1, Math.min(options.limit, 20));
   const timeoutMs = options.timeoutMs ?? 15000;
   const wait: WaitPolicy = options.wait ?? 'auto';
+  const timeRange: TimeRange = options.timeRange ?? 'off';
   const proxy = options.useProxy === false ? undefined : await resolveProxy(options.proxy);
 
   const allow = options.hostIds !== undefined && options.hostIds.length > 0 ? new Set(options.hostIds) : undefined;
@@ -315,14 +361,34 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const wanted = usable.filter((host) => leadsQuery(host, lead)).length;
   const softMs = options.softMs ?? SOFT_DEADLINE[wait](ascii);
   const needed = wait === 'all' ? usable.length : wait === 'fast' ? 1 : wanted > 0 ? wanted : Math.min(2, usable.length);
-  const limits: TierLimits = { limit, softMs, needed, lead: wait === 'all' ? 'all' : lead };
-  const rank = options.rank ?? {};
+  const limits: TierLimits = { limit, softMs, needed, lead: wait === 'all' ? 'all' : lead, timeRange };
+  // Ranking does not drop rows; the engine layer does. `timeRange` is passed
+  // into the rank options only so undated rows are scored lower while a window
+  // is active. Keeping it out of the configured `rank` object preserves the
+  // documented shape of `ResolvedConfig.rank`.
+  const rank: RankOptions = {
+    ...(options.rank ?? {}),
+    ...(timeRange === 'off' ? {} : { timeRange }),
+  };
+
+  /**
+   * Drop results whose parsed date is outside the window.
+   *
+   * Undated results survive on purpose: most documentation pages publish no
+   * date, and discarding them would empty the list for a library query. They
+   * are down-weighted during fusion instead, so a dated in-window page wins a
+   * close comparison without erasing the undated long tail.
+   */
+  const applyWindow = (answers: EngineAnswer[]): EngineAnswer[] =>
+    timeRange === 'off'
+      ? answers
+      : answers.map((answer) => ({ host: answer.host, sources: filterByTimeRange(answer.sources, timeRange) }));
 
   // The key names the engines the run *would* use, not the ones that survived
   // the cooldown filter: an engine entering or leaving a cooldown must not
   // invalidate an entry that is still fresh, or every throttle would turn the
   // next identical query into a cache miss.
-  const key = options.cache === undefined ? undefined : cacheKey({ query, limit, wait, lead, engines: hosts.map((host) => host.id) });
+  const key = options.cache === undefined ? undefined : cacheKey({ query, limit, wait, lead, engines: hosts.map((host) => host.id), timeRange });
   const cached = key === undefined ? undefined : options.cache?.get(key);
   if (cached !== undefined) return { sources: cached, failures, ...(proxy === undefined ? {} : { proxy }) };
 
@@ -330,11 +396,11 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const primary = ordered.filter((host) => host.tier === 'primary');
   const fallback = ordered.filter((host) => host.tier === 'fallback');
 
-  let answers = await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health);
-  let sources = answers.length === 0 ? [] : mergeRegions(answers, lead, limit, rank);
+  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health));
+  let sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   if (sources.length === 0 && fallback.length > 0) {
-    answers = await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health);
-    sources = answers.length === 0 ? [] : mergeRegions(answers, lead, limit, rank);
+    answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health));
+    sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   }
 
   if (signal?.aborted === true) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);

@@ -19,6 +19,12 @@ export interface Source {
 /** Which language side an engine leads. `both` leads either side. */
 export type Region = 'global' | 'cn' | 'both';
 
+/**
+ * How old a result may be: `off` disables time filtering, the rest are rolling
+ * windows measured back from the moment of the search.
+ */
+export type TimeRange = 'off' | 'day' | 'week' | 'month' | 'year';
+
 /** Engine priority tier: fallback engines run only when no primary answered. */
 export type Tier = 'primary' | 'fallback';
 
@@ -46,8 +52,8 @@ export interface HostSpec {
   skipEcho?: boolean;
   /** Confirm the payload really belongs to the query (scraped pages only). */
   echoesQuery?: (payload: string, query: string) => boolean;
-  /** Absolute request URL for a query. */
-  build: (query: string) => string;
+  /** Absolute request URL for a query. `timeRange` may be pushed down when the engine supports it. */
+  build: (query: string, timeRange?: TimeRange) => string;
   /** Request body for a JSON POST. */
   body?: (query: string) => string;
   /** Extra request headers, for a provider that authenticates. */
@@ -88,6 +94,8 @@ export interface SearchOptions {
   proxy?: string;
   /** Restrict the run to these engine ids. */
   hostIds?: string[];
+  /** Rolling window results must fall in; `off` disables filtering. */
+  timeRange?: TimeRange;
   /** Cancellation from the caller. */
   signal?: AbortSignal;
 }
@@ -112,6 +120,12 @@ export interface RankOptions {
   freshnessBoost?: number;
   /** Age in days after which the freshness boost fades to zero. */
   freshnessDays?: number;
+  /**
+   * Active time window. Ranking never drops rows (the engine layer does), but
+   * when a window is active a row without a usable date is scored lower so a
+   * similarly relevant dated row wins.
+   */
+  timeRange?: TimeRange;
   /** Per-engine weight in the pre-fusion interleave. */
   weights?: number[];
 }

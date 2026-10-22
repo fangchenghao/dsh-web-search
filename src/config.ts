@@ -20,7 +20,7 @@
  * @module @fangchenghao/dsh-web-search/config
  */
 import z from '@deepseek-ai/schemastery';
-import type { RankOptions, WaitPolicy } from './types.ts';
+import type { RankOptions, TimeRange, WaitPolicy } from './types.ts';
 import { VERTICAL_IDS, isVerticalId } from './verticals.ts';
 
 /** Schema of the plugin's configuration section. */
@@ -49,6 +49,11 @@ export const Config = z.object({
   authorityBoost: z.number().min(0).max(10).default(0.25).description('上面那份网站名单能让结果往前排多少（0 到 10，0 = 不加强）。觉得好网站排得不够前就调大；不确定保持 0.25。').volatile(),
   freshnessBoost: z.number().min(0).max(10).default(0.2).description('新发布的网页能额外往前排多少（0 到 10，0 = 不看新旧）。常查新闻可调到 0.5；不确定保持 0.2。').volatile(),
   freshnessDays: z.natural().min(1).default(30).description('多新的网页才算新（单位：天）。查新闻可调小到 7，查资料可调大到 365；不确定保持 30。').volatile(),
+  timeRange: z
+    .union(['off', 'day', 'week', 'month', 'year'])
+    .default('off')
+    .description('只保留多久以内发布的结果：off 不限时间、day 最近 24 小时、week 最近 7 天、month 最近 30 天、year 最近 1 年。开启后只返回窗口内发布的结果；若一条带日期的都没落进窗口，会退回无日期的结果避免空手；不确定保持 off。')
+    .volatile(),
   cacheTtlMs: z.natural().default(600000).description('同一问题多久内复用上次结果（缓存，即存一份备用），毫秒。想早点看到新内容就调小；保持 600000（10 分钟）即可。').volatile(),
   cacheEntries: z.natural().default(100).description('最多存多少条旧结果备用（缓存，即存起来省得重复查）。存满后先丢最久没用的；一般保持 100 即可。').volatile(),
   anysearchApiKey: z
@@ -118,6 +123,8 @@ export interface ResolvedConfig {
   limit: number;
   /** Release policy, deciding how long a tier waits for slow engines. */
   wait: WaitPolicy;
+  /** Rolling publication window; `off` disables time filtering. */
+  timeRange: TimeRange;
   /** AnySearch credential, or an empty string for anonymous access. */
   anysearchApiKey: string;
   /** AnySearch vertical domain, or an empty string for the open web. */
@@ -186,6 +193,7 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     proxy: proxy.length > 0 ? proxy : undefined,
     limit,
     wait: settings.wait,
+    timeRange: settings.timeRange,
     anysearchApiKey: settings.anysearchApiKey.trim(),
     anysearchDomain: settings.anysearchDomain.trim(),
     domainSourceIds: domainSources.length > 0 ? domainSources : [...VERTICAL_IDS],

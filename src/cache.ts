@@ -12,7 +12,7 @@
  *
  * @module @fangchenghao/dsh-web-search/cache
  */
-import type { CacheOptions, Source } from './types.ts';
+import type { CacheOptions, Source, TimeRange } from './types.ts';
 
 /** Default entry lifetime: ten minutes. */
 const DEFAULT_TTL_MS = 600_000;
@@ -32,6 +32,8 @@ export interface CacheKeyParts {
   lead: string;
   /** Engine ids that took part in the run. */
   engines: string[];
+  /** Active publication window; omitted and `off` share a key. */
+  timeRange?: TimeRange;
 }
 
 /**
@@ -40,9 +42,11 @@ export interface CacheKeyParts {
  * The query is trimmed, lowercased and has internal whitespace collapsed, so
  * `'  PostgreSQL   Replication '` and `'postgresql replication'` share an
  * entry. Engine order never matters because the ids are sorted; every other
- * field is positional, so differing `limit`, `wait`, `lead` or engine set
- * yields a different key. The query is last so a query containing the field
- * separator cannot collide with a different request's prefix.
+ * field is positional, so differing `limit`, `wait`, `lead`, `timeRange` or
+ * engine set yields a different key. `timeRange` is appended only when it is
+ * active, which keeps the key for an unfiltered search unchanged. The query is
+ * last so a query containing the field separator cannot collide with a
+ * different request's prefix.
  *
  * @param parts - the logical request.
  * @returns a deterministic, comparison-safe cache key.
@@ -50,7 +54,8 @@ export interface CacheKeyParts {
 export function cacheKey(parts: CacheKeyParts): string {
   const query = parts.query.trim().toLowerCase().replace(/\s+/gu, ' ');
   const engines = [...parts.engines].sort().join('+');
-  return `${parts.lead}|${parts.wait}|${parts.limit}|${engines}|${query}`;
+  const window = parts.timeRange === undefined || parts.timeRange === 'off' ? '' : `${parts.timeRange}|`;
+  return `${parts.lead}|${parts.wait}|${parts.limit}|${engines}|${window}${query}`;
 }
 
 /** One cached answer plus the moment it stops being usable. */

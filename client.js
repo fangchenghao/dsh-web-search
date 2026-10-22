@@ -2,7 +2,7 @@
  * Browser half of `dsh-web-search-bing`.
  *
  * Registers one Settings page into the Settings surface's `settings.section`
- * slot, so this plugin's 19 configuration keys can be edited in the GUI instead
+ * slot, so this plugin's 20 configuration keys can be edited in the GUI instead
  * of the profile's `cordis.patch.yml`. The page reads and writes the plugin's
  * Loader entry (`web-search-bing`) through the shared `configForms` service,
  * which is the same path the shipped settings pages use.
@@ -89,6 +89,13 @@
             'hint.freshnessBoost': 'How far recent pages move up',
             'field.freshnessDays': 'Freshness window (days)',
             'hint.freshnessDays': 'Older pages stop receiving the freshness boost',
+            'field.timeRange': 'Time range',
+            'hint.timeRange': 'Only keep results published inside this window; undated results stay but rank lower',
+            'timeRange.off': 'Any time',
+            'timeRange.day': 'Past 24 hours',
+            'timeRange.week': 'Past 7 days',
+            'timeRange.month': 'Past 30 days',
+            'timeRange.year': 'Past year',
             'field.cacheTtlMs': 'Cache lifetime',
             'hint.cacheTtlMs': 'How long an identical question reuses its cached answer (ms)',
             'field.cacheEntries': 'Cache size',
@@ -150,6 +157,13 @@
             'hint.freshnessBoost': '较新的网页往上提多少；常查新闻可调大',
             'field.freshnessDays': '多少天内算新',
             'hint.freshnessDays': '超过这些天的结果不再享受时效加分',
+            'field.timeRange': '时间范围',
+            'hint.timeRange': '只保留这段时间内发布的结果；没有发布日期的结果会保留但排后面',
+            'timeRange.off': '不限时间',
+            'timeRange.day': '最近 24 小时',
+            'timeRange.week': '最近 7 天',
+            'timeRange.month': '最近 30 天',
+            'timeRange.year': '最近 1 年',
             'field.cacheTtlMs': '缓存保留多久',
             'hint.cacheTtlMs': '同一问题复用旧结果多久（毫秒）；想更快见新内容就调小',
             'field.cacheEntries': '缓存条数上限',
@@ -185,6 +199,7 @@
             { key: 'authorityBoost', group: 'ranking', kind: 'number', min: 0, max: 10 },
             { key: 'freshnessBoost', group: 'ranking', kind: 'number', min: 0, max: 10 },
             { key: 'freshnessDays', group: 'ranking', kind: 'number', integer: true, min: 1 },
+            { key: 'timeRange', group: 'ranking', kind: 'select', options: ['off', 'day', 'week', 'month', 'year'] },
             { key: 'cacheTtlMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'cacheEntries', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'baseCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
@@ -503,7 +518,7 @@
                       style: inputStyle,
                       onChange: function (event) { edit(key, event.target.value); }
                     }, field.options.map(function (option) {
-                      return h('option', { key: option, value: option }, t('wait.' + option));
+                      return h('option', { key: option, value: option }, t(field.key + '.' + option));
                     }));
                   } else {
                     control = h('input', {

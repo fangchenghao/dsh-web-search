@@ -16,11 +16,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-/** The nineteen configurable keys, in the order the page renders them. */
+/** The twenty configurable keys, in the order the page renders them. */
 const KEYS = [
   'hosts', 'wait', 'timeoutMs', 'proxy', 'anysearchApiKey', 'anysearchDomain',
   'limit', 'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
-  'cacheTtlMs', 'cacheEntries', 'baseCooldownMs', 'maxCooldownMs',
+  'timeRange', 'cacheTtlMs', 'cacheEntries', 'baseCooldownMs', 'maxCooldownMs',
   'domainSources', 'domainLimit', 'domainTimeoutMs',
 ] as const;
 
@@ -92,6 +92,7 @@ function defaultValues(): Record<string, unknown> {
     authorityBoost: 0.25,
     freshnessBoost: 0.2,
     freshnessDays: 30,
+    timeRange: 'off',
     cacheTtlMs: 600000,
     cacheEntries: 100,
     baseCooldownMs: 300000,
@@ -246,6 +247,21 @@ test('the page renders one control per configuration key', async () => {
   const { render } = await mount(true);
   const controls = flatten(render()).filter((element) => element.type === 'input' || element.type === 'select');
   assert.equal(controls.length, KEYS.length, `expected ${KEYS.length} controls, rendered ${controls.length}`);
+});
+
+test('the time range control is a five-option select showing the stored value', async () => {
+  const { render } = await mount(true);
+  const selects = flatten(render()).filter((element) => element.type === 'select');
+  const timeRange = selects.find((element) => {
+    const values = flatten(element).map((option) => option.props?.['value']);
+    return values.includes('day') && values.includes('year');
+  });
+  assert.ok(timeRange !== undefined, 'the timeRange select is missing');
+  assert.equal(timeRange.props?.['value'], 'off');
+  const options = flatten(timeRange)
+    .filter((element) => element.type === 'option')
+    .map((element) => element.props?.['value']);
+  assert.deepEqual(options, ['off', 'day', 'week', 'month', 'year']);
 });
 
 test('the page shows the stored values, not just blanks', async () => {

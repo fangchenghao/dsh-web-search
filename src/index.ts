@@ -134,6 +134,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       const { sources, failures } = await search(query, signal, {
         limit,
         wait: resolved.wait,
+        timeRange: resolved.timeRange,
         timeoutMs: resolved.timeoutMs,
         ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
         ...(resolved.hostIds === undefined ? {} : { hostIds: resolved.hostIds }),
@@ -219,6 +220,16 @@ export {
   echoesQuery,
 } from './parsers.ts';
 export { fuse, interleave, dedupe, mergeRegions } from './rank.ts';
+export {
+  MS_PER_DAY,
+  TIME_RANGE_MS,
+  TIME_RANGES,
+  parsePublishedAt,
+  extractPublishedAt,
+  publishedTimestamp,
+  isWithinTimeRange,
+  filterByTimeRange,
+} from './freshness.ts';
 export { parseProxy, proxyFromEnv, resolveProxy, proxyGet } from './proxy.ts';
 export {
   VERTICAL_IDS,
@@ -244,4 +255,4 @@ export {
 } from './domain-tool.ts';
 export type { VerticalId, VerticalSpec, VerticalOutcome, VerticalSearchOptions } from './verticals.ts';
 export type { DomainToolSettings, DomainToolValue, DomainToolDefinition, ToolRegistryLike } from './domain-tool.ts';
-export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, WaitPolicy } from './types.ts';
+export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, TimeRange, WaitPolicy } from './types.ts';

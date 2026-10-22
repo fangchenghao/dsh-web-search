@@ -18,7 +18,7 @@ import { SearchCache } from '../src/cache.ts';
 import { EngineHealth } from '../src/health.ts';
 import { SearchError } from '../src/errors.ts';
 import { parseBing, parseSo } from '../src/parsers.ts';
-import type { Source } from '../src/types.ts';
+import type { Source, TimeRange } from '../src/types.ts';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/', import.meta.url));
 
@@ -66,12 +66,18 @@ function stubFetch(routes: Record<string, Reply | (() => Reply)>): Call[] {
 const ANYSEARCH = 'api.anysearch.com';
 const CN_BING = 'cn.bing.com';
 const SO = 'www.so.com';
-const DDG = 'html.duckduckgo.com';
 
 /** Run a search with the tunnel disabled, so no engine needs a proxy. */
 async function runDirect(
   query: string,
-  options: { limit?: number; cache?: SearchCache; health?: EngineHealth; hostIds?: string[]; signal?: AbortSignal } = {},
+  options: {
+    limit?: number;
+    cache?: SearchCache;
+    health?: EngineHealth;
+    hostIds?: string[];
+    timeRange?: TimeRange;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<{ sources: Source[]; failures: string[] }> {
   return search(query, options.signal, {
     limit: options.limit ?? 8,
@@ -80,6 +86,7 @@ async function runDirect(
     ...(options.cache === undefined ? {} : { cache: options.cache }),
     ...(options.health === undefined ? {} : { health: options.health }),
     ...(options.hostIds === undefined ? {} : { hostIds: options.hostIds }),
+    ...(options.timeRange === undefined ? {} : { timeRange: options.timeRange }),
   });
 }
 
@@ -156,6 +163,34 @@ test('a cached query does not touch the network again', async () => {
   assert.ok(afterFirst > 0);
   assert.equal(calls.length, afterFirst, 'the cache must absorb the second identical query');
   assert.deepEqual(second.sources, first.sources);
+});
+
+test('a time window keeps dated rows inside it and holds undated rows back', async () => {
+  const body = JSON.stringify({
+    code: 0,
+    data: {
+      results: [
+        { title: 'Fresh', url: 'https://example.com/fresh', snippet: 'fresh', content: 'body date: 2 hours ago' },
+        { title: 'Stale', url: 'https://example.com/stale', snippet: 'stale', content: 'body date: 10 days ago' },
+        { title: 'Undated', url: 'https://example.com/undated', snippet: 'undated', content: 'body' },
+      ],
+    },
+  });
+  stubFetch({ [ANYSEARCH]: { body, headers: { 'content-type': 'application/json' } } });
+  const { sources } = await runDirect('postgres', { hostIds: ['anysearch'], timeRange: 'day' });
+  // The dated row inside the window wins; the undated row is only the fallback
+  // for a window that caught nothing.
+  assert.deepEqual(sources.map((source) => source.url), ['https://example.com/fresh']);
+  assert.ok(sources.find((source) => source.url.endsWith('/fresh'))?.publishedAt !== undefined);
+});
+
+test('a week window reaches DuckDuckGo as its own df=w parameter', () => {
+  // DuckDuckGo is a viaProxy engine, so an orchestration test would need a
+  // tunnel; the URL contract is asserted directly instead.
+  const ddg = HOSTS.find((host) => host.id === 'ddg-html');
+  assert.ok(ddg !== undefined);
+  assert.match(ddg.build('postgres logical replication', 'week'), /[?&]df=w$/);
+  assert.ok(!ddg.build('postgres logical replication', 'off').includes('df='));
 });
 
 test('a 429 with a Retry-After cools the engine down without emptying the engine set', async () => {

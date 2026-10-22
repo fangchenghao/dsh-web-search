@@ -55,6 +55,12 @@ test('a plain object still validates, and a partial one gets every default', () 
   });
   assert.equal(resolveConfig({}, undefined).cacheTtlMs, 600000);
   assert.equal(resolveConfig(undefined, undefined).timeoutMs, 15000);
+  assert.equal(resolved.timeRange, 'off', 'time filtering is opt-in');
+  assert.equal(resolveConfig({ timeRange: 'week' } as ConfigInput, undefined).timeRange, 'week');
+  assert.throws(
+    () => resolveConfig({ timeRange: 'fortnight' } as unknown as ConfigInput, undefined),
+    /\$\.timeRange/,
+  );
 });
 
 test('an invalid plain value still fails with the offending path', () => {
@@ -93,7 +99,7 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
     'cacheEntries', 'cacheTtlMs', 'domainLimit', 'domainSources', 'domainTimeoutMs',
     'freshnessBoost', 'freshnessDays', 'hosts', 'limit', 'maxCooldownMs', 'proxy', 'rrfConstant',
-    'timeoutMs', 'wait',
+    'timeRange', 'timeoutMs', 'wait',
   ]);
 });
 

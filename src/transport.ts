@@ -8,7 +8,7 @@
  *
  * @module @fangchenghao/dsh-web-search/transport
  */
-import type { HostSpec, Source } from './types.ts';
+import type { HostSpec, Source, TimeRange } from './types.ts';
 import { SearchError, parseRetryAfter } from './errors.ts';
 import { proxyGet } from './proxy.ts';
 import { echoesQuery } from './parsers.ts';
@@ -144,6 +144,8 @@ async function attempt(
  * @param signal - cancellation.
  * @param timeoutMs - per-attempt deadline.
  * @param proxy - tunnel URL, or `undefined` when none is available.
+ * @param timeRange - active publication window, forwarded to engines that can
+ *   push it into their query (currently DuckDuckGo's `df`).
  * @returns the outcome of the route that got furthest; cancellation is rethrown.
  */
 export async function searchHost(
@@ -152,8 +154,9 @@ export async function searchHost(
   signal: AbortSignal | undefined,
   timeoutMs = 15000,
   proxy?: string,
+  timeRange?: TimeRange,
 ): Promise<AttemptOutcome> {
-  const url = host.build(query);
+  const url = host.build(query, timeRange);
   const route = host.viaProxy === true ? proxy : undefined;
   const first = await attempt(host, url, signal, timeoutMs, route, query);
   if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;

@@ -31,7 +31,11 @@
  *   happens to sit at the same rank;
  * - freshness: a result published a few days ago is more useful than the same
  *   result published years ago, with the boost fading linearly to zero at
- *   `freshnessDays`.
+ *   `freshnessDays`;
+ * - an active time filter: a dated in-window result beats a result with no
+ *   date at the same rank. The penalty is small and applied only while
+ *   filtering is on, so an undated page can still win on relevance and the
+ *   default (`timeRange: off`) is byte-for-byte the old behaviour.
  *
  * The bilingual region policy is kept intact: engines whose region matches the
  * query language's lead (or are marked `both`) are fused first and fill the
@@ -41,7 +45,8 @@
  *
  * @module @fangchenghao/dsh-web-search/rank
  */
-import type { EngineAnswer, HostSpec, RankOptions, Region, Source } from './types.ts';
+import type { EngineAnswer, HostSpec, RankOptions, Region, Source, TimeRange } from './types.ts';
+import { publishedTimestamp } from './freshness.ts';
 
 /**
  * Reciprocal-rank-fusion constant over the interleaved slot order; a larger
@@ -82,6 +87,16 @@ export const DEFAULT_FRESHNESS_BOOST = 0.2;
 
 /** Age in days after which the freshness boost has faded to zero. */
 export const DEFAULT_FRESHNESS_DAYS = 30;
+
+/**
+ * Score factor for a result with no usable date while a time window is active.
+ *
+ * Ten percent is roughly six fusion positions at `rrfConstant = 60`: enough for
+ * a dated result to win a close comparison, small enough that an undated result
+ * still outranks a dated one that is clearly less relevant. With every result
+ * undated the factor is uniform, so the order is unchanged.
+ */
+export const UNDATED_WHEN_FILTERING_FACTOR = 0.9;
 
 /**
  * Scores closer together than this count as equal, so the deterministic
@@ -129,6 +144,8 @@ interface ResolvedOptions {
   authorityBoost: number;
   freshnessBoost: number;
   freshnessDays: number;
+  /** Active window, or `undefined`/`off` when no filtering runs. */
+  timeRange: TimeRange | undefined;
   weights: readonly number[] | undefined;
 }
 
@@ -274,6 +291,7 @@ function resolveOptions(options: RankOptions | undefined): ResolvedOptions {
     authorityBoost: nonNegativeOr(options?.authorityBoost, DEFAULT_AUTHORITY_BOOST),
     freshnessBoost: nonNegativeOr(options?.freshnessBoost, DEFAULT_FRESHNESS_BOOST),
     freshnessDays: positiveOr(options?.freshnessDays, DEFAULT_FRESHNESS_DAYS),
+    timeRange: options?.timeRange,
     weights: Array.isArray(options?.weights) ? options.weights : undefined,
   };
 }
@@ -460,11 +478,18 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
   if (candidates.size === 0) return [];
 
   const ranked = [...candidates.values()];
+  const filtering = config.timeRange !== undefined && config.timeRange !== 'off';
   for (const candidate of ranked) {
     const voteCount = votes.get(candidate.key) ?? 1;
     let score = voteCount / (config.rrfConstant + candidate.position);
     if (isAuthoritative(candidate.source.url, config.authorityDomains)) score *= 1 + config.authorityBoost;
     score *= freshnessFactor(candidate.source.publishedAt, config.freshnessDays, config.freshnessBoost, now);
+    // A missing (or unparsable) date is not evidence of staleness, so the row
+    // is kept. While a window is active it is discounted instead of being
+    // dropped, which keeps the long tail of undated documentation visible.
+    if (filtering && publishedTimestamp(candidate.source.publishedAt) === undefined) {
+      score *= UNDATED_WHEN_FILTERING_FACTOR;
+    }
     candidate.score = score;
   }
   ranked.sort(compareRanked);

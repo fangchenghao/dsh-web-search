@@ -231,6 +231,39 @@ test('fuse ignores an unparsable publishedAt instead of penalising it', () => {
   assert.deepEqual(urls(fuse([absent, broken], 2)), ['https://absent.test/post', 'https://broken.test/post']);
 });
 
+test('timeRange off is exactly the old ranking, including undated rows', () => {
+  const undated = answer(host('undated', 'global'), [src('https://undated.test/post')]);
+  const dated = answer(host('dated', 'global'), [
+    src('https://dated.test/post', new Date(Date.now() - 2 * 3_600_000).toISOString()),
+  ]);
+  const legacy = urls(fuse([undated, dated], 2, { freshnessBoost: 0, authorityBoost: 0 }));
+  assert.deepEqual(urls(fuse([undated, dated], 2, { freshnessBoost: 0, authorityBoost: 0, timeRange: 'off' })), legacy);
+  assert.deepEqual(legacy, ['https://undated.test/post', 'https://dated.test/post']);
+});
+
+test('an active timeRange makes a dated row beat an undated row at equal rank', () => {
+  const undated = answer(host('undated', 'global'), [src('https://undated.test/post')]);
+  const dated = answer(host('dated', 'global'), [
+    src('https://dated.test/post', new Date(Date.now() - 2 * 3_600_000).toISOString()),
+  ]);
+  const options = { freshnessBoost: 0, authorityBoost: 0 };
+  assert.deepEqual(urls(fuse([undated, dated], 2, options)), ['https://undated.test/post', 'https://dated.test/post']);
+  assert.deepEqual(urls(fuse([undated, dated], 2, { ...options, timeRange: 'day' })), [
+    'https://dated.test/post',
+    'https://undated.test/post',
+  ]);
+});
+
+test('the undated penalty is uniform, so an all-undated list keeps its order', () => {
+  const first = answer(host('first', 'global'), [src('https://first.test/post')]);
+  const second = answer(host('second', 'global'), [src('https://second.test/post')]);
+  const legacy = urls(fuse([first, second], 2, { freshnessBoost: 0, authorityBoost: 0 }));
+  assert.deepEqual(
+    urls(fuse([first, second], 2, { freshnessBoost: 0, authorityBoost: 0, timeRange: 'week' })),
+    legacy,
+  );
+});
+
 test('fuse ranks a result two engines agree on above a single-engine result', () => {
   const consensus = src('https://consensus.test/answer');
   const first = answer(host('one', 'global'), [src('https://single.test/answer'), consensus]);
