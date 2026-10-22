@@ -78,6 +78,9 @@ const USER_AGENT =
 /** One mebibyte: enough for a documentation page, cheap enough to hold. */
 const DEFAULT_MAX_BYTES = 1_048_576;
 
+/** Deadline for the direct rung, which must not eat the tunnel's budget. */
+const DIRECT_DEADLINE_MS = 5_000;
+
 /** Default per-attempt deadline. */
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -208,8 +211,11 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       /** True once the caller cancelled; a cancellation must not be retried. */
       const cancelled = (): boolean => signal !== undefined && signal.aborted;
 
+      // A blocked host usually fails by timing out, so the direct rung gets a
+      // shorter deadline than the tunnel: spending the whole budget on a request
+      // that cannot work would leave the rung that can work with nothing.
       try {
-        return await deps.direct(target, timeoutMs, signal, userAgent, maxBytes);
+        return await deps.direct(target, Math.min(timeoutMs, DIRECT_DEADLINE_MS), signal, userAgent, maxBytes);
       } catch (error) {
         if (cancelled()) throw error;
         failures.push(`direct: ${error instanceof Error ? error.message : String(error)}`);
