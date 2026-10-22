@@ -16,7 +16,7 @@
  * `SEARCH_PARSE` (markup drift in the parser) and `SEARCH_ABORTED` (the caller
  * cancelled).
  *
- * @module dsh-web-search-bing/health
+ * @module @fangchenghao/dsh-web-search/health
  */
 import type { HealthOptions, SearchErrorCode } from './types.ts';
 import type { SearchError } from './errors.ts';

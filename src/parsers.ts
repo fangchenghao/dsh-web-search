@@ -6,7 +6,7 @@
  * performs I/O or throws on malformed input: a drifted result page yields an
  * empty list so one engine can degrade instead of failing the search.
  *
- * @module dsh-web-search-bing/parsers
+ * @module @fangchenghao/dsh-web-search/parsers
  */
 import type { Source } from './types.ts';
 

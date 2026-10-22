@@ -6,7 +6,7 @@
  * wait hint (an HTTP `Retry-After`) so the cooldown can honour it instead of
  * guessing a fixed duration.
  *
- * @module dsh-web-search-bing/errors
+ * @module @fangchenghao/dsh-web-search/errors
  */
 import type { SearchErrorCode } from './types.ts';
 

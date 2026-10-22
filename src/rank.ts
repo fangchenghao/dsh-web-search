@@ -39,7 +39,7 @@
  * short, so an English query is not half-filled with dictionary pages from a
  * domestic engine that matched one word of it.
  *
- * @module dsh-web-search-bing/rank
+ * @module @fangchenghao/dsh-web-search/rank
  */
 import type { EngineAnswer, HostSpec, RankOptions, Region, Source } from './types.ts';
 

@@ -9,7 +9,7 @@
  * deadline. Requiring more than one contributor is what keeps the fused list
  * cross-engine: the first engine to answer is usually fast but narrow.
  *
- * @module dsh-web-search-bing/engines
+ * @module @fangchenghao/dsh-web-search/engines
  */
 import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, WaitPolicy } from './types.ts';
 import { SearchError } from './errors.ts';

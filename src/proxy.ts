@@ -15,7 +15,7 @@
  * The raw-socket path and the redirect rules below were established by live
  * debugging and are load-bearing; treat them as a specification.
  *
- * @module dsh-web-search-bing/proxy
+ * @module @fangchenghao/dsh-web-search/proxy
  */
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';

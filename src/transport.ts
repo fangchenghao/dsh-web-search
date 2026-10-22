@@ -6,7 +6,7 @@
  * the engine health tracker decides from that code whether to cool the engine
  * down, and whether the service's own `Retry-After` should set the duration.
  *
- * @module dsh-web-search-bing/transport
+ * @module @fangchenghao/dsh-web-search/transport
  */
 import type { HostSpec, Source } from './types.ts';
 import { SearchError, parseRetryAfter } from './errors.ts';

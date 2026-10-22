@@ -17,7 +17,7 @@
  * Loader hands a marked field over as a live `{ get }` reference, never as the
  * value.
  *
- * @module dsh-web-search-bing/config
+ * @module @fangchenghao/dsh-web-search/config
  */
 import z from '@deepseek-ai/schemastery';
 import type { RankOptions, WaitPolicy } from './types.ts';

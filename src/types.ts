@@ -5,7 +5,7 @@
  * parsers, the ranking, the cache, the engine health tracker and the plugin
  * entry cannot drift apart. Nothing in this file has a runtime side effect.
  *
- * @module dsh-web-search-bing/types
+ * @module @fangchenghao/dsh-web-search/types
  */
 
 /** One citable result, in the shape the `web` seam expects. */

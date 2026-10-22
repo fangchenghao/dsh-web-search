@@ -21,7 +21,7 @@
  * A non-2xx response is a result, not a failure, and a failure on one rung is
  * not fatal: the ladder only throws when every rung is unavailable or failed.
  *
- * @module dsh-web-search-bing/fetch
+ * @module @fangchenghao/dsh-web-search/fetch
  */
 import { SearchError } from './errors.ts';
 import { proxyGet, resolveProxy } from './proxy.ts';

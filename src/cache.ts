@@ -10,7 +10,7 @@
  * Time is injected (`now`) instead of read from a timer so the behaviour is
  * testable without sleeping.
  *
- * @module dsh-web-search-bing/cache
+ * @module @fangchenghao/dsh-web-search/cache
  */
 import type { CacheOptions, Source } from './types.ts';
 
