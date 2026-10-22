@@ -45,6 +45,7 @@
           var SLOT = 'settings.section';
           /** Loader entry id the Host projects this plugin's Config under. */
           var ENTRY = 'web-search-bing';
+          var PACKAGE_NAME = 'dsh-web-search-bing';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 
@@ -88,6 +89,7 @@
             'wait.fast': 'Fastest answer',
             loading: 'Loading configuration…',
             unavailable: 'This plugin\'s settings are not available in this deployment yet.',
+            servedNone: 'No settings namespace is served yet.',
             readOnly: 'This deployment stores settings read-only.',
             save: 'Save',
             saving: 'Saving…',
@@ -137,6 +139,7 @@
             'wait.fast': '最快回答',
             loading: '正在读取配置…',
             unavailable: '当前部署尚未提供此插件的设置。',
+            servedNone: 'Host 尚未服务任何设置命名空间。',
             readOnly: '本部署的设置为只读。',
             save: '保存',
             saving: '保存中…',
@@ -221,6 +224,79 @@
               return pair[0];
             };
 
+          /** True when the deployment exposes the shared settings-form service. */
+          function hasFormService(ctx) {
+            var forms = ctx === undefined || ctx === null ? undefined : ctx.configForms;
+            return forms !== undefined && forms !== null && typeof forms.get === 'function';
+          }
+
+          /**
+           * The namespaces the Host currently serves, as one stable string.
+           * `configForms.get` only answers for a namespace the Host has projected,
+           * and that projection arrives asynchronously, so the page has to watch
+           * this instead of reading it once at mount.
+           * @param ctx - the plugin context.
+           * @returns served namespace names joined by `|`.
+           */
+          function servedKeyOf(ctx) {
+            try {
+              var forms = ctx === undefined || ctx === null ? undefined : ctx.configForms;
+              var mirror = forms === undefined || forms === null ? undefined : forms.mirror;
+              var snapshot = mirror !== undefined && mirror !== null && typeof mirror.getSnapshot === 'function' ? mirror.getSnapshot() : null;
+              var view = snapshot === null || snapshot === undefined ? undefined : snapshot.view;
+              var namespaces = view === undefined || view === null || !Array.isArray(view.namespaces) ? [] : view.namespaces;
+              var names = [];
+              for (var i = 0; i < namespaces.length; i += 1) {
+                var ns = namespaces[i] === undefined || namespaces[i] === null ? undefined : namespaces[i].ns;
+                if (typeof ns === 'string' && ns.length > 0) names.push(ns);
+              }
+              return names.join('|');
+            } catch (error) {
+              warn(error);
+              return '';
+            }
+          }
+
+          /**
+           * Watch the settings mirror; `ensure()` starts the read, so subscribing
+           * is enough to make the projection arrive.
+           * @param ctx - the plugin context.
+           * @param listener - called on every settings change.
+           * @returns the unsubscribe function.
+           */
+          function subscribeForms(ctx, listener) {
+            try {
+              var forms = ctx === undefined || ctx === null ? undefined : ctx.configForms;
+              var mirror = forms === undefined || forms === null ? undefined : forms.mirror;
+              if (mirror !== undefined && mirror !== null && typeof mirror.subscribe === 'function') {
+                var off = mirror.subscribe(listener);
+                if (typeof mirror.ensure === 'function') mirror.ensure();
+                return typeof off === 'function' ? off : function () {};
+              }
+            } catch (error) {
+              warn(error);
+            }
+            return function () {};
+          }
+
+          /**
+           * Candidate namespaces, most specific first: the patch id, the full
+           * Loader entry id, the package name, and finally a suffix match so a
+           * prefixed namespace still resolves.
+           * @param served - the served namespace names.
+           * @returns the namespace to read, or null when none matches.
+           */
+          function pickNamespace(served) {
+            var wanted = [ENTRY, 'include:' + ENTRY, PACKAGE_NAME];
+            for (var i = 0; i < wanted.length; i += 1) {
+              if (served.indexOf(wanted[i]) >= 0) return wanted[i];
+            }
+            for (var j = 0; j < served.length; j += 1) {
+              if (served[j].length > 0 && served[j].indexOf(ENTRY) >= 0) return served[j];
+            }
+            return null;
+          }
+
           /** Field values as editable text. */
           function toDraft(values) {
             var draft = {};
@@ -281,7 +357,16 @@
             var t = props.t;
             // Read through on every render: the namespace may become served after
             // the page first mounts, and a captured handle would stay stale.
-            var form = typeof props.getForm === 'function' ? props.getForm() : props.form;
+            // Watch the served namespaces first: the Host projects this row's
+            // settings asynchronously, so a form read at mount time is absent.
+            var surface = props.surface;
+            var servedKey = useSync(
+              function (listener) { return surface.subscribe(listener); },
+              function () { return surface.servedKey(); }
+            );
+            var served = servedKey.length === 0 ? [] : servedKey.split('|');
+            var namespace = surface.hasService() ? pickNamespace(served) : null;
+            var form = namespace === null ? null : surface.form(namespace);
             var subscribe = React.useCallback(function (listener) {
               return form && typeof form.subscribe === 'function' ? form.subscribe(listener) : function () {};
             }, [form]);
@@ -360,8 +445,16 @@
             ];
 
             if (!ready) {
-              var note = state.status === 'loading' ? 'loading' : (state.status === 'unavailable' ? 'unavailable' : 'unavailable');
-              children.push(h('p', { key: 'note', style: { margin: 0, fontSize: '13px', color: 'var(--dsw-alias-label-tertiary)' }, role: 'status' }, t(note)));
+              if (!surface.hasService()) {
+                children.push(h('p', { key: 'note', style: { margin: 0, fontSize: '13px', color: 'var(--dsw-alias-label-tertiary)' }, role: 'status' }, t('unavailable')));
+              } else if (namespace === null) {
+                // The service is here but this row's namespace is not among the
+                // ones the Host serves; show them, so the mismatch names itself.
+                children.push(h('p', { key: 'note', style: { margin: 0, fontSize: '13px', color: 'var(--dsw-alias-label-tertiary)' }, role: 'status' }, t('loading')));
+                children.push(h('p', { key: 'served', style: { margin: 0, fontSize: '11px', color: 'var(--dsw-alias-label-tertiary)', wordBreak: 'break-all' }, 'data-dsw-probe': 'served' }, served.length === 0 ? t('servedNone') : served.join(' · ')));
+              } else {
+                children.push(h('p', { key: 'note', style: { margin: 0, fontSize: '13px', color: 'var(--dsw-alias-label-tertiary)' }, role: 'status' }, t('loading')));
+              }
               return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '760px', color: 'var(--dsw-alias-label-primary)' } }, children);
             }
 
@@ -482,6 +575,31 @@
                 }
               }
 
+              /** The settings surface this page binds to. */
+              var surface = {
+                hasService: function () { return hasFormService(ctx); },
+                subscribe: function (listener) { return subscribeForms(ctx, listener); },
+                servedKey: function () { return servedKeyOf(ctx); },
+                form: function (namespace) { return nsForm(namespace); }
+              };
+
+              /**
+               * The form controller for a served namespace.
+               * @param namespace - a namespace the Host serves.
+               * @returns the controller, or null when it cannot be read.
+               */
+              function nsForm(namespace) {
+                try {
+                  var forms = ctx.configForms;
+                  if (forms === undefined || forms === null || typeof forms.get !== 'function') return null;
+                  var form = forms.get(namespace);
+                  return form === undefined ? null : form;
+                } catch (error) {
+                  warn(error);
+                  return null;
+                }
+              }
+
               mountWhenServed(ctx);
 
               /**
@@ -519,7 +637,7 @@
                     label: function () { return t('title'); },
                     locale: NS
                   }, function (props) {
-                    return h(SettingsPage, Object.assign({}, props, { t: t, getForm: getForm }));
+                    return h(SettingsPage, Object.assign({}, props, { t: t, surface: surface }));
                   });
                 } catch (error) {
                   warn(error);

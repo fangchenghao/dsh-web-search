@@ -31,13 +31,15 @@ The fetch half, and AnySearch's paid-tier capabilities.
 
 ### Fixed
 
-- **The settings page rendered nothing.** The client declared `slots` and
-  `locale` but not `configForms`, so Cordis never injected the service, and the
-  page drew its own "this deployment provides no settings" note. The inject list
-  now names `configForms`; the form handle is read per render rather than
-  captured at mount; mounting happens immediately and again through
-  `configForms.whileServed` (guarded, so the second call is a no-op); and the
-  namespace is looked up both as the patch id and as the full Loader entry id.
+- **The settings page rendered nothing.** Two layers were wrong. The client
+  declared `slots` and `locale` but not `configForms`, so Cordis never injected
+  the service; and even with the service present, the page read its form once at
+  mount, while the Host projects a row's settings namespace asynchronously. The
+  page now subscribes to the settings mirror, derives the namespace from the
+  projection the Host actually serves (patch id, entry id, package name, then a
+  suffix match), and reads the controller for that namespace. When the service
+  is present but no served namespace matches, the page names the namespaces it
+  does see instead of showing a dead end.
 
 ## 0.7.0 (unreleased)
 

@@ -128,7 +128,19 @@ function fakeContext(
     },
     locale: { bind: () => (key: string) => key, register: () => () => undefined },
     ...(withService
-      ? { configForms: { get: () => fakeForm(), whileServed: (_keys: string[], cb: () => unknown) => cb() } }
+      ? {
+          configForms: {
+            get: () => fakeForm(),
+            whileServed: (_keys: string[], cb: () => unknown) => cb(),
+            // The page derives its namespace from the served projection, so the
+            // fake mirrors the shipped shape: a snapshot store plus ensure().
+            mirror: {
+              getSnapshot: () => ({ view: { namespaces: [{ ns: 'web-search-bing' }] } }),
+              subscribe: () => () => undefined,
+              ensure: () => undefined,
+            },
+          },
+        }
       : {}),
     effect: (fn: () => unknown) => fn(),
   };
@@ -205,6 +217,25 @@ test('mounting registers exactly one page into settings.section', async () => {
   assert.equal(options['name'], 'settings.section');
   assert.equal(options['id'], 'web-search-bing');
   assert.equal(typeof options['label'], 'function');
+});
+
+test('a served namespace that is not ours produces a probe line, not a dead end', async () => {
+  const registered: { options: Record<string, unknown>; component: (props: unknown) => unknown }[] = [];
+  const ctx = fakeContext(registered, true);
+  const forms = ctx['configForms'] as Record<string, unknown>;
+  forms['mirror'] = {
+    getSnapshot: () => ({ view: { namespaces: [{ ns: 'something-else' }] } }),
+    subscribe: () => () => undefined,
+    ensure: () => undefined,
+  };
+  const factory = await loadFactory();
+  factory.apply(ctx);
+  const rendered = texts(registered[0] === undefined ? null : (registered[0].component as (props: unknown) => unknown)({}));
+  assert.ok(rendered.includes('loading'), `expected the loading note, got ${JSON.stringify(rendered)}`);
+  assert.ok(
+    rendered.some((text) => text.includes('something-else')),
+    `expected the served namespaces to be shown, got ${JSON.stringify(rendered)}`,
+  );
 });
 
 test('the page renders one control per configuration key', async () => {
