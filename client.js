@@ -279,7 +279,9 @@
           /** One page of the Settings surface. */
           function SettingsPage(props) {
             var t = props.t;
-            var form = props.form;
+            // Read through on every render: the namespace may become served after
+            // the page first mounts, and a captured handle would stay stale.
+            var form = typeof props.getForm === 'function' ? props.getForm() : props.form;
             var subscribe = React.useCallback(function (listener) {
               return form && typeof form.subscribe === 'function' ? form.subscribe(listener) : function () {};
             }, [form]);
@@ -458,27 +460,66 @@
                 ctx.locale.register(NS, { zh: zh, en: en });
               }
 
-              var form = null;
-              try {
-                if (ctx.configForms !== undefined && ctx.configForms !== null && typeof ctx.configForms.get === 'function') {
-                  form = ctx.configForms.get(ENTRY);
+              /**
+               * The form handle for this plugin's namespace, read on demand.
+               * Reading it at mount time would cache a not-yet-served handle,
+               * because the namespace is only served once the Host projects it.
+               * @returns the form handle, or null when the service is absent.
+               */
+              function getForm() {
+                try {
+                  var forms = ctx.configForms;
+                  if (forms === undefined || forms === null || typeof forms.get !== 'function') return null;
+                  // The Host projects this row under its patch id; older
+                  // projections use the full Loader entry id. Ask for both so a
+                  // naming change cannot blank the page again.
+                  var form = forms.get(ENTRY);
+                  if (form !== undefined && form !== null) return form;
+                  return forms.get('include:' + ENTRY);
+                } catch (error) {
+                  warn(error);
+                  return null;
                 }
-              } catch (error) {
-                warn(error);
               }
 
-              ctx.slots.inject(SLOT, function () {
+              mountWhenServed(ctx);
+
+              /**
+               * Register the page once the Host serves the config namespace, and
+               * again if it starts serving later. `whileServed` is the shipped
+               * contract for that; without it, fall back to registering now.
+               */
+              function mountWhenServed(context) {
+                // Register now so the section appears even if the namespace is
+                // still settling, then register again once it is served — the
+                // second call is a no-op because mounting is guarded.
+                mountSlots(context);
+                var forms = context.configForms;
+                if (forms === undefined || forms === null || typeof forms.whileServed !== 'function') return;
+                try {
+                  forms.whileServed([ENTRY, 'include:' + ENTRY], function () {
+                    mountSlots(context);
+                    return function () {};
+                  });
+                } catch (error) {
+                  warn(error);
+                }
+              }
+
+              /** Bind the settings page to the settings surface. */
+              function mountSlots(context) {
+              context.slots.inject(SLOT, function () {
                 if (live !== null) return live;
                 var dispose;
                 try {
-                  dispose = ctx.slots.register({
+                  dispose = context.slots.register({
                     name: SLOT,
                     id: ENTRY,
                     order: 40,
                     label: function () { return t('title'); },
                     locale: NS
                   }, function (props) {
-                    return h(SettingsPage, Object.assign({}, props, { t: t, form: form }));
+                    return h(SettingsPage, Object.assign({}, props, { t: t, getForm: getForm }));
                   });
                 } catch (error) {
                   warn(error);
@@ -496,15 +537,19 @@
                 };
                 return live;
               });
+              }
             } catch (error) {
               warn(error);
             }
           }
 
-          return { inject: ['slots', 'locale'], apply: apply };
+          // `configForms` must be declared: Cordis only exposes a service on the
+          // context when the module asks for it, so an undeclared one reads as
+          // undefined and the page would fall back to "not available".
+          return { inject: ['slots', 'locale', 'configForms'], apply: apply };
         } catch (error) {
           warn(error);
-          return { apply: function () {} };
+          return { inject: ['slots', 'locale', 'configForms'], apply: function () {} };
         }
       }
     });
