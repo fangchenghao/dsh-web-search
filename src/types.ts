@@ -50,6 +50,8 @@ export interface HostSpec {
   build: (query: string) => string;
   /** Request body for a JSON POST. */
   body?: (query: string) => string;
+  /** Extra request headers, for a provider that authenticates. */
+  headers?: Record<string, string>;
   /** Turn a response payload into sources; must never throw on markup drift. */
   parse: (payload: string, finalUrl: string) => Source[];
 }

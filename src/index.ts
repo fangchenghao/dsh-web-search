@@ -14,6 +14,8 @@ import type { PluginConfig } from './config.ts';
 import { search } from './engines.ts';
 import { SearchCache } from './cache.ts';
 import { EngineHealth } from './health.ts';
+import { createFetchProvider } from './fetch.ts';
+import type { FetchProvider } from './fetch.ts';
 import type { Source } from './types.ts';
 
 export const name = 'dsh-web-search-bing';
@@ -23,6 +25,8 @@ export const inject = ['web'];
 
 /** Provider id referenced by `web.searchProvider`. */
 export const PROVIDER_ID = 'bing';
+/** Fetch provider id, named in the `web` service config as `fetchProvider`. */
+export const FETCH_PROVIDER_ID = 'http-proxy';
 
 /** The request shape the `web` seam hands a search provider. */
 export interface SearchRequest {
@@ -45,7 +49,10 @@ export interface SearchProvider {
 
 /** The slice of the plugin context this plugin uses. */
 export interface PluginContext {
-  web: { registerSearchProvider: (provider: SearchProvider) => void };
+  web: {
+    registerSearchProvider: (provider: SearchProvider) => void;
+    registerFetchProvider: (provider: FetchProvider) => void;
+  };
 }
 
 /** Configuration as the loader hands it over, already schema-validated. */
@@ -84,6 +91,8 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
         ...(resolved.hostIds === undefined ? {} : { hostIds: resolved.hostIds }),
         rank: resolved.rank,
+        ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
+        ...(resolved.anysearchDomain.length === 0 ? {} : { anysearchDomain: resolved.anysearchDomain }),
         cache,
         health,
         ...(signal === undefined ? {} : { signal }),
@@ -95,6 +104,17 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       return { sources: sources.slice(0, limit), truncated: true };
     },
   });
+
+  // The same tunnel the search side resolves, offered to `web_fetch`: a search
+  // that finds a page on a blocked host is useless if the agent cannot read it.
+  ctx.web.registerFetchProvider(
+    createFetchProvider({
+      id: FETCH_PROVIDER_ID,
+      timeoutMs: resolved.timeoutMs,
+      ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
+      ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
+    }),
+  );
 }
 
 export { Config, resolveConfig } from './config.ts';

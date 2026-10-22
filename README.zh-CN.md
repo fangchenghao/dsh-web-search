@@ -192,6 +192,28 @@ score(source) = votes / (rrfConstant + position)
 所以抓取型引擎在解析前都要求页面里出现查询词的任一 ≥3 字符片段；不出现的页面记为失败
 （`SEARCH_BLOCKED`），让位给下一个引擎。JSON API 用自己的信封校验，不做回显检查。
 
+## 在受限网络里抓取页面
+
+`web_search` 和 `web_fetch` 是两件事：搜索负责"发现 URL"，抓取负责"读取页面"。本插件两边都提供，
+因为受限网络里坏掉的是后半段。本机实测：
+
+| 站点 | 直连 | 经本地隧道 |
+| --- | --- | --- |
+| `github.com` | 超时 | 200，3.5 秒 |
+| `html.duckduckgo.com` | 超时 | 202，1.2 秒 |
+| `api.anysearch.com` | 200（2.1 秒） | 200（1.0 秒） |
+| `cn.bing.com`、`www.so.com` | 200 | 200 |
+
+也就是说，搜到一条 GitHub 链接曾经是死路：看得见、读不到。把 `web` 服务指向本 provider 后按三级
+落梯处理——直连优先，其次隧道，配置了 AnySearch 密钥时最后再用它的提取接口：
+
+```yaml
+- id: web
+  config:
+    searchProvider: bing
+    fetchProvider: http-proxy
+```
+
 ## 配置
 
 loader 会在 `apply` 之前用 schemastery schema 校验配置段：非法值会在加载时报出具体
@@ -210,6 +232,8 @@ loader 会在 `apply` 之前用 schemastery schema 校验配置段：非法值�
 | `authorityBoost` | 数值 0–10 | `0.25` | 权威域名加成：`× (1 + boost)` |
 | `freshnessBoost` | 数值 0–10 | `0.2` | 当天发布结果的加成，随时间线性衰减到 0 |
 | `freshnessDays` | 整数 ≥ 1 | `30` | 新鲜度加成衰减到 0 的天数 |
+| `anysearchApiKey` | 字符串 | `''` | 发给 `api.anysearch.com` 的 Bearer 令牌；空值表示匿名访问 |
+| `anysearchDomain` | 字符串 | `''` | AnySearch 垂直索引（`finance`、`academic`、`security`、`legal`、`code`）；带点号的值选择子域 |
 | `cacheTtlMs` | 整数 ≥ 0 | `600000` | 缓存有效期；`0` 关闭缓存 |
 | `cacheEntries` | 整数 ≥ 0 | `100` | 缓存条目上限，超出淘汰最久未用 |
 | `baseCooldownMs` | 整数 ≥ 0 | `300000` | 无等待提示时的基础冷却 |
@@ -222,6 +246,8 @@ loader 会在 `apply` 之前用 schemastery schema 校验配置段：非法值�
     wait: auto
     limit: 8
     proxy: "http://127.0.0.1:7890"   # 省略则自动探测
+    anysearchApiKey: ''       # 放在 profile，别放进仓库
+    anysearchDomain: ''       # 或 finance / academic / security / legal / code
     cacheTtlMs: 600000
 ```
 

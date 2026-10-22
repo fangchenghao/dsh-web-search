@@ -13,7 +13,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { search } from '../src/engines.ts';
+import { HOSTS, resolveHost, search } from '../src/engines.ts';
 import { SearchCache } from '../src/cache.ts';
 import { EngineHealth } from '../src/health.ts';
 import { SearchError } from '../src/errors.ts';
@@ -82,6 +82,34 @@ async function runDirect(
     ...(options.hostIds === undefined ? {} : { hostIds: options.hostIds }),
   });
 }
+
+test('an AnySearch key and vertical domain reach the request without mutating the catalogue', () => {
+  const anysearch = HOSTS.find((host) => host.id === 'anysearch');
+  assert.ok(anysearch !== undefined);
+
+  // Without configuration the catalogue entry is returned untouched.
+  assert.equal(resolveHost(anysearch, {}), anysearch);
+
+  const keyed = resolveHost(anysearch, { anysearchApiKey: 'as_sk_test' });
+  assert.equal(keyed.headers?.['authorization'], 'Bearer as_sk_test');
+  assert.equal(JSON.parse(keyed.body?.('q') ?? '{}')['query'], 'q');
+
+  const vertical = resolveHost(anysearch, { anysearchDomain: 'finance.us_stock' });
+  const body = JSON.parse(vertical.body?.('q') ?? '{}');
+  assert.equal(body['domain'], 'finance');
+  assert.equal(body['sub_domain'], 'finance.us_stock');
+
+  const plain = JSON.parse(resolveHost(anysearch, { anysearchDomain: 'academic' }).body?.('q') ?? '{}');
+  assert.equal(plain['domain'], 'academic');
+  assert.equal(plain['sub_domain'], undefined);
+
+  // Other engines are never touched.
+  const ddg = HOSTS.find((host) => host.id === 'ddg-html');
+  assert.ok(ddg !== undefined);
+  assert.equal(resolveHost(ddg, { anysearchApiKey: 'as_sk_test' }), ddg);
+  // The catalogue itself keeps no credential.
+  assert.equal(anysearch.headers, undefined);
+});
 
 test('an ASCII query leads with the global engines and only fills from cn engines when short', async () => {
   const anysearch = await fixture('anysearch.json');

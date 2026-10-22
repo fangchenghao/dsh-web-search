@@ -7,6 +7,38 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Version dates were not recorded in this repository's history, so the entries
 below are ordered but undated; only the ordering is authoritative.
 
+## 0.8.0 (unreleased)
+
+The fetch half, and AnySearch's paid-tier capabilities.
+
+### Added
+
+- **A fetch provider (`http-proxy`), so `web_fetch` works on a restricted
+  network.** Measured here: a direct request to `github.com` or
+  `html.duckduckgo.com` times out while the same URL answers through the local
+  tunnel. The provider tries a direct request first, falls back to the tunnel
+  the search side already resolves, and finally — when an AnySearch key is
+  configured — to AnySearch's extraction endpoint, which renders the page
+  server-side and so also rescues a page that answers 403 to a bare request.
+  Select it with `fetchProvider: http-proxy` in the `web` service config.
+- `anysearchApiKey`: sent as a Bearer token to `api.anysearch.com` only. It
+  raises the rate limit and unlocks extraction; empty keeps anonymous access.
+  Keep it in the profile, not in the bundle: the shipped default is empty.
+- `anysearchDomain`: route the AnySearch engine at one of its vertical indexes
+  (`finance`, `academic`, `security`, `legal`, `code`). A dotted value such as
+  `finance.us_stock` selects the sub-domain.
+- 9 tests for the fetch ladder and for the credential/domain resolution.
+
+### Fixed
+
+- **The settings page rendered nothing.** The client declared `slots` and
+  `locale` but not `configForms`, so Cordis never injected the service, and the
+  page drew its own "this deployment provides no settings" note. The inject list
+  now names `configForms`; the form handle is read per render rather than
+  captured at mount; mounting happens immediately and again through
+  `configForms.whileServed` (guarded, so the second call is a no-op); and the
+  namespace is looked up both as the patch id and as the full Loader entry id.
+
 ## 0.7.0 (unreleased)
 
 The TypeScript rewrite. Behaviour is meant to be unchanged where it was

@@ -38,6 +38,14 @@ export const Config = z.object({
   freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.'),
   cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.'),
   cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.'),
+  anysearchApiKey: z
+    .string()
+    .default('')
+    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.'),
+  anysearchDomain: z
+    .string()
+    .default('')
+    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.'),
   baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.'),
   maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.'),
 });
@@ -57,6 +65,10 @@ export interface ResolvedConfig {
   limit: number;
   /** Release policy, deciding how long a tier waits for slow engines. */
   wait: WaitPolicy;
+  /** AnySearch credential, or an empty string for anonymous access. */
+  anysearchApiKey: string;
+  /** AnySearch vertical domain, or an empty string for the open web. */
+  anysearchDomain: string;
   /** Ranking knobs. */
   rank: RankOptions;
   /** Cache lifetime in milliseconds. */
@@ -90,6 +102,8 @@ export function resolveConfig(config: PluginConfig | Readonly<Record<string, unk
     proxy: proxy.length > 0 ? proxy : undefined,
     limit,
     wait: settings.wait,
+    anysearchApiKey: settings.anysearchApiKey.trim(),
+    anysearchDomain: settings.anysearchDomain.trim(),
     rank: {
       rrfConstant: settings.rrfConstant,
       ...(settings.authorityDomains.length > 0 ? { authorityDomains: settings.authorityDomains } : {}),

@@ -231,6 +231,10 @@ async function runTier(
 
 /** Options for {@link search}: the seam's budget plus the plugin's runtime. */
 export interface EngineRunOptions extends SearchOptions {
+  /** AnySearch Bearer token; empty or absent means anonymous access. */
+  anysearchApiKey?: string;
+  /** AnySearch vertical domain, such as `finance` or `finance.us_stock`. */
+  anysearchDomain?: string;
   /** Ranking knobs, falling back to the documented defaults. */
   rank?: RankOptions;
   /** Result cache to consult and fill, when one is configured. */
@@ -246,6 +250,39 @@ export interface EngineRunOptions extends SearchOptions {
  * @param options - budget, policy and runtime dependencies.
  * @returns fused sources plus the failures worth reporting; throws on cancellation.
  */
+/**
+ * Apply per-run configuration to an engine definition.
+ *
+ * Only AnySearch is configurable today: it authenticates with a Bearer token and
+ * can be pointed at one of its vertical domains. Returning a copy keeps the
+ * exported `HOSTS` catalogue static, so a stale credential can never leak into
+ * the next run through a mutated descriptor.
+ * @param host - the engine definition from `HOSTS`.
+ * @param options - the run options carrying the credential and domain.
+ * @returns the engine definition to use for this run.
+ */
+export function resolveHost(host: HostSpec, options: Pick<EngineRunOptions, 'anysearchApiKey' | 'anysearchDomain'>): HostSpec {
+  if (host.id !== 'anysearch') return host;
+  const key = (options.anysearchApiKey ?? '').trim();
+  const domain = (options.anysearchDomain ?? '').trim();
+  if (key.length === 0 && domain.length === 0) return host;
+  const headers = key.length === 0 ? undefined : { authorization: `Bearer ${key}` };
+  const body = (query: string): string => {
+    const payload: Record<string, unknown> = { query, max_results: ANYSEARCH_MAX_RESULTS };
+    if (domain.length > 0) {
+      const dot = domain.indexOf('.');
+      if (dot > 0) {
+        payload['domain'] = domain.slice(0, dot);
+        payload['sub_domain'] = domain;
+      } else {
+        payload['domain'] = domain;
+      }
+    }
+    return JSON.stringify(payload);
+  };
+  return { ...host, body, ...(headers === undefined ? {} : { headers }) };
+}
+
 export async function search(query: string, signal: AbortSignal | undefined, options: EngineRunOptions): Promise<SearchOutcome> {
   const limit = Math.max(1, Math.min(options.limit, 20));
   const timeoutMs = options.timeoutMs ?? 15000;
@@ -253,9 +290,9 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const proxy = options.useProxy === false ? undefined : await resolveProxy(options.proxy);
 
   const allow = options.hostIds !== undefined && options.hostIds.length > 0 ? new Set(options.hostIds) : undefined;
-  const hosts = HOSTS.filter((host) => allow === undefined || allow.has(host.id)).filter(
-    (host) => host.viaProxy !== true || proxy !== undefined,
-  );
+  const hosts = HOSTS.filter((host) => allow === undefined || allow.has(host.id))
+    .filter((host) => host.viaProxy !== true || proxy !== undefined)
+    .map((host) => resolveHost(host, options));
 
   // Skip engines that are cooling down, but never end up with no engine at all:
   // a throttled engine is still better than no search.

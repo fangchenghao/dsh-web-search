@@ -74,6 +74,7 @@ async function attempt(
     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
   };
   if (post) headers['content-type'] = 'application/json';
+  if (host.headers !== undefined) Object.assign(headers, host.headers);
   const body = typeof host.body === 'function' ? host.body(query) : undefined;
 
   let status: number;

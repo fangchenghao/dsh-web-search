@@ -231,6 +231,31 @@ empty the engine set: if every engine is cooling, the run uses them anyway. A
 skipped engine appears in the failure list as
 `cooling down for another 2m 10s after SEARCH_THROTTLED`.
 
+## Fetching pages from a restricted network
+
+`web_search` and `web_fetch` are different jobs: search discovers a URL, fetch
+reads it. The plugin ships a provider for both, because on a restricted network
+the second half is the one that breaks. Measured here:
+
+| Host | Direct | Through the local tunnel |
+| --- | --- | --- |
+| `github.com` | timeout | 200 in 3.5s |
+| `html.duckduckgo.com` | timeout | 202 in 1.2s |
+| `api.anysearch.com` | 200 (2.1s) | 200 (1.0s) |
+| `cn.bing.com`, `www.so.com` | 200 | 200 |
+
+So a search that returns a GitHub URL used to be a dead end: the agent could see
+the result and could not read it. Point the `web` service at this provider and
+the ladder takes over — direct first, then the tunnel, then AnySearch extraction
+when a key is set:
+
+```yaml
+- id: web
+  config:
+    searchProvider: bing
+    fetchProvider: http-proxy
+```
+
 ## Configuration
 
 The loader validates the config section against a schemastery schema before
@@ -250,6 +275,8 @@ Unknown keys are not rejected, so spell the names from the table below exactly.
 | `authorityBoost` | number 0–10 | `0.25` | Added multiplier for an authoritative domain: `× (1 + boost)`. |
 | `freshnessBoost` | number 0–10 | `0.2` | Added multiplier for a result published today; fades linearly to zero. |
 | `freshnessDays` | integer ≥ 1 | `30` | Age at which the freshness boost has faded out. |
+| `anysearchApiKey` | string | `''` | Bearer token for `api.anysearch.com`; empty means anonymous. |
+| `anysearchDomain` | string | `''` | AnySearch vertical index (`finance`, `academic`, `security`, `legal`, `code`); dotted values select a sub-domain. |
 | `cacheTtlMs` | integer ≥ 0 | `600000` | Cache lifetime; `0` disables the cache. |
 | `cacheEntries` | integer ≥ 0 | `100` | Cached queries before the least recently used is evicted. |
 | `baseCooldownMs` | integer ≥ 0 | `300000` | Cooldown after a failure that carried no wait hint. |
@@ -262,6 +289,8 @@ Unknown keys are not rejected, so spell the names from the table below exactly.
     wait: auto
     limit: 8
     proxy: "http://127.0.0.1:7890"   # omit to auto-detect
+    anysearchApiKey: ''       # keep it in the profile, not in the repository
+    anysearchDomain: ''       # or finance / academic / security / legal / code
     cacheTtlMs: 600000
 ```
 
