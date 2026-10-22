@@ -156,3 +156,5 @@ export default Object.assign(apply, { Config, inject });   // Config + inject �
 
 **教训：先定位「命名空间有没有被 Host 收录」，再改客户端。** 客户端加一行诊断
 （把 `settings.describe()` 返回的 ns 列表打印出来）能在 10 分钟内省掉上面四个误判。
+
+> 同一份内容也作为 skill 存放在 `~/.dsh/skills/dsh-plugin-settings-form/SKILL.md`（自包含，触发时一次性加载）。改这里时请同步改那边。
