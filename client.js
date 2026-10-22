@@ -155,6 +155,8 @@
             { key: 'wait', group: 'engines', kind: 'select', options: ['auto', 'all', 'fast'] },
             { key: 'timeoutMs', group: 'engines', kind: 'number', integer: true, min: 500 },
             { key: 'proxy', group: 'engines', kind: 'text' },
+            { key: 'anysearchApiKey', group: 'engines', kind: 'text' },
+            { key: 'anysearchDomain', group: 'engines', kind: 'text' },
             { key: 'limit', group: 'ranking', kind: 'number', integer: true, min: 1, max: 20 },
             { key: 'rrfConstant', group: 'ranking', kind: 'number', integer: true, min: 1 },
             { key: 'authorityDomains', group: 'ranking', kind: 'list' },

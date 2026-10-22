@@ -370,3 +370,7 @@ that the build emitted the declared `lib/index.js` entry point.
 ## Licence
 
 MIT © 2026 fangchenghao. See [LICENSE](LICENSE).
+
+## 文档
+
+- [让配置出现在「设置」里：四层判定链](docs/plugin-settings-form.md) —— 写给插件作者，也写给下次调试这个问题的自己。

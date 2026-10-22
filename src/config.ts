@@ -27,39 +27,39 @@ export const Config = z.object({
   hosts: z
     .array(z.string())
     .default([])
-    .description('Restrict the run to these engine ids (empty means every engine).')
+    .description('引擎白名单：只运行列出的引擎 id，留空表示全部（如 anysearch、ddg-html、cn.bing）。数组字段，请在配置文件中编辑。')
     .volatile(),
-  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.').volatile(),
+  timeoutMs: z.natural().min(500).default(15000).description('单个引擎的请求超时（毫秒）。').volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
-    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.').volatile(),
+    .description('等待策略：auto 跟随查询语言，all 等全部引擎返回，fast 首个结果即返回。').volatile(),
   proxy: z
     .string()
     .default('')
-    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.').volatile(),
-  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.').volatile(),
-  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.').volatile(),
+    .description('代理地址，例如 http://127.0.0.1:7890；留空则自动探测系统代理。').volatile(),
+  limit: z.natural().min(1).max(20).default(8).description('返回结果数上限，同时决定引擎之间的名额分配。').volatile(),
+  rrfConstant: z.natural().min(1).default(60).description('RRF 融合常数：越大越平均，越小越偏向各引擎的头部结果。').volatile(),
   authorityDomains: z
     .array(z.string())
     .default([])
-    .description('Extra domains that earn the authority boost, on top of the built-in list.')
+    .description('权威域名列表，命中后提升排名。数组字段，请在配置文件中编辑。')
     .volatile(),
-  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.').volatile(),
-  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.').volatile(),
-  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.').volatile(),
-  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.').volatile(),
-  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.').volatile(),
+  authorityBoost: z.number().min(0).max(10).default(0.25).description('权威域名加成强度。').volatile(),
+  freshnessBoost: z.number().min(0).max(10).default(0.2).description('时效加成强度。').volatile(),
+  freshnessDays: z.natural().min(1).default(30).description('时效窗口（天），超出窗口的结果不享受时效加成。').volatile(),
+  cacheTtlMs: z.natural().default(600000).description('缓存有效期（毫秒）。').volatile(),
+  cacheEntries: z.natural().default(100).description('缓存条数上限（超出按最久未用淘汰）。').volatile(),
   anysearchApiKey: z
     .string()
     .default('')
-    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.').volatile(),
+    .description('AnySearch API Key：留空则匿名调用（速率较低）；有 key 时仅发送到 api.anysearch.com。').volatile(),
   anysearchDomain: z
     .string()
     .default('')
-    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.').volatile(),
-  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.').volatile(),
-  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.').volatile(),
+    .description('AnySearch 垂直域：finance / academic / security / legal / code，可带子域如 finance.us_stock；留空为通用搜索。').volatile(),
+  baseCooldownMs: z.natural().default(300000).description('触发限流后的基础冷却时间（毫秒）。').volatile(),
+  maxCooldownMs: z.natural().default(1800000).description('指数退避冷却的上限（毫秒）。').volatile(),
 });
 
 /** What the schema resolves a field to: a live reference, not the value. */

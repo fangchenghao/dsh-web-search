@@ -22,7 +22,9 @@ import type { EngineHealth } from './health.ts';
 import { searchHost } from './transport.ts';
 
 /** How many rows to ask AnySearch for; the merge picks from them. */
-const ANYSEARCH_MAX_RESULTS = 20;
+// AnySearch caps max_results at 10: asking for more returns 10 with HTTP
+// 200, so the constant matches the real ceiling instead of over-asking.
+const ANYSEARCH_MAX_RESULTS = 10;
 
 /**
  * Engines, in merge priority order.

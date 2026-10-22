@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.1
+
+### Fixed
+- **The AnySearch fields were missing from the card.** The client renders the
+  controls it knows about from its own field list, and `anysearchApiKey` /
+  `anysearchDomain` were never added there, so the API key had no entry — the
+  form showed 14 controls where the schema has 16.
+- `max_results` asked AnySearch for 20 while the service caps it at 10 and
+  silently returns 10, so the constant now states the real ceiling.
+
+### Changed
+- Every configuration description is in Chinese, and the API key field says what
+  an empty value means: anonymous access at a lower rate limit.
+- New [docs/plugin-settings-form.md](docs/plugin-settings-form.md): the four-layer
+  chain that decides whether a plugin's configuration reaches Settings, with
+  file:line evidence and the four wrong diagnoses this plugin went through.
+
 ## 0.9.0
 
 ### Added

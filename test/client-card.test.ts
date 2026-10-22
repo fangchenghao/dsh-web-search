@@ -18,7 +18,7 @@ import vm from 'node:vm';
 
 /** The fourteen configurable keys, in the order the page renders them. */
 const KEYS = [
-  'hosts', 'wait', 'proxy', 'limit', 'timeoutMs',
+  'hosts', 'wait', 'proxy', 'anysearchApiKey', 'anysearchDomain', 'limit', 'timeoutMs',
   'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
   'cacheTtlMs', 'cacheEntries', 'baseCooldownMs', 'maxCooldownMs',
 ] as const;
