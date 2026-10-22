@@ -24,6 +24,8 @@
  * @module @fangchenghao/dsh-web-search/fetch
  */
 import { SearchError } from './errors.ts';
+import { DEFAULT_FETCH_MAX_LENGTH, renderFetchText, truncateFetchText } from './markdown.ts';
+import type { FetchFormat } from './markdown.ts';
 import { proxyGet, resolveProxy } from './proxy.ts';
 
 /** One retrieval outcome, mirroring the Host's `WebFetchResult`. */
@@ -55,6 +57,10 @@ export interface FetchProviderOptions {
   anysearchApiKey?: string;
   /** Bytes kept from a response; the Host applies its own cap too. */
   maxBytes?: number;
+  /** Output style for an HTML body; `markdown` keeps structure. */
+  format?: FetchFormat;
+  /** Character budget for the returned text. */
+  maxLength?: number;
   /** User agent sent on every rung. */
   userAgent?: string;
 }
@@ -197,6 +203,29 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const userAgent = options.userAgent ?? USER_AGENT;
   const apiKey = (options.anysearchApiKey ?? '').trim();
+  const format = options.format ?? 'markdown';
+  const maxLength = options.maxLength ?? DEFAULT_FETCH_MAX_LENGTH;
+
+  // Every rung funnels through here: an HTML body becomes Markdown (or plain
+  // text), a text body keeps its content, and both obey the character budget.
+  // The Host's own renderer then sees `kind: 'text'`, so it does not convert the
+  // same page a second time.
+  const finalize = (outcome: FetchOutcome): FetchOutcome => {
+    if (outcome.body.kind === 'html') {
+      const rendered = renderFetchText(outcome.body.content, { format, maxLength, baseUrl: outcome.url });
+      return {
+        ...outcome,
+        body: { kind: 'text', content: rendered.content },
+        truncated: outcome.truncated || rendered.truncated,
+      };
+    }
+    const limited = truncateFetchText(outcome.body.content, maxLength);
+    return {
+      ...outcome,
+      body: { kind: 'text', content: limited.content },
+      truncated: outcome.truncated || limited.truncated,
+    };
+  };
 
   return {
     id: options.id ?? 'http-proxy',
@@ -215,7 +244,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       // shorter deadline than the tunnel: spending the whole budget on a request
       // that cannot work would leave the rung that can work with nothing.
       try {
-        return await deps.direct(target, Math.min(timeoutMs, DIRECT_DEADLINE_MS), signal, userAgent, maxBytes);
+        return finalize(await deps.direct(target, Math.min(timeoutMs, DIRECT_DEADLINE_MS), signal, userAgent, maxBytes));
       } catch (error) {
         if (cancelled()) throw error;
         failures.push(`direct: ${error instanceof Error ? error.message : String(error)}`);
@@ -232,7 +261,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
 
       if (proxy !== undefined && proxy.length > 0) {
         try {
-          return await deps.tunnel(target, proxy, timeoutMs, signal, userAgent, maxBytes);
+          return finalize(await deps.tunnel(target, proxy, timeoutMs, signal, userAgent, maxBytes));
         } catch (error) {
           if (cancelled()) throw error;
           failures.push(`tunnel: ${error instanceof Error ? error.message : String(error)}`);
@@ -241,7 +270,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
 
       if (apiKey.length > 0) {
         try {
-          return await deps.extract(target, apiKey, timeoutMs, signal);
+          return finalize(await deps.extract(target, apiKey, timeoutMs, signal));
         } catch (error) {
           if (cancelled()) throw error;
           failures.push(`extract: ${error instanceof Error ? error.message : String(error)}`);

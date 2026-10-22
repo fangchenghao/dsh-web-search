@@ -1,0 +1,65 @@
+{
+  "captured": "2026-10-22",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "pages": [
+    {
+      "file": "wikipedia-markdown.html",
+      "url": "https://en.wikipedia.org/wiki/Markdown",
+      "captured": "2026-10-22",
+      "characterSlices": [
+        [
+          15685,
+          16712
+        ],
+        [
+          153147,
+          155044
+        ]
+      ],
+      "bytes": 3053,
+      "notes": "Two contiguous excerpts: a complete site nav block, then the Implementations heading and its first paragraph."
+    },
+    {
+      "file": "mdn-table.html",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table",
+      "captured": "2026-10-22",
+      "characterSlices": [
+        [
+          87587,
+          87633
+        ],
+        [
+          87771,
+          87825
+        ],
+        [
+          92909,
+          94123
+        ],
+        [
+          160237,
+          160644
+        ]
+      ],
+      "bytes": 1851,
+      "notes": "Four contiguous excerpts. The real <main> opening tag is kept and a closing </main> is appended so the heading, code example and table stay in one main landmark."
+    },
+    {
+      "file": "python-urllib.html",
+      "url": "https://docs.python.org/3/library/urllib.parse.html",
+      "captured": "2026-10-22",
+      "characterSlices": [
+        [
+          4458,
+          5648
+        ],
+        [
+          11168,
+          12029
+        ]
+      ],
+      "bytes": 2186,
+      "notes": "A complete mobile nav block, then the main body from its opening tag through the first paragraph."
+    }
+  ]
+}

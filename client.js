@@ -2,7 +2,7 @@
  * Browser half of `dsh-web-search-bing`.
  *
  * Registers one Settings page into the Settings surface's `settings.section`
- * slot, so this plugin's 20 configuration keys can be edited in the GUI instead
+ * slot, so this plugin's 22 configuration keys can be edited in the GUI instead
  * of the profile's `cordis.patch.yml`. The page reads and writes the plugin's
  * Loader entry (`web-search-bing`) through the shared `configForms` service,
  * which is the same path the shipped settings pages use.
@@ -77,6 +77,10 @@
             'hint.wait': 'auto decides from the question language, all waits for everyone, fast takes the first answer',
             'field.proxy': 'Proxy (relay)',
             'hint.proxy': 'Relay address for blocked sites; empty auto-detects the system proxy',
+            'field.fetchFormat': 'Fetched page style',
+            'hint.fetchFormat': 'markdown keeps headings, lists, tables and links; text keeps words only',
+            'field.fetchMaxLength': 'Fetched characters',
+            'hint.fetchMaxLength': 'Characters returned per fetch (1000-200000); the rest is noted as truncated',
             'field.limit': 'Results per search',
             'hint.limit': 'How many results come back, and how they are split across engines',
             'field.rrfConstant': 'Result blending',
@@ -145,6 +149,10 @@
             'hint.wait': 'auto 按提问语言自动决定，all 等全部，fast 先到先用',
             'field.proxy': '代理（中转站）',
             'hint.proxy': '上网中转站地址；留空自动识别系统代理',
+            'field.fetchFormat': '抓取内容的样式',
+            'hint.fetchFormat': 'markdown 保留标题、列表、表格和链接；text 只留纯文字',
+            'field.fetchMaxLength': '抓取字符上限',
+            'hint.fetchMaxLength': '一次抓取最多返回多少字符（1000-200000）；超出部分会注明已截断',
             'field.limit': '返回几条',
             'hint.limit': '一次最多返回几条，也决定各引擎分到几条',
             'field.rrfConstant': '结果混合力度',
@@ -191,6 +199,8 @@
             { key: 'wait', group: 'engines', kind: 'select', options: ['auto', 'all', 'fast'] },
             { key: 'timeoutMs', group: 'engines', kind: 'number', integer: true, min: 500 },
             { key: 'proxy', group: 'engines', kind: 'text' },
+            { key: 'fetchFormat', group: 'engines', kind: 'select', options: ['markdown', 'text'] },
+            { key: 'fetchMaxLength', group: 'engines', kind: 'number', integer: true, min: 1000, max: 200000 },
             { key: 'anysearchApiKey', group: 'engines', kind: 'text' },
             { key: 'anysearchDomain', group: 'engines', kind: 'text' },
             { key: 'limit', group: 'ranking', kind: 'number', integer: true, min: 1, max: 20 },

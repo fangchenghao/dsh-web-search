@@ -16,9 +16,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-/** The twenty configurable keys, in the order the page renders them. */
+/** The twenty-two configurable keys, in the order the page renders them. */
 const KEYS = [
-  'hosts', 'wait', 'timeoutMs', 'proxy', 'anysearchApiKey', 'anysearchDomain',
+  'hosts', 'wait', 'timeoutMs', 'proxy', 'fetchFormat', 'fetchMaxLength',
+  'anysearchApiKey', 'anysearchDomain',
   'limit', 'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
   'timeRange', 'cacheTtlMs', 'cacheEntries', 'baseCooldownMs', 'maxCooldownMs',
   'domainSources', 'domainLimit', 'domainTimeoutMs',
@@ -85,6 +86,8 @@ function defaultValues(): Record<string, unknown> {
     hosts: [],
     wait: 'auto',
     proxy: '',
+    fetchFormat: 'markdown',
+    fetchMaxLength: 20000,
     limit: 8,
     timeoutMs: 15000,
     rrfConstant: 60,

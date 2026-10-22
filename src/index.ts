@@ -159,6 +159,8 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
     createFetchProvider({
       id: FETCH_PROVIDER_ID,
       timeoutMs: mounted.timeoutMs,
+      format: mounted.fetchFormat,
+      maxLength: mounted.fetchMaxLength,
       ...(mounted.proxy === undefined ? {} : { proxy: mounted.proxy }),
       ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
     }),

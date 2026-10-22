@@ -98,8 +98,8 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
   assert.deepEqual(marked, [
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
     'cacheEntries', 'cacheTtlMs', 'domainLimit', 'domainSources', 'domainTimeoutMs',
-    'freshnessBoost', 'freshnessDays', 'hosts', 'limit', 'maxCooldownMs', 'proxy', 'rrfConstant',
-    'timeRange', 'timeoutMs', 'wait',
+    'fetchFormat', 'fetchMaxLength', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
+    'maxCooldownMs', 'proxy', 'rrfConstant', 'timeRange', 'timeoutMs', 'wait',
   ]);
 });
 
@@ -147,4 +147,27 @@ test('apply mounts on the Loader-shaped config instead of failing activation', (
   // `unknown` is how the Loader hands the section to a function-style plugin.
   apply(ctx, loaderResolve(RAW));
   assert.deepEqual(registered, ['bing', 'http-proxy']);
+});
+
+test('fetch format and length resolve with defaults and reject out-of-range values', () => {
+  const defaults = resolveConfig({}, undefined);
+  assert.equal(defaults.fetchFormat, 'markdown');
+  assert.equal(defaults.fetchMaxLength, 20000);
+
+  const overridden = resolveConfig({ fetchFormat: 'text', fetchMaxLength: 50000 } as ConfigInput, undefined);
+  assert.equal(overridden.fetchFormat, 'text');
+  assert.equal(overridden.fetchMaxLength, 50000);
+
+  assert.throws(
+    () => resolveConfig({ fetchMaxLength: 999 } as ConfigInput, undefined),
+    /\$\.fetchMaxLength expected number >= 1000 but got 999/,
+  );
+  assert.throws(
+    () => resolveConfig({ fetchMaxLength: 200001 } as ConfigInput, undefined),
+    /\$\.fetchMaxLength expected number <= 200000 but got 200001/,
+  );
+  assert.throws(
+    () => resolveConfig({ fetchFormat: 'html' } as unknown as ConfigInput, undefined),
+    /\$\.fetchFormat expected "markdown" \| "text" but got "html"/,
+  );
 });

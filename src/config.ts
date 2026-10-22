@@ -20,6 +20,7 @@
  * @module @fangchenghao/dsh-web-search/config
  */
 import z from '@deepseek-ai/schemastery';
+import { DEFAULT_FETCH_MAX_LENGTH } from './markdown.ts';
 import type { RankOptions, TimeRange, WaitPolicy } from './types.ts';
 import { VERTICAL_IDS, isVerticalId } from './verticals.ts';
 
@@ -31,6 +32,18 @@ export const Config = z.object({
     .description('只启用列出的搜索引擎（如 anysearch、cn.bing），多个用逗号分隔；留空表示全部。不想限制就留空。')
     .volatile(),
   timeoutMs: z.natural().min(500).default(15000).description('每次向搜索引擎要结果，最多等它多久（毫秒，1000 = 1 秒）。网络慢可加到 20000；平时保持 15000 就行。').volatile(),
+  fetchFormat: z
+    .union(['markdown', 'text'])
+    .default('markdown')
+    .description('抓取网页后返回什么样式：markdown 保留标题、列表、表格和链接，最适合阅读；text 只留纯文字、去掉所有标记。一般保持 markdown。')
+    .volatile(),
+  fetchMaxLength: z
+    .natural()
+    .min(1000)
+    .max(200000)
+    .default(DEFAULT_FETCH_MAX_LENGTH)
+    .description('一次抓取最多返回多少个字符（1000-200000）；超出会在末尾注明原始长度。想一次多读可调到 50000，日常保持 20000 即可。')
+    .volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
@@ -117,6 +130,10 @@ export interface ResolvedConfig {
   hostIds: string[] | undefined;
   /** Per-engine deadline. */
   timeoutMs: number;
+  /** `web_fetch` output style. */
+  fetchFormat: 'markdown' | 'text';
+  /** `web_fetch` character budget. */
+  fetchMaxLength: number;
   /** Explicit tunnel URL, or `undefined` to detect one. */
   proxy: string | undefined;
   /** Caller budget cap. */
@@ -190,6 +207,8 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
   return {
     hostIds: hosts.length > 0 ? hosts : undefined,
     timeoutMs: settings.timeoutMs,
+    fetchFormat: settings.fetchFormat,
+    fetchMaxLength: settings.fetchMaxLength,
     proxy: proxy.length > 0 ? proxy : undefined,
     limit,
     wait: settings.wait,
