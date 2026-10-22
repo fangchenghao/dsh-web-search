@@ -10,7 +10,7 @@
  * @module dsh-web-search-bing
  */
 import { Config, resolveConfig } from './config.ts';
-import type { PluginConfig } from './config.ts';
+import type { ConfigInput, PluginConfig } from './config.ts';
 import { search } from './engines.ts';
 import { SearchCache } from './cache.ts';
 import { EngineHealth } from './health.ts';
@@ -61,20 +61,26 @@ export type ApplyConfig = PluginConfig;
 /**
  * Register the search provider.
  * @param ctx - plugin context carrying the `web` service.
- * @param config - the validated configuration section.
+ * @param config - the validated configuration section: volatile fields arrive as
+ * live references the Loader updates in place, so the section is read again for
+ * every search instead of being frozen at mount time.
  */
 export function apply(ctx: PluginContext, config: unknown = {}): void {
-  const resolved = resolveConfig(config as PluginConfig, undefined);
+  const section = (config ?? {}) as ConfigInput;
+  const mounted = resolveConfig(section, undefined);
   // One cache and one health tracker per mounted plugin, so a config change
   // through a restart starts from a clean slate instead of inheriting the
   // cooldowns of a previous instance.
-  const cache = new SearchCache({ ttlMs: resolved.cacheTtlMs, maxEntries: resolved.cacheEntries });
-  const health = new EngineHealth({ baseCooldownMs: resolved.baseCooldownMs, maxCooldownMs: resolved.maxCooldownMs });
+  const cache = new SearchCache({ ttlMs: mounted.cacheTtlMs, maxEntries: mounted.cacheEntries });
+  const health = new EngineHealth({ baseCooldownMs: mounted.baseCooldownMs, maxCooldownMs: mounted.maxCooldownMs });
 
   ctx.web.registerSearchProvider({
     id: PROVIDER_ID,
     available: () => true,
     async search(request: SearchRequest, signal?: AbortSignal): Promise<ProviderResult> {
+      // A Settings commit only mutates the existing references; reading the
+      // section here is what makes the edit apply without a restart.
+      const resolved = resolveConfig(section, undefined);
       const query = request.query;
       if (typeof query !== 'string' || query.trim().length === 0) {
         throw new Error('web search requires a non-empty query');
@@ -110,9 +116,9 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
   ctx.web.registerFetchProvider(
     createFetchProvider({
       id: FETCH_PROVIDER_ID,
-      timeoutMs: resolved.timeoutMs,
-      ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
-      ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
+      timeoutMs: mounted.timeoutMs,
+      ...(mounted.proxy === undefined ? {} : { proxy: mounted.proxy }),
+      ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
     }),
   );
 }

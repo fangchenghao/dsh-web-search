@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.0
+
+### Added
+- **The settings form works.** All sixteen fields are live-editable from
+  Settings, because each one is marked `.volatile()` and the plugin reads the
+  current value out of the holder the schema hands it.
+
+### Fixed
+- **`resolveConfig` validated an already-parsed config.** The Loader validates
+  a row's config once and hands `apply` the parsed result, in which every
+  volatile field is a `{ get }` holder. Running that parsed value back through
+  `Config()` re-validated the holders as values and threw
+  `$.timeoutMs expected number but got [object Object]`, so the plugin died
+  inside `apply` — which the Host reports as "1 entry did not activate". The
+  previous three attempts all failed on this same line, which is why marking
+  fields, attaching `Config` to the runtime and re-installing each looked
+  plausible and each changed nothing.
+- Search re-reads the configuration on every call, so a volatile-only change
+  from Settings takes effect without remounting the plugin.
+
 All notable changes to `dsh-web-search-bing` are recorded here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

@@ -7,6 +7,16 @@
  * also carries a description, because the same schema is what a settings
  * surface renders its fields from.
  *
+ * Every field is `.volatile()`: `dsh-settings` serves a namespace only when
+ * {@link Config} holds at least one volatile field, and a volatile field is
+ * what the Settings page can write without remounting the plugin. A marked
+ * array is not special — it resolves to a live reference wrapping the array,
+ * whose *JSON* form is `{}`; `plainConfig` unwraps it before the form is
+ * rendered, so the list fields survive the round trip. See
+ * {@link resolveConfig} for the one rule the marks impose on the reader: the
+ * Loader hands a marked field over as a live `{ get }` reference, never as the
+ * value.
+ *
  * @module dsh-web-search-bing/config
  */
 import z from '@deepseek-ai/schemastery';
@@ -17,41 +27,76 @@ export const Config = z.object({
   hosts: z
     .array(z.string())
     .default([])
-    .description('Restrict the run to these engine ids (empty means every engine).'),
-  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.'),
+    .description('Restrict the run to these engine ids (empty means every engine).')
+    .volatile(),
+  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.').volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
-    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.'),
+    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.').volatile(),
   proxy: z
     .string()
     .default('')
-    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.'),
-  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.'),
-  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.'),
+    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.').volatile(),
+  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.').volatile(),
+  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.').volatile(),
   authorityDomains: z
     .array(z.string())
     .default([])
-    .description('Extra domains that earn the authority boost, on top of the built-in list.'),
-  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.'),
-  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.'),
-  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.'),
-  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.'),
-  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.'),
+    .description('Extra domains that earn the authority boost, on top of the built-in list.')
+    .volatile(),
+  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.').volatile(),
+  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.').volatile(),
+  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.').volatile(),
+  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.').volatile(),
+  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.').volatile(),
   anysearchApiKey: z
     .string()
     .default('')
-    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.'),
+    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.').volatile(),
   anysearchDomain: z
     .string()
     .default('')
-    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.'),
-  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.'),
-  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.'),
+    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.').volatile(),
+  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.').volatile(),
+  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.').volatile(),
 });
 
-/** The resolved configuration object handed to `apply`. */
+/** What the schema resolves a field to: a live reference, not the value. */
+export interface LiveRef<T> {
+  /** @returns the value the Loader's last commit for this field holds. */
+  get: () => T;
+}
+
+/** The plain value behind a schema field. */
+type Plain<T> = T extends LiveRef<infer V> ? V : T;
+
+/** The validated section, with volatile fields still wrapped. */
 export type PluginConfig = ReturnType<typeof Config>;
+
+/** The section with every live reference read out on demand. */
+export type PlainConfig = { [K in keyof PluginConfig]: Plain<PluginConfig[K]> };
+
+/**
+ * A config section as it can arrive here: the Loader's resolved object (volatile
+ * fields are live references), a partial plain object from a test or a
+ * hand-edited composition, or the patch's raw values.
+ */
+export type ConfigInput = {
+  readonly [K in keyof PluginConfig]?: Plain<PluginConfig[K]> | PluginConfig[K];
+};
+
+/**
+ * Read one field, whichever shape it arrived in.
+ * @param field - a live reference, a plain value, or nothing.
+ * @param fallback - value to use when the field is absent.
+ * @returns the current plain value.
+ */
+function read<T>(field: Plain<T> | LiveRef<Plain<T>> | undefined, fallback: Plain<T>): Plain<T> {
+  const holder = field as LiveRef<Plain<T>> | undefined;
+  const value = typeof holder?.get === 'function' ? holder.get() : (field as Plain<T> | undefined);
+  return value === undefined ? fallback : value;
+}
 
 /** Configuration normalised for the engine layer. */
 export interface ResolvedConfig {
@@ -83,17 +128,35 @@ export interface ResolvedConfig {
 
 /**
  * Normalise the validated config into the shape the engine layer consumes.
- * @param config - the schema-validated plugin config.
+ *
+ * The Loader already ran {@link Config} over the patch values through
+ * `Config['~standard'].validate` (`@deepseek-ai/cordis` `resolveConfig`), and
+ * that call resolves every `.volatile()` field to a live `{ get }` reference.
+ * Feeding that object back into the schema would hand a `{ get }` to the
+ * field's own validator — `$.timeoutMs expected number but got [object Object]`
+ * — so the values are read out first, validated, and then the caller's
+ * references win: a Settings commit mutates them in place
+ * (`cordis-plugin-loader` `Entry._commitVolatile`), which is what makes an
+ * edit reach a running plugin.
+ *
+ * @param config - the config section, resolved by the Loader or raw.
  * @param callLimit - the caller's own budget, used when the config sets none.
  * @returns the normalised configuration.
  */
-export function resolveConfig(config: PluginConfig | Readonly<Record<string, unknown>>, callLimit: number | undefined): ResolvedConfig {
-  // The loader validates a row's config before activation, but this function is
-  // also reachable from the settings card and from a hand-edited composition,
-  // where the value can be a partial object. Running it through the schema first
-  // makes the defaults apply instead of dereferencing an absent key.
-  const settings = Config(config as PluginConfig);
-  const hosts = settings.hosts.filter((id) => id.trim().length > 0);
+export function resolveConfig(config: ConfigInput | undefined, callLimit: number | undefined): ResolvedConfig {
+  const supplied = (config ?? {}) as Readonly<Record<string, unknown>>;
+  const plain = Object.fromEntries(
+    Object.entries(supplied).map(([key, value]) => [key, read(value as never, undefined)]),
+  );
+  const validated = Config(plain as unknown as Parameters<typeof Config>[0]) as unknown as PluginConfig;
+  const keys = Object.keys(validated) as (keyof PluginConfig)[];
+  const settings = Object.fromEntries(
+    keys.map((key) => [key, read(supplied[key], read(validated[key] as never, undefined))]),
+  ) as unknown as PlainConfig;
+
+  // A volatile reference hands out a frozen snapshot, so the two list fields
+  // are copied before they leave: a caller may sort or splice what it gets.
+  const hosts = [...settings.hosts].filter((id) => id.trim().length > 0);
   const proxy = settings.proxy.trim();
   const limit = Math.min(callLimit ?? settings.limit, settings.limit);
   return {
@@ -106,7 +169,7 @@ export function resolveConfig(config: PluginConfig | Readonly<Record<string, unk
     anysearchDomain: settings.anysearchDomain.trim(),
     rank: {
       rrfConstant: settings.rrfConstant,
-      ...(settings.authorityDomains.length > 0 ? { authorityDomains: settings.authorityDomains } : {}),
+      ...(settings.authorityDomains.length > 0 ? { authorityDomains: [...settings.authorityDomains] } : {}),
       authorityBoost: settings.authorityBoost,
       freshnessBoost: settings.freshnessBoost,
       freshnessDays: settings.freshnessDays,
