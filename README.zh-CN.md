@@ -746,7 +746,7 @@ read_page 调用
 
 返回：`url`、`content`（这一段正文）、`offset`、`nextOffset`（下次该传的 offset；读完为 `null`）、`totalLength`（整页正文长度）、`truncated`（来源本身是否被截断：2,000,000 字符安全上限或传输层截断）、`chunk`（`index` 从 1 开始，`count` 按本次 `maxLength` 估算）、`failures`（抓取失败，形状与 `domain_search` / `search_many` 相同）。
 
-缓存：成功的整页正文按「URL + 输出格式 + 影响抓取的设置」缓存，最多 8 页，按最久未用淘汰；因此一页分几段读也只抓一次，只有换格式或改代理、超时、渲染设置才会重新抓。失败不缓存。`content` 里不含「还剩多少字符」那行提示，所以各段 `content` 直接拼接就是完整正文。
+缓存：成功的整页正文按「URL + 输出格式 + 影响抓取的设置」缓存，最多 8 页，按最久未用淘汰；因此一页分几段读也只抓一次，只有换格式或改代理、超时、渲染设置、AnySearch key 才会重新抓。失败不缓存。`content` 里不含「还剩多少字符」那行提示，所以各段 `content` 直接拼接就是完整正文。
 
 边界：`offset` 超过 `totalLength` 直接报错；`offset === totalLength` 视为读完，返回空 `content` 与 `nextOffset: null`；非 http/https 报错；网络、HTTP 状态或拦截失败以 `failures` 返回，不抛给宿主；调用方取消仍然抛出。切片按 JavaScript 字符串的 code unit 计数，切点落在代理对中间时回退一个 code unit，`nextOffset` 跟着回退后的边界走。
 

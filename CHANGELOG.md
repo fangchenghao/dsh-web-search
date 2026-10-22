@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.1
+
+### Documentation
+- `read_page`'s page cache is keyed by URL, output format and the fetch settings
+  that shape the result — including the AnySearch key. The READMEs now say so,
+  and the test count matches what the suite actually reports.
+
 ## 0.13.0
 
 ### Added
