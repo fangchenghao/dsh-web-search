@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **`domain_search`: key-free vertical search for packages, papers, code, Q&A
+  and reference material.** Eight credential-free adapters — GitHub
+  repositories, npm, PyPI (exact package name, since PyPI has no public search
+  API), arXiv, Wikipedia (zh for CJK queries, en otherwise), Hacker News,
+  Stack Exchange and crates.io — run concurrently, interleave by rank and merge
+  into the same `{ url, title, snippet, publishedAt }` shape `web_search`
+  returns. One source failing, timing out or answering HTTP 500 is reported as
+  a failure line and never blocks the others; every request carries a
+  User-Agent and its own deadline.
+- Three settings fields, all `.volatile()`: `domainSources` (enabled adapters),
+  `domainLimit` (results per source, default 5) and `domainTimeoutMs` (per-source
+  deadline, default 8000 ms). The dedicated-sources group is editable from the
+  Settings page.
+- The tool registers through the host's real `ToolRuntime.register(definition)`
+  API, read with `ctx.get('tools')` rather than `inject` so a deployment without
+  a tool registry still mounts the plugin and keeps `web_search`. If another
+  plugin owns `domain_search`, it registers as `web_domain_search`.
+- `scripts/verify-tool-registration.mjs` proves the definition against a real
+  `ToolRuntime`; `scripts/smoke-verticals.mjs` is the live, non-CI smoke.
+- Offline fixtures and tests for all eight parsers: normal and empty payloads,
+  HTTP 500, timeout on an injected fetch, and single-source failure isolation.
+
 ## 0.10.0
 
 ### Added

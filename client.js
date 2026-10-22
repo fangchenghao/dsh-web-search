@@ -2,7 +2,7 @@
  * Browser half of `dsh-web-search-bing`.
  *
  * Registers one Settings page into the Settings surface's `settings.section`
- * slot, so this plugin's 14 configuration keys can be edited in the GUI instead
+ * slot, so this plugin's 19 configuration keys can be edited in the GUI instead
  * of the profile's `cordis.patch.yml`. The page reads and writes the plugin's
  * Loader entry (`web-search-bing`) through the shared `configForms` service,
  * which is the same path the shipped settings pages use.
@@ -52,10 +52,11 @@
           // English copy. Every label the page renders lives here.
           var en = {
             title: 'Web search (Bing)',
-            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache and cooldowns.',
+            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources.',
             'group.engines': 'Engines and transport',
             'group.ranking': 'Results and ranking',
             'group.cache': 'Cache and cooldowns',
+            'group.domain': 'Dedicated sources',
             'wait.auto': 'Auto (query language)',
             'wait.all': 'All engines',
             'wait.fast': 'Fastest answer',
@@ -100,16 +101,23 @@
             'hint.baseCooldownMs': 'How long an engine rests after it reports throttling (ms)',
             'field.maxCooldownMs': 'Max cooldown (ms)',
             'hint.maxCooldownMs': 'Ceiling for repeated throttling (ms); rarely worth changing',
+            'field.domainSources': 'Dedicated sources',
+            'hint.domainSources': 'github, npm, pypi, arxiv, wikipedia, hn, stackexchange, crates; empty means all eight',
+            'field.domainLimit': 'Results per source',
+            'hint.domainLimit': 'How many results each dedicated source returns (1-20); 5 is a sane default',
+            'field.domainTimeoutMs': 'Source wait limit (ms)',
+            'hint.domainTimeoutMs': 'How long one dedicated source may take; 8000 normally, 15000 on a slow network',
             invalidNumber: 'Enter a number within the allowed range, or leave blank for the default.'
                     };
 
           // Simplified Chinese copy.
           var zh = {
             title: '网页搜索（Bing）',
-            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存与冷却。',
+            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。',
             'group.engines': '引擎与传输',
             'group.ranking': '结果与排序',
             'group.cache': '缓存与冷却',
+            'group.domain': '专用检索',
             'wait.auto': '自动（按提问语言）',
             'wait.all': '等待全部引擎',
             'wait.fast': '最快回答',
@@ -154,6 +162,12 @@
             'hint.baseCooldownMs': '某个引擎说太频繁后先歇多久（毫秒）；默认 5 分钟即可',
             'field.maxCooldownMs': '歇息上限',
             'hint.maxCooldownMs': '反复被拒时歇息时间的上限（毫秒）；一般不用改',
+            'field.domainSources': '默认查哪些专用源',
+            'hint.domainSources': 'github、npm、pypi、arxiv、wikipedia、hn、stackexchange、crates；留空查全部',
+            'field.domainLimit': '每个源返回几条',
+            'hint.domainLimit': '每个专用源最多返回几条（1-20）；默认 5 条即可',
+            'field.domainTimeoutMs': '每个源等待上限',
+            'hint.domainTimeoutMs': '单个专用源最多等多久（毫秒）；平时 8000，网络慢可加到 15000',
             invalidNumber: '请填写允许范围内的数字；留空表示使用默认值。'
                     };
 
@@ -174,11 +188,14 @@
             { key: 'cacheTtlMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'cacheEntries', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'baseCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
-            { key: 'maxCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 }
+            { key: 'maxCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
+            { key: 'domainSources', group: 'domain', kind: 'list' },
+            { key: 'domainLimit', group: 'domain', kind: 'number', integer: true, min: 1, max: 20 },
+            { key: 'domainTimeoutMs', group: 'domain', kind: 'number', integer: true, min: 500 }
           ];
 
           /** Groups in render order. */
-          var GROUPS = ['engines', 'ranking', 'cache'].map(function (group) {
+          var GROUPS = ['engines', 'ranking', 'cache', 'domain'].map(function (group) {
             return { key: group, fields: FIELDS.filter(function (field) { return field.group === group; }) };
           });
 
@@ -314,7 +331,7 @@
               var field = FIELDS[i];
               var value = values === undefined ? undefined : values[field.key];
               draft[field.key] = field.kind === 'list'
-                ? (Array.isArray(value) ? value.join(', ') : '')
+                ? (Array.isArray(value) ? value.join(', ') : (typeof value === 'string' ? value : ''))
                 : (value === undefined || value === null ? '' : String(value));
             }
             return draft;

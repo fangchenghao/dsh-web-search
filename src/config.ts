@@ -21,6 +21,7 @@
  */
 import z from '@deepseek-ai/schemastery';
 import type { RankOptions, WaitPolicy } from './types.ts';
+import { VERTICAL_IDS, isVerticalId } from './verticals.ts';
 
 /** Schema of the plugin's configuration section. */
 export const Config = z.object({
@@ -60,6 +61,13 @@ export const Config = z.object({
     .description('只搜某一类专业内容（如 finance 财经、academic 学术、code 代码）。要专查某类才填；日常搜索留空。').volatile(),
   baseCooldownMs: z.natural().default(300000).description('搜索引擎说“你查得太频繁了”后，先歇多久（毫秒）。歇太久会少一个引擎，太短易被再拒；保持 300000（5 分钟）即可。').volatile(),
   maxCooldownMs: z.natural().default(1800000).description('它反复被拒时，最长让它歇多久（毫秒），也就是等待一步步加长的封顶值。一般不用改；保持 1800000（30 分钟）即可。').volatile(),
+  domainSources: z
+    .union([z.array(z.string()), z.string()])
+    .default([...VERTICAL_IDS])
+    .description('默认查哪些专用源，逗号分隔；留空表示 github、npm 等全部八个源。')
+    .volatile(),
+  domainLimit: z.natural().min(1).max(20).default(5).description('domain_search 一次最多返回几条（1-20）；默认 5 条，想多看可调到 10。').volatile(),
+  domainTimeoutMs: z.natural().min(500).default(8000).description('每个专用源最多等多久（毫秒）；网络慢可加到 15000，平时 8000 即可。').volatile(),
 });
 
 /** What the schema resolves a field to: a live reference, not the value. */
@@ -124,6 +132,12 @@ export interface ResolvedConfig {
   baseCooldownMs: number;
   /** Cooldown ceiling in milliseconds. */
   maxCooldownMs: number;
+  /** Vertical sources `domain_search` queries by default. */
+  domainSourceIds: string[];
+  /** Default result budget per vertical source. */
+  domainLimit: number;
+  /** Per-source deadline for vertical requests. */
+  domainTimeoutMs: number;
 }
 
 /**
@@ -154,9 +168,16 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     keys.map((key) => [key, read(supplied[key], read(validated[key] as never, undefined))]),
   ) as unknown as PlainConfig;
 
-  // A volatile reference hands out a frozen snapshot, so the two list fields
-  // are copied before they leave: a caller may sort or splice what it gets.
+  // A volatile reference hands out a frozen snapshot, so the list fields are
+  // copied before they leave: a caller may sort or splice what it gets.
   const hosts = [...settings.hosts].filter((id) => id.trim().length > 0);
+  // The field accepts an array or the comma separated form the Settings card
+  // writes; both normalise to the ids the tool understands.
+  const rawDomainSources = settings.domainSources;
+  const domainList = Array.isArray(rawDomainSources)
+    ? rawDomainSources
+    : String(rawDomainSources).split(/[\s,]+/);
+  const domainSources = domainList.map((id) => id.trim()).filter(isVerticalId);
   const proxy = settings.proxy.trim();
   const limit = Math.min(callLimit ?? settings.limit, settings.limit);
   return {
@@ -167,6 +188,9 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     wait: settings.wait,
     anysearchApiKey: settings.anysearchApiKey.trim(),
     anysearchDomain: settings.anysearchDomain.trim(),
+    domainSourceIds: domainSources.length > 0 ? domainSources : [...VERTICAL_IDS],
+    domainLimit: settings.domainLimit,
+    domainTimeoutMs: settings.domainTimeoutMs,
     rank: {
       rrfConstant: settings.rrfConstant,
       ...(settings.authorityDomains.length > 0 ? { authorityDomains: [...settings.authorityDomains] } : {}),

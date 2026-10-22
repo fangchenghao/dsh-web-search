@@ -91,9 +91,30 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
   assert.equal(marked.length, Object.keys(fields).length, 'every field must be editable, or the served form disagrees with the card');
   assert.deepEqual(marked, [
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
-    'cacheEntries', 'cacheTtlMs', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
-    'maxCooldownMs', 'proxy', 'rrfConstant', 'timeoutMs', 'wait',
+    'cacheEntries', 'cacheTtlMs', 'domainLimit', 'domainSources', 'domainTimeoutMs',
+    'freshnessBoost', 'freshnessDays', 'hosts', 'limit', 'maxCooldownMs', 'proxy', 'rrfConstant',
+    'timeoutMs', 'wait',
   ]);
+});
+
+test('the vertical defaults are delivered without an edit', () => {
+  const resolved = resolveConfig({}, undefined);
+  assert.equal(resolved.domainLimit, 5);
+  assert.equal(resolved.domainTimeoutMs, 8000);
+  assert.deepEqual(resolved.domainSourceIds, [
+    'github', 'npm', 'pypi', 'arxiv', 'wikipedia', 'hn', 'stackexchange', 'crates',
+  ]);
+  // Through the Loader the union field is a live reference whose get() is the
+  // array the Settings form and the tool both need.
+  const handed = loaderResolve({});
+  const holder = handed.domainSources as { get?: () => string[] } | undefined;
+  assert.equal(typeof holder?.get, 'function', 'domainSources must arrive as a live reference');
+  assert.deepEqual(holder?.get(), resolved.domainSourceIds);
+  // A typo is ignored rather than crashing the tool; a named source narrows it.
+  assert.deepEqual(resolveConfig({ domainSources: ['github', 'nope'] } as ConfigInput, undefined).domainSourceIds, ['github']);
+  assert.deepEqual(resolveConfig({ domainSources: ['github', 'crates'] } as ConfigInput, undefined).domainSourceIds, ['github', 'crates']);
+  // The patch may carry the same comma separated form the Settings card writes.
+  assert.deepEqual(resolveConfig({ domainSources: 'github, crates' } as ConfigInput, undefined).domainSourceIds, ['github', 'crates']);
 });
 
 test('a marked array survives the handoff and its value is a real array', () => {

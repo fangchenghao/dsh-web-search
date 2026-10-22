@@ -16,9 +16,11 @@ import { SearchCache } from './cache.ts';
 import { EngineHealth } from './health.ts';
 import { createFetchProvider } from './fetch.ts';
 import type { FetchProvider } from './fetch.ts';
+import { registerDomainTool } from './domain-tool.ts';
+import type { DomainToolSettings, ToolRegistryLike } from './domain-tool.ts';
 import type { Source } from './types.ts';
 
-export const name = 'dsh-web-search-bing';
+export const name = 'dsh-web-search';
 
 /** The `ctx.web` service this plugin registers a search provider with. */
 export const inject = ['web'];
@@ -53,6 +55,45 @@ export interface PluginContext {
     registerSearchProvider: (provider: SearchProvider) => void;
     registerFetchProvider: (provider: FetchProvider) => void;
   };
+  /**
+   * Cordis's inject-free service lookup. `tools` is read through this rather
+   * than added to {@link inject} on purpose: a hard `tools` dependency would
+   * stop the whole plugin (including `web_search`) from mounting in a
+   * deployment that has no tool registry.
+   */
+  get?: (name: string) => unknown;
+  /** Fallback for tests and hosts that expose the registry as a property. */
+  tools?: unknown;
+}
+
+/**
+ * Read the optional tool registry without requiring it.
+ * @param ctx - the plugin context.
+ * @returns the registry, or `undefined` when this deployment has none.
+ */
+function readToolRegistry(ctx: PluginContext): ToolRegistryLike | undefined {
+  let candidate: unknown;
+  try {
+    const found = typeof ctx.get === 'function' ? ctx.get('tools') : undefined;
+    // Cordis throws on an un-injected service property, so even the fallback
+    // read is guarded: a missing `tools` is a supported deployment, not an error.
+    candidate = found ?? ctx.tools;
+  } catch {
+    return undefined;
+  }
+  if (typeof candidate !== 'object' || candidate === null) return undefined;
+  return typeof (candidate as { register?: unknown }).register === 'function'
+    ? (candidate as ToolRegistryLike)
+    : undefined;
+}
+
+/** Report a skipped tool registration without breaking plugin loading. */
+function warnTool(message: string): void {
+  try {
+    console.warn(`[dsh-web-search-bing] ${message}`);
+  } catch {
+    // Logging must never be the reason a plugin fails to mount.
+  }
 }
 
 /** Configuration as the loader hands it over, already schema-validated. */
@@ -121,6 +162,31 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
     }),
   );
+
+  // Optional half: `domain_search`. Fail-safe by construction — a deployment
+  // without `ctx.tools` still loads this plugin and keeps `web_search`; the
+  // registration path is the host's `ToolRuntime.register(definition)`.
+  try {
+    const tools = readToolRegistry(ctx);
+    if (tools !== undefined) {
+      registerDomainTool(
+        tools,
+        () => {
+          const live = resolveConfig(section, undefined);
+          const settings: DomainToolSettings = {
+            sourceIds: live.domainSourceIds,
+            limit: live.domainLimit,
+            timeoutMs: live.domainTimeoutMs,
+            ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
+          };
+          return settings;
+        },
+        { warn: warnTool },
+      );
+    }
+  } catch (error) {
+    warnTool(`domain_search skipped: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export { Config, resolveConfig } from './config.ts';
@@ -154,4 +220,28 @@ export {
 } from './parsers.ts';
 export { fuse, interleave, dedupe, mergeRegions } from './rank.ts';
 export { parseProxy, proxyFromEnv, resolveProxy, proxyGet } from './proxy.ts';
+export {
+  VERTICAL_IDS,
+  VERTICALS,
+  searchVerticals,
+  verticalById,
+  isVerticalId,
+  parseGithub,
+  parseNpm,
+  parsePypi,
+  parseArxiv,
+  parseWikipedia,
+  parseHn,
+  parseStackExchange,
+  parseCrates,
+} from './verticals.ts';
+export {
+  DOMAIN_TOOL_NAME,
+  DOMAIN_TOOL_FALLBACK_NAME,
+  createDomainToolDefinition,
+  registerDomainTool,
+  formatDomainValue,
+} from './domain-tool.ts';
+export type { VerticalId, VerticalSpec, VerticalOutcome, VerticalSearchOptions } from './verticals.ts';
+export type { DomainToolSettings, DomainToolValue, DomainToolDefinition, ToolRegistryLike } from './domain-tool.ts';
 export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, WaitPolicy } from './types.ts';

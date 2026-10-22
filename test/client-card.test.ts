@@ -16,11 +16,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-/** The fourteen configurable keys, in the order the page renders them. */
+/** The nineteen configurable keys, in the order the page renders them. */
 const KEYS = [
-  'hosts', 'wait', 'proxy', 'anysearchApiKey', 'anysearchDomain', 'limit', 'timeoutMs',
-  'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
+  'hosts', 'wait', 'timeoutMs', 'proxy', 'anysearchApiKey', 'anysearchDomain',
+  'limit', 'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
   'cacheTtlMs', 'cacheEntries', 'baseCooldownMs', 'maxCooldownMs',
+  'domainSources', 'domainLimit', 'domainTimeoutMs',
 ] as const;
 
 /** One rendered element, after function components have been expanded. */
@@ -95,6 +96,9 @@ function defaultValues(): Record<string, unknown> {
     cacheEntries: 100,
     baseCooldownMs: 300000,
     maxCooldownMs: 1800000,
+    domainSources: ['github', 'npm', 'pypi', 'arxiv', 'wikipedia', 'hn', 'stackexchange', 'crates'],
+    domainLimit: 5,
+    domainTimeoutMs: 8000,
   };
 }
 
