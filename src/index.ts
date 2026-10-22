@@ -118,6 +118,18 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
 }
 
 export { Config, resolveConfig } from './config.ts';
+
+/**
+ * The plugin as the Loader hands it to the Host.
+ *
+ * `dsh-settings` reads the config schema from `entry.fiber.runtime.Config`, and
+ * for a function-style plugin the runtime *is* that function — a named export is
+ * not reachable from it. Without this attachment the settings document drops the
+ * row before it ever looks at the schema, which is why the page stayed empty with
+ * a perfectly valid Config. Object-style plugins carry the schema as
+ * `static Config`; this is the function-style equivalent.
+ */
+export default Object.assign(apply, { Config });
 export { HOSTS, search } from './engines.ts';
 export { SearchCache, cacheKey } from './cache.ts';
 export { EngineHealth } from './health.ts';

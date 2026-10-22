@@ -31,6 +31,13 @@ The fetch half, and AnySearch's paid-tier capabilities.
 
 ### Fixed
 
+- **The settings page rendered nothing: the Host never saw the schema.**
+  `dsh-settings` reads a plugin's schema from `entry.fiber.runtime.Config`, and
+  for a function-style plugin the runtime *is* the `apply` function, so a named
+  `Config` export was unreachable: the settings document dropped the row before
+  it looked at the schema at all. The module now exports the plugin as
+  `Object.assign(apply, { Config })`, which is what object-style plugins get from
+  `static Config`. `test/plugin-entry.test.ts` pins the shape.
 - **The settings page rendered nothing: the configuration was not marked
   live-editable.** `dsh-settings` keeps a namespace only when
   `volatileForm(schema)` yields a form, and that helper keeps a namespace when a
