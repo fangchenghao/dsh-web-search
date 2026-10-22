@@ -1,4 +1,4 @@
-# @fangchenghao/dsh-web-search
+# @fffangchenghao/dsh-web-search
 
 **给 DeepSeek Harness 加一双「自己上网」的手：模型不用你贴链接，就能先搜索、再打开网页读正文。**
 
@@ -209,7 +209,7 @@ npm run build
 ```yaml
 - insert:
     - id: web-search-bing
-      name: @fangchenghao/dsh-web-search
+      name: @fffangchenghao/dsh-web-search
 ```
 
 如果你是通过 `pnpm install` / `link:` 装进 profile 的，这一行会自动生效，不用手抄。仓库里这份 patch 还带了一个空的 `config: {}`，作用是让设置页能发现这一行、显示卡片而不是「当前部署尚未提供此插件的设置」。
@@ -218,7 +218,7 @@ npm run build
 
 ```json
 "dependencies": {
-  "@fangchenghao/dsh-web-search": "link:/Users/dp/.dsh/plugins/dsh-web-search-bing"
+  "@fffangchenghao/dsh-web-search": "link:/Users/dp/.dsh/plugins/dsh-web-search-bing"
 }
 ```
 
@@ -253,7 +253,7 @@ pnpm install
 
 ```yaml
 - id: web-search-bing
-  name: @fangchenghao/dsh-web-search
+  name: @fffangchenghao/dsh-web-search
   config:
     limit: 8
     wait: auto

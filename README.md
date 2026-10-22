@@ -1,4 +1,4 @@
-# @fangchenghao/dsh-web-search
+# @fffangchenghao/dsh-web-search
 
 **Gives DeepSeek Harness a pair of hands for the web: the model can search, then open a page and read it, without you pasting links.**
 
@@ -209,7 +209,7 @@ The package ships its own `cordis.patch.yml`, and it is one insert:
 ```yaml
 - insert:
     - id: web-search-bing
-      name: @fangchenghao/dsh-web-search
+      name: @fffangchenghao/dsh-web-search
 ```
 
 If you installed the package into a profile with `pnpm install` or a `link:`, that row arrives automatically. The copy in this repository also carries an empty `config: {}`; its job is to keep the row discoverable so Settings renders a card instead of "this deployment does not provide settings for this plugin".
@@ -218,7 +218,7 @@ If the bundle is not in the profile yet, add it as a dependency of that profile'
 
 ```json
 "dependencies": {
-  "@fangchenghao/dsh-web-search": "link:/Users/dp/.dsh/plugins/dsh-web-search-bing"
+  "@fffangchenghao/dsh-web-search": "link:/Users/dp/.dsh/plugins/dsh-web-search-bing"
 }
 ```
 
@@ -253,7 +253,7 @@ Optionally, add a config row:
 
 ```yaml
 - id: web-search-bing
-  name: @fangchenghao/dsh-web-search
+  name: @fffangchenghao/dsh-web-search
   config:
     limit: 8
     wait: auto
