@@ -27,39 +27,39 @@ export const Config = z.object({
   hosts: z
     .array(z.string())
     .default([])
-    .description('引擎白名单：只运行列出的引擎 id，留空表示全部（如 anysearch、ddg-html、cn.bing）。数组字段，请在配置文件中编辑。')
+    .description('只启用列出的搜索引擎（如 anysearch、cn.bing），多个用逗号分隔；留空表示全部。不想限制就留空。')
     .volatile(),
-  timeoutMs: z.natural().min(500).default(15000).description('单个引擎的请求超时（毫秒）。').volatile(),
+  timeoutMs: z.natural().min(500).default(15000).description('每次向搜索引擎要结果，最多等它多久（毫秒，1000 = 1 秒）。网络慢可加到 20000；平时保持 15000 就行。').volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
-    .description('等待策略：auto 跟随查询语言，all 等全部引擎返回，fast 首个结果即返回。').volatile(),
+    .description('等结果等多久：auto 按提问语言自动决定，all 等所有搜索引擎答完，fast 谁先答完就用谁。不确定保持 auto。').volatile(),
   proxy: z
     .string()
     .default('')
-    .description('代理地址，例如 http://127.0.0.1:7890；留空则自动探测系统代理。').volatile(),
-  limit: z.natural().min(1).max(20).default(8).description('返回结果数上限，同时决定引擎之间的名额分配。').volatile(),
-  rrfConstant: z.natural().min(1).default(60).description('RRF 融合常数：越大越平均，越小越偏向各引擎的头部结果。').volatile(),
+    .description('上网中转站（代理）：替你转发请求的机器，如 http://127.0.0.1:7890；留空自动认系统代理，不懂就别填。').volatile(),
+  limit: z.natural().min(1).max(20).default(8).description('一次最多返回几条结果，也决定各搜索引擎分到几条。想多看可调到 10 到 20；一般保持 8。').volatile(),
+  rrfConstant: z.natural().min(1).default(60).description('多个搜索引擎结果的混合力度：调大更偏“只有一家推荐”的冷门链接，调小更像“大家都推荐的前几名”。不想微调就保持 60。').volatile(),
   authorityDomains: z
     .array(z.string())
     .default([])
-    .description('权威域名列表，命中后提升排名。数组字段，请在配置文件中编辑。')
+    .description('你认为更可信的网站名单（如 docs.python.org），命中会往前排。多个用逗号分隔；不填也没关系。')
     .volatile(),
-  authorityBoost: z.number().min(0).max(10).default(0.25).description('权威域名加成强度。').volatile(),
-  freshnessBoost: z.number().min(0).max(10).default(0.2).description('时效加成强度。').volatile(),
-  freshnessDays: z.natural().min(1).default(30).description('时效窗口（天），超出窗口的结果不享受时效加成。').volatile(),
-  cacheTtlMs: z.natural().default(600000).description('缓存有效期（毫秒）。').volatile(),
-  cacheEntries: z.natural().default(100).description('缓存条数上限（超出按最久未用淘汰）。').volatile(),
+  authorityBoost: z.number().min(0).max(10).default(0.25).description('上面那份网站名单能让结果往前排多少（0 到 10，0 = 不加强）。觉得好网站排得不够前就调大；不确定保持 0.25。').volatile(),
+  freshnessBoost: z.number().min(0).max(10).default(0.2).description('新发布的网页能额外往前排多少（0 到 10，0 = 不看新旧）。常查新闻可调到 0.5；不确定保持 0.2。').volatile(),
+  freshnessDays: z.natural().min(1).default(30).description('多新的网页才算新（单位：天）。查新闻可调小到 7，查资料可调大到 365；不确定保持 30。').volatile(),
+  cacheTtlMs: z.natural().default(600000).description('同一问题多久内复用上次结果（缓存，即存一份备用），毫秒。想早点看到新内容就调小；保持 600000（10 分钟）即可。').volatile(),
+  cacheEntries: z.natural().default(100).description('最多存多少条旧结果备用（缓存，即存起来省得重复查）。存满后先丢最久没用的；一般保持 100 即可。').volatile(),
   anysearchApiKey: z
     .string()
     .default('')
-    .description('AnySearch API Key：留空则匿名调用（速率较低）；有 key 时仅发送到 api.anysearch.com。').volatile(),
+    .description('AnySearch 通行证（API Key）：没有就留空，能用但慢；填了更稳且只发 api.anysearch.com。').volatile(),
   anysearchDomain: z
     .string()
     .default('')
-    .description('AnySearch 垂直域：finance / academic / security / legal / code，可带子域如 finance.us_stock；留空为通用搜索。').volatile(),
-  baseCooldownMs: z.natural().default(300000).description('触发限流后的基础冷却时间（毫秒）。').volatile(),
-  maxCooldownMs: z.natural().default(1800000).description('指数退避冷却的上限（毫秒）。').volatile(),
+    .description('只搜某一类专业内容（如 finance 财经、academic 学术、code 代码）。要专查某类才填；日常搜索留空。').volatile(),
+  baseCooldownMs: z.natural().default(300000).description('搜索引擎说“你查得太频繁了”后，先歇多久（毫秒）。歇太久会少一个引擎，太短易被再拒；保持 300000（5 分钟）即可。').volatile(),
+  maxCooldownMs: z.natural().default(1800000).description('它反复被拒时，最长让它歇多久（毫秒），也就是等待一步步加长的封顶值。一般不用改；保持 1800000（30 分钟）即可。').volatile(),
 });
 
 /** What the schema resolves a field to: a live reference, not the value. */
