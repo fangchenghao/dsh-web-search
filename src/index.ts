@@ -18,6 +18,8 @@ import { createFetchProvider } from './fetch.ts';
 import type { FetchProvider } from './fetch.ts';
 import { registerDomainTool } from './domain-tool.ts';
 import type { DomainToolSettings, ToolRegistryLike } from './domain-tool.ts';
+import { registerSearchManyTool } from './search-many.ts';
+import type { SearchManyOutcome, SearchManyRegistryLike } from './search-many.ts';
 import type { Source } from './types.ts';
 
 export const name = 'dsh-web-search';
@@ -64,6 +66,13 @@ export interface PluginContext {
   get?: (name: string) => unknown;
   /** Fallback for tests and hosts that expose the registry as a property. */
   tools?: unknown;
+  /**
+   * Cordis lifecycle hook. `effect` is the canonical registration; `on` is the
+   * older/test fallback. Both let the tool registration and the cache release
+   * their resources when the plugin is disposed.
+   */
+  effect?: (execute: () => (() => void) | void) => unknown;
+  on?: (event: string, listener: () => void) => unknown;
 }
 
 /**
@@ -96,6 +105,25 @@ function warnTool(message: string): void {
   }
 }
 
+/**
+ * Register a cleanup with the plugin lifecycle.
+ *
+ * `ctx.effect(() => cleanup)` is Cordis's ownership primitive; a host that
+ * predates it (or a test double) may only expose a `dispose` event, so that is
+ * the fallback. Losing the hook must not break mounting.
+ */
+function onDispose(ctx: PluginContext, cleanup: () => void): void {
+  try {
+    if (typeof ctx.effect === 'function') {
+      ctx.effect(() => cleanup);
+      return;
+    }
+    if (typeof ctx.on === 'function') ctx.on('dispose', cleanup);
+  } catch (error) {
+    warnTool(`dispose hook skipped: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 /** Configuration as the loader hands it over, already schema-validated. */
 export type ApplyConfig = PluginConfig;
 
@@ -112,16 +140,69 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
   // One cache and one health tracker per mounted plugin, so a config change
   // through a restart starts from a clean slate instead of inheriting the
   // cooldowns of a previous instance.
-  const cache = new SearchCache({ ttlMs: mounted.cacheTtlMs, maxEntries: mounted.cacheEntries });
+  const cache = new SearchCache({
+    // Read through on every use: a Settings edit must take effect without a
+    // remount, which is the whole point of marking these fields volatile.
+    ttlMs: () => resolveConfig(section, undefined).cacheTtlMs,
+    maxEntries: () => resolveConfig(section, undefined).cacheEntries,
+    ...(mounted.cachePersist
+      ? { persist: { ...(mounted.cacheFile === undefined ? {} : { file: mounted.cacheFile }) } }
+      : {}),
+  });
   const health = new EngineHealth({ baseCooldownMs: mounted.baseCooldownMs, maxCooldownMs: mounted.maxCooldownMs });
+
+  // The disk snapshot is flushed at plugin disposal; the cache also flushes on
+  // its own exit hook, so an abrupt process end keeps the newest state.
+  onDispose(ctx, () => cache.close());
+
+  /**
+   * Run one query through the same engine path as `web_search`.
+   *
+   * Reading `section` on every call is what makes a Settings commit visible
+   * without a restart. The configured limit is the hard ceiling: a caller may
+   * ask for fewer results, never for more.
+   */
+  const runQuery = async (
+    query: string,
+    requested: number | undefined,
+    signal?: AbortSignal,
+  ): Promise<SearchManyOutcome> => {
+    const resolved = resolveConfig(section, undefined);
+    if (typeof query !== 'string' || query.trim().length === 0) {
+      throw new Error('web search requires a non-empty query');
+    }
+    if (signal?.aborted === true) throw new Error('web search was cancelled');
+    const asked = typeof requested === 'number' && Number.isInteger(requested) && requested > 0
+      ? requested
+      : undefined;
+    const limit = Math.min(asked ?? resolved.limit, resolved.limit);
+    const { sources, failures } = await search(query, signal, {
+      limit,
+      wait: resolved.wait,
+      timeRange: resolved.timeRange,
+      timeoutMs: resolved.timeoutMs,
+      ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
+      ...(resolved.hostIds === undefined ? {} : { hostIds: resolved.hostIds }),
+      rank: resolved.rank,
+      ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
+      ...(resolved.anysearchDomain.length === 0 ? {} : { anysearchDomain: resolved.anysearchDomain }),
+      cache,
+      health,
+      ...(signal === undefined ? {} : { signal }),
+    });
+    return {
+      sources,
+      failures,
+      truncated: asked !== undefined && asked > resolved.limit,
+    };
+  };
 
   ctx.web.registerSearchProvider({
     id: PROVIDER_ID,
     available: () => true,
     async search(request: SearchRequest, signal?: AbortSignal): Promise<ProviderResult> {
       // A Settings commit only mutates the existing references; reading the
-      // section here is what makes the edit apply without a restart.
-      const resolved = resolveConfig(section, undefined);
+      // section inside `runQuery` is what makes the edit apply without a restart.
       const query = request.query;
       if (typeof query !== 'string' || query.trim().length === 0) {
         throw new Error('web search requires a non-empty query');
@@ -130,26 +211,11 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       const asked = typeof request.maxResults === 'number' && Number.isInteger(request.maxResults) && request.maxResults > 0
         ? request.maxResults
         : undefined;
-      const limit = Math.min(asked ?? resolved.limit, resolved.limit);
-      const { sources, failures } = await search(query, signal, {
-        limit,
-        wait: resolved.wait,
-        timeRange: resolved.timeRange,
-        timeoutMs: resolved.timeoutMs,
-        ...(resolved.proxy === undefined ? {} : { proxy: resolved.proxy }),
-        ...(resolved.hostIds === undefined ? {} : { hostIds: resolved.hostIds }),
-        rank: resolved.rank,
-        ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
-        ...(resolved.anysearchDomain.length === 0 ? {} : { anysearchDomain: resolved.anysearchDomain }),
-        cache,
-        health,
-        ...(signal === undefined ? {} : { signal }),
-      });
-      if (sources.length === 0) {
-        throw new Error(`no search engine returned results for ${JSON.stringify(query)} (${failures.join('; ')})`);
+      const outcome = await runQuery(query, asked, signal);
+      if (outcome.sources.length === 0) {
+        throw new Error(`no search engine returned results for ${JSON.stringify(query)} (${outcome.failures.join('; ')})`);
       }
-      if (sources.length <= limit) return { sources, truncated: false };
-      return { sources: sources.slice(0, limit), truncated: true };
+      return { sources: outcome.sources, truncated: outcome.truncated };
     },
   });
 
@@ -166,9 +232,10 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
     }),
   );
 
-  // Optional half: `domain_search`. Fail-safe by construction — a deployment
-  // without `ctx.tools` still loads this plugin and keeps `web_search`; the
-  // registration path is the host's `ToolRuntime.register(definition)`.
+  // Optional half: `domain_search` and `search_many`. Fail-safe by
+  // construction — a deployment without `ctx.tools` still loads this plugin and
+  // keeps `web_search`; the registration path is the host's
+  // `ToolRuntime.register(definition)`.
   try {
     const tools = readToolRegistry(ctx);
     if (tools !== undefined) {
@@ -186,9 +253,20 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         },
         { warn: warnTool },
       );
+
+      // Batch tool: same optional-registry path, same fail-safe mounting. The
+      // runner is the `web_search` path, so both tools share lookups and cache.
+      const batch = registerSearchManyTool(
+        tools as unknown as SearchManyRegistryLike,
+        (query, limit, signal) => runQuery(query, limit, signal),
+        { warn: warnTool },
+      );
+      if (batch !== undefined) {
+        onDispose(ctx, batch.dispose);
+      }
     }
   } catch (error) {
-    warnTool(`domain_search skipped: ${error instanceof Error ? error.message : String(error)}`);
+    warnTool(`optional tool registration skipped: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -210,6 +288,17 @@ export { Config, resolveConfig } from './config.ts';
 export default Object.assign(apply, { Config, inject });
 export { HOSTS, search } from './engines.ts';
 export { SearchCache, cacheKey } from './cache.ts';
+export type { CachePersistOptions, SearchCacheOptions } from './cache.ts';
+export {
+  CACHE_FILE_VERSION,
+  DEFAULT_CACHE_FILE_MAX_BYTES,
+  defaultCacheFile,
+  resolveCacheFile,
+  readCacheFile,
+  serializeCache,
+  writeCacheFile,
+} from './cache-persist.ts';
+export type { CacheFileIo, CacheWriteOptions, PersistedEntry, SerializedCache } from './cache-persist.ts';
 export { EngineHealth } from './health.ts';
 export { SearchError, parseRetryAfter } from './errors.ts';
 export {
@@ -257,4 +346,24 @@ export {
 } from './domain-tool.ts';
 export type { VerticalId, VerticalSpec, VerticalOutcome, VerticalSearchOptions } from './verticals.ts';
 export type { DomainToolSettings, DomainToolValue, DomainToolDefinition, ToolRegistryLike } from './domain-tool.ts';
+export {
+  SEARCH_MANY_TOOL_NAME,
+  SEARCH_MANY_FALLBACK_NAME,
+  SEARCH_MANY_CONCURRENCY,
+  SEARCH_MANY_DEFAULT_LIMIT,
+  createSearchManyDefinition,
+  registerSearchManyTool,
+  pickSearchManyToolName,
+  formatSearchManyValue,
+} from './search-many.ts';
+export type {
+  SearchManyDefinition,
+  SearchManyOutcome,
+  SearchManyRegistration,
+  SearchManyRegistryLike,
+  SearchManyResult,
+  SearchManyRunner,
+  SearchManySource,
+  SearchManyValue,
+} from './search-many.ts';
 export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, TimeRange, WaitPolicy } from './types.ts';

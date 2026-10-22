@@ -69,6 +69,16 @@ export const Config = z.object({
     .volatile(),
   cacheTtlMs: z.natural().default(600000).description('同一问题多久内复用上次结果（缓存，即存一份备用），毫秒。想早点看到新内容就调小；保持 600000（10 分钟）即可。').volatile(),
   cacheEntries: z.natural().default(100).description('最多存多少条旧结果备用（缓存，即存起来省得重复查）。存满后先丢最久没用的；一般保持 100 即可。').volatile(),
+  cachePersist: z
+    .boolean()
+    .default(true)
+    .description('是否把缓存保存到硬盘，重启后还能复用上次结果。默认开启（true）；不想留痕或磁盘只读时改成 false。')
+    .volatile(),
+  cacheFile: z
+    .string()
+    .default('')
+    .description('缓存文件放哪；留空用默认 ~/.dsh/cache/dsh-web-search/cache.json。一般不用填，换位置时再写绝对路径。')
+    .volatile(),
   anysearchApiKey: z
     .string()
     .default('')
@@ -152,6 +162,10 @@ export interface ResolvedConfig {
   cacheTtlMs: number;
   /** Cache capacity in entries. */
   cacheEntries: number;
+  /** Whether the cache snapshot is written to disk. */
+  cachePersist: boolean;
+  /** Custom snapshot path, or `undefined` for the default one. */
+  cacheFile: string | undefined;
   /** Base cooldown in milliseconds. */
   baseCooldownMs: number;
   /** Cooldown ceiling in milliseconds. */
@@ -203,6 +217,7 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     : String(rawDomainSources).split(/[\s,]+/);
   const domainSources = domainList.map((id) => id.trim()).filter(isVerticalId);
   const proxy = settings.proxy.trim();
+  const cacheFile = settings.cacheFile.trim();
   const limit = Math.min(callLimit ?? settings.limit, settings.limit);
   return {
     hostIds: hosts.length > 0 ? hosts : undefined,
@@ -227,6 +242,8 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     },
     cacheTtlMs: settings.cacheTtlMs,
     cacheEntries: settings.cacheEntries,
+    cachePersist: settings.cachePersist,
+    cacheFile: cacheFile.length > 0 ? cacheFile : undefined,
     baseCooldownMs: settings.baseCooldownMs,
     maxCooldownMs: settings.maxCooldownMs,
   };

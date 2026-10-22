@@ -165,3 +165,22 @@ test('cacheKey: engine order does not matter but every other field does', () => 
   assert.notEqual(key, cacheKey({ ...parts, engines: ['bing', 'ddg'] }));
   assert.notEqual(key, cacheKey({ ...parts, query: 'kubernetes service' }));
 });
+
+test('live readers make a Settings edit effective without a remount', () => {
+  let ttl = 10_000;
+  let max = 10;
+  let now = 0;
+  const cache = new SearchCache({ ttlMs: () => ttl, maxEntries: () => max }, () => now);
+  const row = [source('https://example.com/a')];
+  cache.set('k', row);
+  now = 20_000;
+  assert.equal(cache.get('k'), undefined, 'expired under the mounted TTL');
+  // The user raises the TTL on the Settings page; the next write must use it,
+  // because the cache asks for the value instead of remembering the mount one.
+  ttl = 600_000;
+  cache.set('k', row);
+  now = 60_000;
+  assert.equal(cache.get('k')?.length, 1, 'the raised TTL applies immediately');
+  max = 0;
+  assert.equal(cache.get('k'), undefined, 'a zero cap disables reads immediately');
+});

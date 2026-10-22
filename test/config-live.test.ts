@@ -97,7 +97,8 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
   assert.equal(marked.length, Object.keys(fields).length, 'every field must be editable, or the served form disagrees with the card');
   assert.deepEqual(marked, [
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
-    'cacheEntries', 'cacheTtlMs', 'domainLimit', 'domainSources', 'domainTimeoutMs',
+    'cacheEntries', 'cacheFile', 'cachePersist', 'cacheTtlMs',
+    'domainLimit', 'domainSources', 'domainTimeoutMs',
     'fetchFormat', 'fetchMaxLength', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
     'maxCooldownMs', 'proxy', 'rrfConstant', 'timeRange', 'timeoutMs', 'wait',
   ]);

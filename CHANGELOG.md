@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.12.0
+
+### Added
+- **Fetched pages come back as article Markdown**, not raw markup. Extraction
+  picks the article root, prunes page furniture, renders headings, lists, code
+  fences, tables, entities and absolute links, and cuts at `fetchMaxLength` with
+  a notice naming the original length. `fetchFormat` can return plain text.
+- **`search_many`** answers one to five queries in a single call with a
+  concurrency cap of three and per-query error isolation.
+- **The cache survives a restart.** A versioned snapshot keeps summaries only,
+  is written atomically, caps itself at 4 MiB with LRU eviction, and treats a
+  corrupt or unreadable file as an empty cache. `cachePersist` and `cacheFile`
+  control it.
+
+### Fixed
+- `cacheTtlMs`, `cacheEntries`, `cachePersist` and `cacheFile` are read live, so
+  a Settings edit takes effect without a remount, like every other volatile
+  field.
+
+### Known limits
+- The host fetch request carries only a url, so a page cannot be resumed at an
+  offset: raise `fetchMaxLength` or fetch a narrower page.
+- Two processes writing the same cache file is last-writer-wins.
+
 ## 0.11.0
 
 ### Added

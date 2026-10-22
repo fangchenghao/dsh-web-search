@@ -132,10 +132,13 @@ export interface RankOptions {
 
 /** Cache knobs. */
 export interface CacheOptions {
-  /** Entry lifetime in milliseconds. `0` disables the cache. */
-  ttlMs?: number;
-  /** Maximum retained entries; the least recently used entry is evicted. */
-  maxEntries?: number;
+  /**
+   * Entry lifetime in milliseconds. `0` disables the cache. A reader keeps
+   * Settings edits live without a remount.
+   */
+  ttlMs?: number | (() => number);
+  /** Maximum retained entries, or a reader for it; the least recently used goes. */
+  maxEntries?: number | (() => number);
 }
 
 /** Health knobs for the per-engine cooldown. */

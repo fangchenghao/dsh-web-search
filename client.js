@@ -104,6 +104,12 @@
             'hint.cacheTtlMs': 'How long an identical question reuses its cached answer (ms)',
             'field.cacheEntries': 'Cache size',
             'hint.cacheEntries': 'How many answers are remembered before the least recently used goes',
+            'field.cachePersist': 'Save cache to disk',
+            'hint.cachePersist': 'Keep recent answers across restarts; turn it off to stay memory-only',
+            'cachePersist.true': 'On (save to disk)',
+            'cachePersist.false': 'Off (memory only)',
+            'field.cacheFile': 'Cache file',
+            'hint.cacheFile': 'Empty uses ~/.dsh/cache/dsh-web-search/cache.json',
             'field.anysearchApiKey': 'AnySearch key',
             'hint.anysearchApiKey': 'Leave empty to stay anonymous at a lower rate limit; only sent to api.anysearch.com',
             'field.anysearchDomain': 'Vertical domain',
@@ -176,6 +182,12 @@
             'hint.cacheTtlMs': '同一问题复用旧结果多久（毫秒）；想更快见新内容就调小',
             'field.cacheEntries': '缓存条数上限',
             'hint.cacheEntries': '最多记住多少条旧结果，满了丢最久没用的',
+            'field.cachePersist': '缓存保存到磁盘',
+            'hint.cachePersist': '重启后仍复用最近结果；关闭则只在内存中保存',
+            'cachePersist.true': '开启（保存到磁盘）',
+            'cachePersist.false': '关闭（仅内存）',
+            'field.cacheFile': '缓存文件路径',
+            'hint.cacheFile': '留空使用 ~/.dsh/cache/dsh-web-search/cache.json',
             'field.anysearchApiKey': 'AnySearch 通行证',
             'hint.anysearchApiKey': '没有就留空，仍可用但速率较低；只发给 api.anysearch.com',
             'field.anysearchDomain': '专业领域',
@@ -212,6 +224,8 @@
             { key: 'timeRange', group: 'ranking', kind: 'select', options: ['off', 'day', 'week', 'month', 'year'] },
             { key: 'cacheTtlMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'cacheEntries', group: 'cache', kind: 'number', integer: true, min: 0 },
+            { key: 'cachePersist', group: 'cache', kind: 'select', options: ['true', 'false'], boolean: true },
+            { key: 'cacheFile', group: 'cache', kind: 'text' },
             { key: 'baseCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'maxCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'domainSources', group: 'domain', kind: 'list' },
@@ -379,8 +393,9 @@
               return { op: 'set', path: [key], value: list };
             }
             if (field.kind === 'select') {
-              if (raw === current) return null;
-              return raw === '' ? { op: 'unset', path: [key] } : { op: 'set', path: [key], value: raw };
+              var next = field.boolean === true ? raw === 'true' : raw;
+              if (next === current) return null;
+              return raw === '' ? { op: 'unset', path: [key] } : { op: 'set', path: [key], value: next };
             }
             if (field.kind === 'text') {
               var text = String(raw === undefined || raw === null ? '' : raw);

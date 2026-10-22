@@ -192,15 +192,16 @@ test('apply registers domain_search when the host exposes ctx.get("tools")', () 
   const { ctx, providers } = pluginContext(tools);
   assert.doesNotThrow(() => apply(ctx, {}));
   assert.equal(providers.length, 1, 'web_search is registered either way');
-  assert.equal(definitions.length, 1);
+  assert.equal(definitions.length, 2, 'domain_search and search_many share the optional registry');
   assert.equal(definitions[0]?.name, DOMAIN_TOOL_NAME);
+  assert.equal(definitions[1]?.name, 'search_many');
 });
 
 test('apply uses web_domain_search when another plugin owns the preferred name', () => {
   const { tools, definitions } = registry({ taken: true });
   const { ctx } = pluginContext(tools);
   apply(ctx, {});
-  assert.equal(definitions[0]?.name, DOMAIN_TOOL_FALLBACK_NAME);
+  assert.equal(definitions.find((definition) => definition.name === DOMAIN_TOOL_FALLBACK_NAME)?.name, DOMAIN_TOOL_FALLBACK_NAME);
 });
 
 test('a throwing tool registry never breaks plugin loading', () => {

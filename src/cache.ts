@@ -13,12 +13,35 @@
  * @module @fangchenghao/dsh-web-search/cache
  */
 import type { CacheOptions, Source, TimeRange } from './types.ts';
+import { readCacheFile, resolveCacheFile, writeCacheFile } from './cache-persist.ts';
+import type { CacheFileIo, PersistedEntry } from './cache-persist.ts';
 
 /** Default entry lifetime: ten minutes. */
 const DEFAULT_TTL_MS = 600_000;
 
 /** Default number of retained entries. */
 const DEFAULT_MAX_ENTRIES = 100;
+
+/** Default minimum gap between disk writes. */
+const DEFAULT_PERSIST_THROTTLE_MS = 2_000;
+
+/** Optional disk persistence, layered on top of the in-memory cache. */
+export interface CachePersistOptions {
+  /** Custom snapshot path; empty or absent uses `~/.dsh/cache/dsh-web-search/cache.json`. */
+  file?: string;
+  /** Serialised byte budget; the oldest entries are evicted to fit. */
+  maxBytes?: number;
+  /** Minimum gap between writes in milliseconds; defaults to two seconds. */
+  throttleMs?: number;
+  /** Filesystem seam, mainly for tests. */
+  io?: CacheFileIo;
+}
+
+/** Constructor options: {@link CacheOptions} plus optional persistence. */
+export interface SearchCacheOptions extends CacheOptions {
+  /** Persist the cache when present; absent keeps the cache purely in memory. */
+  persist?: CachePersistOptions;
+}
 
 /** The logical inputs that decide whether two searches may share an entry. */
 export interface CacheKeyParts {
@@ -99,22 +122,55 @@ function normaliseCount(value: number | undefined, fallback: number): number {
  */
 export class SearchCache {
   /** Entry lifetime in milliseconds; `0` disables the cache completely. */
-  private readonly ttlMs: number;
+  /** Live TTL reader: settings may change without a remount. */
+  private readonly ttlOf: () => number;
   /** Maximum retained entries; the oldest read is evicted first. */
-  private readonly maxEntries: number;
+  /** Live entry-cap reader: settings may change without a remount. */
+  private readonly maxOf: () => number;
   /** Injected clock, so tests never wait on real time. */
   private readonly now: () => number;
   /** Insertion order doubles as LRU order: the first key is the coldest. */
   private readonly entries = new Map<string, CacheEntry>();
+  /** Snapshot destination, or `undefined` for a purely in-memory cache. */
+  private readonly persistTo: { file: string; maxBytes?: number; io?: CacheFileIo } | undefined;
+  /** Minimum gap between writes. */
+  private readonly throttleMs: number;
+  /** Whether memory changed since the last successful write. */
+  private dirty = false;
+  /** Pending throttled flush. */
+  private timer: ReturnType<typeof setTimeout> | undefined;
 
   /**
-   * @param options - TTL and entry cap, both optional.
+   * @param options - TTL, entry cap and optional persistence.
    * @param now - clock override; defaults to `Date.now`.
    */
-  constructor(options: CacheOptions = {}, now?: () => number) {
-    this.ttlMs = normaliseDuration(options.ttlMs, DEFAULT_TTL_MS);
-    this.maxEntries = normaliseCount(options.maxEntries, DEFAULT_MAX_ENTRIES);
+  constructor(options: SearchCacheOptions = {}, now?: () => number) {
+    const ttlOption = options.ttlMs;
+    const maxOption = options.maxEntries;
+    this.ttlOf = () =>
+      normaliseDuration(typeof ttlOption === 'function' ? ttlOption() : ttlOption, DEFAULT_TTL_MS);
+    this.maxOf = () =>
+      normaliseCount(typeof maxOption === 'function' ? maxOption() : maxOption, DEFAULT_MAX_ENTRIES);
     this.now = now ?? Date.now;
+    this.throttleMs = normaliseDuration(options.persist?.throttleMs, DEFAULT_PERSIST_THROTTLE_MS);
+
+    const persist = options.persist;
+    if (persist !== undefined && this.ttlOf() > 0 && this.maxOf() > 0) {
+      const file = resolveCacheFile(persist.file);
+      // Startup restore is synchronous and fully contained: an unreadable or
+      // malformed snapshot simply yields an empty cache.
+      const loaded = readCacheFile(file, this.now(), this.maxOf(), persist.io);
+      for (const entry of loaded) {
+        this.entries.set(entry.key, { sources: entry.sources, expiresAt: entry.expiresAt });
+      }
+      this.persistTo = {
+        file,
+        ...(persist.maxBytes === undefined ? {} : { maxBytes: persist.maxBytes }),
+        ...(persist.io === undefined ? {} : { io: persist.io }),
+      };
+      liveCaches.add(this);
+      installExitHook();
+    }
   }
 
   /** Number of retained entries, including ones whose TTL already elapsed. */
@@ -131,11 +187,12 @@ export class SearchCache {
    * @returns a copy of the cached sources, or `undefined` on miss/expiry.
    */
   get(key: string): Source[] | undefined {
-    if (this.ttlMs === 0) return undefined;
+    if (this.ttlOf() === 0 || this.maxOf() === 0) return undefined;
     const entry = this.entries.get(key);
     if (entry === undefined) return undefined;
     if (this.now() >= entry.expiresAt) {
       this.entries.delete(key);
+      this.touch();
       return undefined;
     }
     // Re-insert to move the entry to the young end of the map.
@@ -152,21 +209,111 @@ export class SearchCache {
    * @param sources - the merged source list; copied before storage.
    */
   set(key: string, sources: Source[]): void {
-    if (this.ttlMs === 0 || this.maxEntries === 0) return;
+    const ttlMs = this.ttlOf();
+    const maxEntries = this.maxOf();
+    if (ttlMs === 0 || maxEntries === 0) return;
     this.entries.delete(key);
     this.entries.set(key, {
       sources: cloneSources(sources),
-      expiresAt: this.now() + this.ttlMs,
+      expiresAt: this.now() + ttlMs,
     });
-    while (this.entries.size > this.maxEntries) {
+    while (this.entries.size > maxEntries) {
       const oldest = this.entries.keys().next();
       if (oldest.done === true) break;
       this.entries.delete(oldest.value);
     }
+    this.touch();
+  }
+
+  /**
+   * Write the snapshot now, if there is anything to write.
+   *
+   * Writes are normally throttled and happen on a timer or at process exit;
+   * this is the deterministic seam tests use, and the call a shutdown path can
+   * make when it wants the newest state on disk immediately.
+   *
+   * @returns `true` when the file was replaced, `false` for "nothing to write"
+   * or a contained filesystem failure.
+   */
+  flush(): boolean {
+    if (this.persistTo === undefined) return false;
+    if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    }
+    if (!this.dirty) return false;
+    const entries: PersistedEntry[] = [];
+    for (const [key, entry] of this.entries) {
+      entries.push({ key, expiresAt: entry.expiresAt, sources: cloneSources(entry.sources) });
+    }
+    const written = writeCacheFile(this.persistTo.file, entries, this.now(), {
+      ...(this.persistTo.maxBytes === undefined ? {} : { maxBytes: this.persistTo.maxBytes }),
+      ...(this.persistTo.io === undefined ? {} : { io: this.persistTo.io }),
+    });
+    this.dirty = !written;
+    if (!written) this.schedule();
+    return written;
+  }
+
+  /** Stop the exit hook and flush whatever is still pending. */
+  close(): void {
+    this.flush();
+    if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    }
+    liveCaches.delete(this);
+    if (liveCaches.size === 0) removeExitHook();
   }
 
   /** Drop every entry. */
   clear(): void {
+    if (this.entries.size === 0) return;
     this.entries.clear();
+    this.touch();
   }
+
+  /** Mark the snapshot stale and arrange a throttled flush. */
+  private touch(): void {
+    if (this.persistTo === undefined) return;
+    this.dirty = true;
+    this.schedule();
+  }
+
+  /** Arm the single pending timer, if persistence is enabled. */
+  private schedule(): void {
+    if (this.persistTo === undefined || this.timer !== undefined) return;
+    this.timer = setTimeout(() => {
+      this.timer = undefined;
+      this.flush();
+    }, this.throttleMs);
+    // A pending cache flush must not keep a one-shot CLI process alive; the
+    // exit hook still writes it synchronously.
+    this.timer.unref();
+  }
+}
+
+/** Caches that still need an exit-time flush. */
+const liveCaches = new Set<SearchCache>();
+
+/** Set once the process-level hook is installed. */
+let exitHookInstalled = false;
+
+/** Flush every live cache; used only during process exit. */
+function flushLiveCaches(): void {
+  for (const cache of liveCaches) cache.flush();
+}
+
+/** Install one process-wide exit hook, lazily. */
+function installExitHook(): void {
+  if (exitHookInstalled) return;
+  exitHookInstalled = true;
+  process.once('exit', flushLiveCaches);
+}
+
+/** Remove the hook when no persisted cache remains. */
+function removeExitHook(): void {
+  if (!exitHookInstalled) return;
+  process.removeListener('exit', flushLiveCaches);
+  exitHookInstalled = false;
 }
