@@ -5,7 +5,7 @@
 - [English README](README.md)
 - [更新日志](CHANGELOG.md) · [设置页为什么不显示：四层判定链](docs/plugin-settings-form.md)
 
-> 当前版本 0.13.0。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
+> 最新版本与安装命令以 [npm 上的 latest](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search) 为准（这里不写死版本号，免得文档和发布不同步）。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
 
 ## 一句话说明
 

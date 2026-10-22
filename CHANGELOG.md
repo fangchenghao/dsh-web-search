@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.2
+
+### Documentation
+- The READMEs point at npm for the current version instead of repeating a number
+  that goes stale the moment a release is cut.
+
 ## 0.13.1
 
 ### Documentation

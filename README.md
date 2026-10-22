@@ -5,7 +5,7 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
-> Version 0.13.0. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> The latest version and install command live on [npm](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search); no version number is hard-coded here, so the docs cannot drift from the release. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
