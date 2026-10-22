@@ -239,8 +239,8 @@ Each line is the plain version first, the technical note second. The technical n
      *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
 
 14. **Every setting is editable in the UI.**
-     Twenty-six controls in five groups; a save takes effect on the next search, apart from the few the plugin reads once at mount.
-     *Technical: all twenty-six fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, while the fetch provider takes `proxy`, `timeoutMs`, `fetchFormat` and `fetchMaxLength` at mount; `renderJs` and `renderTimeoutMs` are re-read on every fetch; the cache wiring takes `cachePersist` and `cacheFile` there too.*
+     Twenty-six controls in five groups; a save takes effect on the next search, apart from `cachePersist` and `cacheFile`, which decide the cache wiring at mount.
+     *Technical: all twenty-six fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, `fetchFormat` and `fetchMaxLength` are resolved per request, `renderJs` and `renderTimeoutMs` per fetch; `proxy` and `timeoutMs` are taken at mount, and so is the cache wiring that `cachePersist` and `cacheFile` decide.*
 
 15. **Failures are explained, not silently empty.**
      When nothing succeeds, the error lists which engines were tried and why each one failed.
@@ -452,7 +452,7 @@ Only these situations are worth changing:
 
 Three things to keep in mind:
 
-- A save is immediate and applies to the next search, no restart — except the controls the plugin reads at mount (`fetchFormat`, `fetchMaxLength`, `cachePersist`, `cacheFile`), which need a restart.
+- A save is immediate and applies to the next search, no restart — except `cachePersist` and `cacheFile`, which decide the cache wiring when the plugin mounts.
 - **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order — and with persistence on, restarting DSH does not clear it. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
 - **`web_fetch` cannot continue from the middle**: it makes one request per URL, so if the tail is missing, raise `fetchMaxLength` or use `read_page` to continue from the break; fetching a narrower page still costs the least context.
 
@@ -563,7 +563,7 @@ Use `search_many`. One call carries one to five `queries`, runs three at a time,
 
 Three cases:
 
-- **Changed on the Settings page**: saved immediately and read on the next search, except `fetchFormat`, `fetchMaxLength`, `cachePersist` and `cacheFile`, which are read when the plugin mounts. But if you ask the same question again within ten minutes you may hit the cache and see no difference — try rephrasing; with persistence on, a restart does not clear the cache either.
+- **Changed on the Settings page**: saved immediately and read on the next search — `fetchFormat` and `fetchMaxLength` per request, `renderJs` and `renderTimeoutMs` per fetch; only `cachePersist` and `cacheFile` are read when the plugin mounts. But if you ask the same question again within ten minutes you may hit the cache and see no difference — try rephrasing; with persistence on, a restart does not clear the cache either.
 - **Changed the profile's `cordis.patch.yml`**: requires a full restart of the harness.
 - **Changed `src/*.ts`**: requires `npm run build` and then a restart. Source edits without a build still run the old code in `lib/`.
 
@@ -691,7 +691,7 @@ The conversion is dependency-free (`src/markdown.ts`): a tolerant tokenizer and 
 - Tables become Markdown tables; a table outside the chosen article root is dropped with the rest of the furniture.
 - The character budget applies **after** conversion: `truncateFetchText` cuts at `fetchMaxLength`, trims trailing whitespace, avoids splitting a surrogate pair, and appends `[truncated at 20000 chars; original length 40891 chars; the rest is not shown]`.
 - Measured on `docs.python.org/3/library/urllib.parse.html`: 119,614 characters of HTML → 40,891 characters of Markdown → 20,080 characters returned.
-- The provider is built with `fetchFormat` and `fetchMaxLength` at mount, so changing either on the Settings page needs a restart; search-side settings are re-read per call.
+- `fetchFormat` and `fetchMaxLength` are resolved on every request and `renderJs` / `renderTimeoutMs` on every fetch, so a Settings edit applies without a restart; only `proxy` and `timeoutMs` are fixed at mount, along with the cache wiring.
 - **`web_fetch` cannot resume**: the host's `WebFetchRequest` has exactly one field, `url` — no offset, no maxLength, no format, so every fetch starts at the top. The plugin's separate `read_page` tool fills that gap (see "The read_page pipeline"); without switching tools, the remedies are still raising `fetchMaxLength` or fetching a narrower page.
 
 ### The domain_search pipeline

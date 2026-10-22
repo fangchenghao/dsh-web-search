@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.3
+
+### Documentation
+- Both READMEs no longer claim that `fetchFormat` and `fetchMaxLength` need a
+  restart. They are resolved per request; only `cachePersist`, `cacheFile`,
+  `proxy` and `timeoutMs` are fixed when the plugin mounts.
+
 ## 0.13.2
 
 ### Documentation

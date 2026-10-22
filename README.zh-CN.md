@@ -452,7 +452,7 @@ pnpm install
 
 三个提醒：
 
-- 保存是即时的，下一次搜索就按新值走，不用重启——但插件挂载时才读的那几项例外（`fetchFormat`、`fetchMaxLength`、`cachePersist`、`cacheFile`），改它们要重启。
+- 保存是即时的，下一次搜索就按新值走，不用重启——只有 `cachePersist` 和 `cacheFile` 例外，它们决定缓存怎么接线，在插件挂载时读取。
 - 但**排序类的改动可能被缓存挡住**：缓存键里只有 `lead|wait|limit|引擎集合|时间窗|query`，没有排序参数。同一个问题十分钟内再问，拿到的还是旧顺序——开了持久化后，重启 DSH 也清不掉。换个问法，或者等十分钟。改时间窗会换一个键，所以不受旧缓存影响。
 - **`web_fetch` 不能从中间续读**：它对一个网址只发一次请求，尾巴缺了可以调大 `fetchMaxLength`，也可以用 `read_page` 从断点接着读；抓一个更窄的页面仍然最省上下文。
 
@@ -563,7 +563,7 @@ pnpm install
 
 分三种情况：
 
-- **在设置页改的**：保存即生效，但下一次搜索才读新值——`fetchFormat`、`fetchMaxLength`、`cachePersist` 和 `cacheFile` 例外，它们在插件挂载时读取。如果问的是同一个问题、十分钟内又问了一遍，可能命中了缓存，看起来像没变——换个问法试试；开了持久化后，重启也不会清掉缓存。
+- **在设置页改的**：保存即生效，下一次搜索就读新值；`fetchFormat`、`fetchMaxLength` 每次请求重新解析，`renderJs`、`renderTimeoutMs` 每次抓取重新解析，所以都不用重启——只有 `cachePersist` 和 `cacheFile` 在挂载时决定缓存接线。如果问的是同一个问题、十分钟内又问了一遍，可能命中了缓存，看起来像没变——换个问法试试；开了持久化后，重启也不会清掉缓存。
 - **改的是 profile 里的 `cordis.patch.yml`**：需要完全重启 Harness。
 - **改的是 `src/*.ts`**：需要 `npm run build` 再重启。只改源码不构建，跑的还是 `lib/` 里的旧代码。
 
@@ -691,7 +691,7 @@ Playwright 不在依赖里，也不在启动时导入：抓取提供方在第一
 - 表格转成 Markdown 表格；不在选定正文根里的表格会跟导航一起丢掉。
 - 字符预算在**转换之后**才生效：`truncateFetchText` 按 `fetchMaxLength` 切，去掉尾部空白，避免把代理对切成半个，并追加 `[truncated at 20000 chars; original length 40891 chars; the rest is not shown]`。
 - 实测 `docs.python.org/3/library/urllib.parse.html`：119,614 字符 HTML → 40,891 字符 Markdown → 实际返回 20,080 字符。
-- 抓取提供方在挂载时取走 `fetchFormat` 和 `fetchMaxLength`，所以这两项在设置页改完要重启；搜索侧的设置每次调用都重读。
+- `fetchFormat` 和 `fetchMaxLength` 每次请求重新解析、`renderJs` 和 `renderTimeoutMs` 每次抓取重新解析，设置页改完立即生效；`proxy`、`timeoutMs` 以及缓存接线在挂载时固定。
 - **`web_fetch` 不支持续读**：宿主的 `WebFetchRequest` 只有 `url` 一个字段，没有 offset、maxLength、format，所以每次抓取都从头开始。插件另外注册的 `read_page` 补上了这个缺口（见「read_page 的管道」）；不换工具时，办法仍然是调大 `fetchMaxLength`，或抓更窄的页面。
 
 ### domain_search 的管道
