@@ -17,41 +17,60 @@ export const Config = z.object({
   hosts: z
     .array(z.string())
     .default([])
-    .description('Restrict the run to these engine ids (empty means every engine).'),
-  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.'),
+    .description('Restrict the run to these engine ids (empty means every engine).').volatile(),
+  timeoutMs: z.natural().min(500).default(15000).description('Per-engine request deadline in milliseconds.').volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
     .default('auto')
-    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.'),
+    .description('How long a tier waits: auto follows the query language, all waits for every engine, fast returns on the first answer.').volatile(),
   proxy: z
     .string()
     .default('')
-    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.'),
-  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.'),
-  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.'),
+    .description('Explicit tunnel URL such as http://127.0.0.1:7890. Empty means detect from the environment, then from the macOS system proxy.').volatile(),
+  limit: z.natural().min(1).max(20).default(8).description('Upper bound on returned sources, applied on top of the caller budget.').volatile(),
+  rrfConstant: z.natural().min(1).default(60).description('Reciprocal-rank-fusion constant; larger flattens the rank curve.').volatile(),
   authorityDomains: z
     .array(z.string())
     .default([])
-    .description('Extra domains that earn the authority boost, on top of the built-in list.'),
-  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.'),
-  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.'),
-  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.'),
-  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.'),
-  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.'),
+    .description('Extra domains that earn the authority boost, on top of the built-in list.').volatile(),
+  authorityBoost: z.number().min(0).max(10).default(0.25).description('Multiplier applied to sources on an authoritative domain.').volatile(),
+  freshnessBoost: z.number().min(0).max(10).default(0.2).description('Multiplier applied to a result published today.').volatile(),
+  freshnessDays: z.natural().min(1).default(30).description('Age in days at which the freshness boost has faded to zero.').volatile(),
+  cacheTtlMs: z.natural().default(600000).description('Result cache lifetime in milliseconds; 0 disables the cache.').volatile(),
+  cacheEntries: z.natural().default(100).description('Maximum cached queries before the least recently used one is evicted.').volatile(),
   anysearchApiKey: z
     .string()
     .default('')
-    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.'),
+    .description('AnySearch API key, sent as a Bearer token to api.anysearch.com only; empty means anonymous access.').volatile(),
   anysearchDomain: z
     .string()
     .default('')
-    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.'),
-  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.'),
-  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.'),
+    .description('Vertical domain for AnySearch (finance, academic, security, legal, code); a dotted value such as finance.us_stock selects a sub-domain.').volatile(),
+  baseCooldownMs: z.natural().default(300000).description('Cooldown after a throttling failure that carried no wait hint.').volatile(),
+  maxCooldownMs: z.natural().default(1800000).description('Ceiling for the exponential cooldown.').volatile(),
 });
 
 /** The resolved configuration object handed to `apply`. */
-export type PluginConfig = ReturnType<typeof Config>;
+export type PluginConfig = {
+  hosts: string[];
+  hostIds?: string[];
+  limit: number;
+  timeoutMs: number;
+  wait: WaitPolicy;
+  proxy: string;
+  useProxy: boolean;
+  cacheTtlMs: number;
+  cacheEntries: number;
+  anysearchApiKey: string;
+  anysearchDomain: string;
+  baseCooldownMs: number;
+  maxCooldownMs: number;
+  rrfConstant: number;
+  authorityDomains: string[];
+  authorityBoost: number;
+  freshnessBoost: number;
+  freshnessDays: number;
+};
 
 /** Configuration normalised for the engine layer. */
 export interface ResolvedConfig {
@@ -92,7 +111,10 @@ export function resolveConfig(config: PluginConfig | Readonly<Record<string, unk
   // also reachable from the settings card and from a hand-edited composition,
   // where the value can be a partial object. Running it through the schema first
   // makes the defaults apply instead of dereferencing an absent key.
-  const settings = Config(config as PluginConfig);
+  // `.volatile()` wraps each field type in `Volatile<T>`, which is a schema
+    // marker rather than a runtime wrapper: the value is still a plain object, so
+    // the cast restores the plain field types the rest of this module reads.
+    const settings = Config(config as never) as unknown as PluginConfig;
   const hosts = settings.hosts.filter((id) => id.trim().length > 0);
   const proxy = settings.proxy.trim();
   const limit = Math.min(callLimit ?? settings.limit, settings.limit);

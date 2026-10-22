@@ -31,6 +31,14 @@ The fetch half, and AnySearch's paid-tier capabilities.
 
 ### Fixed
 
+- **The settings page rendered nothing: the configuration was not marked
+  live-editable.** `dsh-settings` keeps a namespace only when
+  `volatileForm(schema)` yields a form, and that helper keeps a namespace when a
+  field carries `meta.volatile`. None of the sixteen fields did, so the Host
+  dropped the row before the client ever asked for it — the plugin was loaded,
+  its schema was valid, and Settings still had nothing to show. Every field now
+  ends in `.volatile()`; `test/config-live.test.ts` restates the Host's filter
+  and fails if the mark is dropped again.
 - **The settings page rendered nothing.** Two layers were wrong. The client
   declared `slots` and `locale` but not `configForms`, so Cordis never injected
   the service; and even with the service present, the page read its form once at
