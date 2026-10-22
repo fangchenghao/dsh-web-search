@@ -260,17 +260,18 @@ test('the configured wait policy decides whether a slow engine is still worth wa
   const anysearch = await fixture('anysearch.json');
   const bing = await fixture('bing-global.html');
   const so = await fixture('so.html');
-  // A CJK query puts cn.bing, so and anysearch in the same leading group. Two
-  // answer at once and `so` answers 300ms later.
+  // A CJK query puts cn.bing and anysearch in the same primary tier. anysearch
+  // answers at once and cn.bing answers 300ms later, so the wait policy alone
+  // decides whether the slow primary engine is still worth waiting for.
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     const host = new URL(url).hostname;
     if (host === ANYSEARCH) return new Response(anysearch, { status: 200, headers: { 'content-type': 'application/json' } });
-    if (host === CN_BING) return new Response(bing, { status: 200 });
-    if (host === SO) {
+    if (host === CN_BING) {
       await new Promise((resolve) => setTimeout(resolve, 300));
-      return new Response(so, { status: 200 });
+      return new Response(bing, { status: 200 });
     }
+    if (host === SO) return new Response(so, { status: 200 });
     throw new Error(`unstubbed host ${host}`);
   }) as typeof fetch;
 
@@ -283,7 +284,7 @@ test('the configured wait policy decides whether a slow engine is still worth wa
   const fast = await timeIt('fast');
   const auto = await timeIt('auto');
   // `fast` releases the tier as soon as one engine has answered; `auto` waits
-  // for all of them, so the gap is the 300ms `so` takes.
+  // for every primary engine, so the gap is the 300ms cn.bing takes.
   assert.ok(fast < 250, `wait: fast should not wait for the slow engine, took ${fast}ms`);
   assert.ok(auto >= 280, `wait: auto should have waited for the slow engine, took ${auto}ms`);
 });
@@ -329,4 +330,16 @@ test('search rejects a cancellation that arrives while engines are still running
   controller.abort();
   release?.();
   await assert.rejects(pending, (error: unknown) => error instanceof SearchError || error instanceof Error);
+});
+
+test('an anti-bot page counts as blocked instead of an empty result set', async () => {
+  const so = HOSTS.find((host) => host.id === 'so');
+  assert.ok(so, 'the 360 host still exists for networks where it answers');
+  assert.equal(so.tier, 'fallback', 'a walled engine must not slow every primary search');
+  stubFetch({ [SO]: { body: '<html><title>访问异常页面</title><script>location="/qcaptcha"</script></html>' } });
+  const { searchHost } = await import('../src/transport.ts');
+  const result = await searchHost(so, 'postgres', undefined, 2000);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'SEARCH_BLOCKED');
+  assert.match(result.error.message, /bot verification page/);
 });

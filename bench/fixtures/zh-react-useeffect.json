@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-react-useeffect",
+  "query": "React useEffect 用法",
+  "language": "zh",
+  "category": "package",
+  "expectedDomains": [
+    "react.dev"
+  ],
+  "recordedAt": "2026-10-22T14:10:34.493Z",
+  "elapsedMs": 1650,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://zh-hans.react.dev/reference/react/useEffect",
+          "title": "useEffect – React 中文文档",
+          "snippet": "useEffect(setup, dependencies?) 用法. 连接到外部系统; 在自定义Hook 中封装Effect; 控制非React 小部件; 使用Effect 请求数据 ..."
+        },
+        {
+          "url": "https://juejin.cn/post/6923070024559099918",
+          "title": "【译】一文看懂React useEffect hook 的用法来源",
+          "snippet": "useEffect hook 简介. 钩子是一个函数，它可以让你在不编写ES6类的情况下使用状态和其他react特性。 useEffect 钩子是react钩子API的一部分。",
+          "publishedAt": "2021-01-28T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/673953792",
+          "title": "精读React hooks（五）：useEffect使用细节知多少？",
+          "snippet": "用法详解. 基础使用. 最简单的用法，在 useEffect 函数组件中执行副作用（例如：数据获取、手动修改DOM、订阅事件等）。 import React, { useState ...",
+          "publishedAt": "2023-12-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://ithelp.ithome.com.tw/articles/10224270",
+          "title": "Day 17 - 頁面載入時就去請求資料- useEffect 的基本使用",
+          "snippet": "載入並使用useEffect · 先從 react 中載入 useEffect · useEffect 這個方法的參數中需要帶入一個函式，而這個函式會在「畫面渲染完成」後被呼叫 · 在不同位置使用 console.log ..."
+        },
+        {
+          "url": "https://github.com/puxiao/react-hook-tutorial/blob/master/04%20useEffect%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95.md",
+          "title": "04 useEffect基础用法.md - react-hook-tutorial",
+          "snippet": "useEffect基本用法. useEffect(effect,[deps])函数可以传入2个参数，第1个参数为我们定义的执行函数、第2个参数是依赖关系(可选参数)。若一个函数组件中定义了多个 ..."
+        },
+        {
+          "url": "https://medium.com/vita-for-one/react-hooks-%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-usestate-useeffect-usecontext-b11c33e69bea",
+          "title": "[React Hooks 學習筆記] useState、useEffect | by vita shela",
+          "snippet": "基本使用. 基本結構用法： useEffect(callback, array). callback：回調函式，用於處理副作用邏輯。 array (可選)：一個陣列，用於控制與執行。 範例3 ...",
+          "publishedAt": "2020-10-23T14:10:34.493Z"
+        },
+        {
+          "url": "https://www.reddit.com/r/react/comments/tivs7z/understanding_useeffect/",
+          "title": "Understanding useEffect() : r/react",
+          "snippet": "useEffect runs after each render, unless you include the dependency array . If the array is empty, it only runs after the first render. If it is ...",
+          "publishedAt": "2022-10-23T14:10:34.493Z"
+        },
+        {
+          "url": "https://blog.csdn.net/qq_46049113/article/details/152897487",
+          "title": "【React】useMemo 和useEffect 的用法",
+          "snippet": "useMemo：在组件渲染过程中同步运行计算（不触发浏览器绘制前就算完），返回值直接用于本次渲染。 useEffect：在浏览器完成绘制后异步运行（非阻塞渲染） ...",
+          "publishedAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "url": "https://zh-hans.legacy.reactjs.org/docs/hooks-effect.html",
+          "title": "使用Effect Hook",
+          "snippet": "如果你熟悉React class 的生命周期函数，你可以把 useEffect Hook 看做 componentDidMount ， componentDidUpdate 和 componentWillUnmount 这三个函数的组合。 在React ..."
+        },
+        {
+          "url": "https://www.cnblogs.com/wen-web/p/17305643.html",
+          "title": "react useEffect的用法- wenwen。",
+          "snippet": "useEffect是React Hook的一种，用于在函数组件中定义副作用操作，比如改变DOM、发送网络请求、订阅事件等等。useEffect用于替代类组件中的生命周期 ...",
+          "publishedAt": "2023-04-11T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://zh-hans.react.dev/learn",
+          "title": "快速入门 – React 中文文档",
+          "snippet": "使用 Hook 以 use 开头的函数被称为 Hook。 useState 是 React 提供的一个内置 Hook。 你可以在 React API 参考 中找到其他内置的 Hook。 …"
+        },
+        {
+          "url": "https://react.dev/",
+          "title": "React",
+          "snippet": "React is the library for web and native user interfaces. Build user interfaces out of individual pieces called components written in …"
+        },
+        {
+          "url": "https://www.runoob.com/react/react-tutorial.html",
+          "title": "React 教程 | 菜鸟教程",
+          "snippet": "React 教程 React 是一个用于构建用户界面的 JAVASCRIPT 库。 React 主要用于构建 UI，很多人认为 React 是 MVC 中的 V（视图）。 React …"
+        },
+        {
+          "url": "https://react.dev/learn",
+          "title": "Quick Start – React",
+          "snippet": "Quick Start Welcome to the React documentation! This page will give you an introduction to 80% of the React concepts that you will use …"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/2000591279092954105",
+          "title": "2026最新 React 技术栈梳理，全栈必备 - 知乎",
+          "snippet": "2026年1月30日 · 前言 有需要更多前端资料的看文末哦~ 2025年的React生态持续迭代，从核心框架的编译器革新到生态工具的性能优化，都 …",
+          "publishedAt": "2026-01-30T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.runoob.com/react/react-intro.html",
+          "title": "React 简介 - 菜鸟教程",
+          "snippet": "React 简介 React 是由 Facebook（现 Meta）开发并于 2013 年开源的 JavaScript 库，专门用于构建用户界面，特别是单页应用程序（SPA） …"
+        },
+        {
+          "url": "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+          "title": "React 入门 - 学习 Web 开发 | MDN",
+          "snippet": "2026年6月8日 · 本文会引导我们进入一段 React 学习之旅。 我们将逐步了解有关它的背景和用例的一些细节，在自己的电脑上建起基本的 …",
+          "publishedAt": "2026-06-08T12:00:00.000Z"
+        },
+        {
+          "url": "https://zh-hans.react.dev/learn/installation",
+          "title": "安装 – React 中文文档",
+          "snippet": "安装 React 从诞生之初就是可被渐进式使用的。 因此你可以选择性地使用 React 特性。 不管你是想体验下 React，用它为简单的 HTML 页面 …"
+        },
+        {
+          "url": "https://reactjs.bootcss.com/learn",
+          "title": "快速入门 | React 中文文档 | React 中文网",
+          "snippet": "2026年4月24日 · Next Steps By now, you know the basics of how to write React code! Head to Thinking in React to see how it feels to …",
+          "publishedAt": "2026-04-24T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/react/18077599",
+          "title": "react （Meta开发构建用户界面JS库）_百度百科",
+          "snippet": "2026年2月24日 · 作为专注于构建用户界面的JavaScript库，React采用声明式设计和虚拟DOM技术优化渲染效率，支持组件化架构实现动态 …",
+          "publishedAt": "2026-02-24T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://zh-hans.react.dev/reference/react/useEffect",
+    "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+    "https://juejin.cn/post/6923070024559099918",
+    "https://zh-hans.react.dev/learn",
+    "https://zhuanlan.zhihu.com/p/673953792",
+    "https://ithelp.ithome.com.tw/articles/10224270",
+    "https://react.dev/",
+    "https://github.com/puxiao/react-hook-tutorial/blob/master/04%20useEffect%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95.md"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)",
+    "ddg-html: aborted once enough results had arrived"
+  ]
+}

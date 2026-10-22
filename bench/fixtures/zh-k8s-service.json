@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-k8s-service",
+  "query": "Kubernetes Service 官方文档",
+  "language": "zh",
+  "category": "docs",
+  "expectedDomains": [
+    "kubernetes.io"
+  ],
+  "recordedAt": "2026-10-22T14:10:08.135Z",
+  "elapsedMs": 2690,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service",
+          "snippet": "In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.",
+          "publishedAt": "2026-07-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+          "title": "了解Kubernetes 服务| GKE networking",
+          "snippet": "本页面介绍了不同类型的Kubernetes Service，以及Google Kubernetes Engine (GKE) 如何使用Service 对Pod 端点进行分组。 您将通过YAML 示例来了解如何创建Service。"
+        },
+        {
+          "url": "https://www.trae.cn/article/3133450242",
+          "title": "K8s Service服务发现：原理、类型与实战配置指南",
+          "snippet": "Kubernetes 官方文档- Service … 可快速生成代码、技术文档和教程,支持多语言框架,理解上下文需求,自动化重复性工作,提供实时优化建议,提升开发效率",
+          "publishedAt": "2025-10-15T12:00:00.000Z"
+        },
+        {
+          "url": "https://spacelift.io/blog/kubernetes-service",
+          "title": "Kubernetes Service - What It is, Types & Examples",
+          "snippet": "Kubernetes Services are resources that map network traffic to the Pods in your cluster. You need to create a Service each time you expose a set ...",
+          "publishedAt": "2025-05-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.mongodb.com/zh-cn/docs/kubernetes/v1.13/reference/k8s-operator-om-specification/",
+          "title": "Ops Manager 资源规范",
+          "snippet": "Kubernetes Operator 创建MongoDB Ops Manager所需的服务和自定义Kubernetes资源，然后在Kubernetes环境中的容器中部署MongoDB Ops Manager及其后端应用程序数据库。 每个 ...",
+          "publishedAt": "2026-10-22T03:10:08.134Z"
+        },
+        {
+          "url": "https://code.visualstudio.com/docs/devcontainers/containers",
+          "title": "Developing inside a Container",
+          "snippet": "The Visual Studio Code Dev Containers extension lets you use a container as a full-featured development environment. It allows you to open any folder inside",
+          "publishedAt": "2026-10-22T05:10:08.134Z"
+        },
+        {
+          "url": "https://azure.microsoft.com/zh-cn/resources/cloud-computing-dictionary/what-is-cloud-architecture",
+          "title": "什么是云体系结构？",
+          "snippet": "Kubernetes 服务(AKS) 借助Kubernetes 等编排平台,团队能够高效地部署和管理复杂的工作负载。 云博客、行业新闻和文档更新,实时跟进信息。",
+          "publishedAt": "2026-10-21T15:10:08.134Z"
+        },
+        {
+          "url": "https://github.com/iflytek/skillhub",
+          "title": "iflytek/skillhub: Self-hosted, open-source agent skill registry ...",
+          "snippet": "SkillHub is a self-hosted platform that gives teams a private, governed place to share agent skills. Publish a skill package, push it to a namespace, ...",
+          "publishedAt": "2026-10-21T20:10:08.134Z"
+        },
+        {
+          "url": "https://www.alachisoft.com/zh-CN/resources/docs/ncache/admin-guide/service-health-check.html",
+          "title": "服务健康检查| NCache 文档",
+          "snippet": "Kubernetes 可以使用NCache 通过其标准健康探测机制进行健康检查：. 启动探针决定是否NCache 初始化成功。 准备就绪探针确定是否NCache 实例已准备好接收流量。 活体检测 ...",
+          "publishedAt": "2026-10-22T01:10:08.134Z"
+        },
+        {
+          "url": "https://kubernetes.io/docs/home/",
+          "title": "Kubernetes Documentation",
+          "snippet": "Kubernetes is an open source container orchestration engine for automating deployment, scaling, and management of containerized applications. The open source ..."
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh/",
+          "title": "Kubernetes",
+          "snippet": "Kubernetes 也称为 K8s，是用于自动部署、扩缩和管理容器化应用程序的开源系统。 它将组成应用程序的容器组合成逻辑单元，以便于管理和 …"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/home/",
+          "title": "Kubernetes 文档",
+          "snippet": "尝试 Kubernetes 按照教程学习如何在 Kubernetes 上部署应用。 你好，Minikube 基础知识介绍 无状态应用示例：基于 Redis 的 PHP …"
+        },
+        {
+          "url": "https://cloud.tencent.com/developer/article/2640426",
+          "title": "Kubernetes （K8s）从入门到精通：一篇彻底搞懂云原生核心",
+          "snippet": "2026年3月17日 · Kubernetes (K8s)是云原生时代的容器编排系统，解决Docker单机部署的局限性。 本文详解K8s核心架构 …",
+          "publishedAt": "2026-03-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/sinat_39327967/article/details/158390297",
+          "title": "Kubernetes (K8s) 从入门到实战：超详细教程（2026版）",
+          "snippet": "2026年2月25日 · 本教程系统讲解Kubernetes集群搭建与核心运维实践，涵盖环境准备、单Master多Worker集群部署、Deployment/Service …",
+          "publishedAt": "2026-02-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/kubernetes/22864162",
+          "title": "kubernetes _百度百科",
+          "snippet": "2026年4月13日 · Kubernetes是 Google 开源的一个容器编排引擎，它支持 自动化部署 、大规模可伸缩、应用容器化管理。 在生产环境中部 …",
+          "publishedAt": "2026-04-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_43980547/article/details/137085690",
+          "title": "Kubernetes 超详细教程，一篇文章帮助你从零开始学习k8s ...",
+          "snippet": "2024年3月27日 · 本文是 Kubernetes 超详细教程，介绍了 k8s 概念、特点、架构、使用场景等基础知识，涵盖 minikube 安装、服务器裸机 …",
+          "publishedAt": "2024-03-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ltd/zh-cn/docs/",
+          "title": "文档 | Kubernetes",
+          "snippet": "2026年4月19日 · 文档 Kubernetes 文档 Kubernetes 是一个开源的容器编排引擎，用来对容器化应用进行自动部署、扩缩和管理。 此开源项 …",
+          "publishedAt": "2026-04-19T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/621593509",
+          "title": "一文让你全面了解K8s ( Kubernetes ) - 知乎",
+          "snippet": "2023年4月14日 · 随着时间的推移，Kubernetes 社区逐渐成为了一个庞大的开源生态系统，在全球范围内得到广泛的应用和推广。 目 …",
+          "publishedAt": "2023-04-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ac.cn/docs/home/",
+          "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "2026年9月4日 · 尝试 Kubernetes 通过教程学习如何在 Kubernetes 中部署应用程序。 你好 Minikube 基础知识演练 无状态示例：带 Redis 的 …",
+          "publishedAt": "2026-09-04T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://kubernetes.io/docs/concepts/services-networking/service/",
+    "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+    "https://kubernetes.io/zh/",
+    "https://kubernetes.io/zh-cn/docs/home/",
+    "https://www.mongodb.com/zh-cn/docs/kubernetes/v1.13/reference/k8s-operator-om-specification/",
+    "https://code.visualstudio.com/docs/devcontainers/containers",
+    "https://azure.microsoft.com/zh-cn/resources/cloud-computing-dictionary/what-is-cloud-architecture",
+    "https://kubernetes.io/docs/home/"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)",
+    "ddg-html: aborted once enough results had arrived"
+  ]
+}

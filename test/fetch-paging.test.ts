@@ -32,7 +32,7 @@ test('the configured budget cuts converted Markdown and names the original lengt
   const page = `<html><body><article><h1>Long</h1><p>${body}</p></article></body></html>`;
   const restore = stubFetch(page);
   try {
-    const provider = createFetchProvider({ maxLength: 1000 });
+    const provider = createFetchProvider({ maxLength: 1000, renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://example.com/long' });
     assert.equal(result.statusCode, 200);
     assert.equal(result.body.kind, 'text', 'the Host must receive text, or it converts the page a second time');
@@ -53,7 +53,7 @@ test('the default budget is 20000 characters', async () => {
   const page = `<html><body><article><h1>Long</h1><p>${body}</p></article></body></html>`;
   const restore = stubFetch(page);
   try {
-    const provider = createFetchProvider();
+    const provider = createFetchProvider({ renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://example.com/long' });
     assert.equal(result.truncated, true);
     assert.equal(
@@ -70,7 +70,7 @@ test('fetchFormat text returns the same reading order without Markdown syntax', 
   const page = '<html><body><h2>Title</h2><p><strong>Bold</strong> <a href="/x">Link</a></p></body></html>';
   const restore = stubFetch(page);
   try {
-    const provider = createFetchProvider({ format: 'text' });
+    const provider = createFetchProvider({ format: 'text', renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://example.com/page' });
     assert.equal(result.body.content, 'Title\n\nBold Link (https://example.com/x)');
     assert.equal(result.truncated, false);
@@ -83,7 +83,7 @@ test('a plain-text body is budgeted too, without HTML conversion', async () => {
   const json = `{"data":"${'j'.repeat(1200)}"}`;
   const restore = stubFetch(json, 'application/json');
   try {
-    const provider = createFetchProvider({ maxLength: 1000 });
+    const provider = createFetchProvider({ maxLength: 1000, renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://api.example.com/items' });
     assert.equal(result.body.kind, 'text');
     assert.equal(result.truncated, true);
@@ -101,7 +101,7 @@ test('an offset in the request cannot continue a page: every call starts at the 
   const page = `<html><body><article><h1>Long</h1><p>${'w'.repeat(1200)}</p></article></body></html>`;
   const restore = stubFetch(page);
   try {
-    const provider = createFetchProvider({ maxLength: 1000 });
+    const provider = createFetchProvider({ maxLength: 1000, renderJs: 'off' });
     const first = await provider.fetch({ url: 'https://example.com/long', offset: 1000 } as never);
     const second = await provider.fetch({ url: 'https://example.com/long' });
     // The Host type has no offset field, so the extra property is inert: the
@@ -125,7 +125,7 @@ test('the tunnel rung is converted as well, not just the direct rung', async () 
     truncated: false,
   };
   const provider = createFetchProvider(
-    { proxy: 'http://127.0.0.1:7890' },
+    { proxy: 'http://127.0.0.1:7890', renderJs: 'off' },
     {
       direct: () => Promise.reject(new Error('direct refused')),
       tunnel: () => Promise.resolve(html),
@@ -145,7 +145,7 @@ test('a non-2xx HTML response is converted but keeps its status', async () => {
   globalThis.fetch = (async () =>
     new Response(page, { status: 404, headers: { 'content-type': 'text/html' } })) as typeof fetch;
   try {
-    const provider = createFetchProvider({ maxLength: 20000 });
+    const provider = createFetchProvider({ maxLength: 20000, renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://example.com/missing' });
     assert.equal(result.statusCode, 404);
     assert.equal(result.body.content, '# Missing\n\nNot found here.');
@@ -159,7 +159,7 @@ test('a live format and length reader applies without rebuilding the provider', 
   let format: 'markdown' | 'text' = 'markdown';
   let maxLength = 200;
   stubFetch('<html><body><article><h1>Title</h1><p>Body text.</p></article></body></html>');
-  const provider = createFetchProvider({ id: 'http-proxy', format: () => format, maxLength: () => maxLength });
+  const provider = createFetchProvider({ id: 'http-proxy', format: () => format, maxLength: () => maxLength, renderJs: 'off' });
   const first = await provider.fetch({ url: 'https://example.com/live' });
   assert.match(first.body.content, /^# Title/m, 'markdown under the mounted reader');
 

@@ -227,6 +227,8 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       timeoutMs: mounted.timeoutMs,
       format: () => resolveConfig(section, undefined).fetchFormat,
       maxLength: () => resolveConfig(section, undefined).fetchMaxLength,
+      renderJs: () => resolveConfig(section, undefined).renderJs,
+      renderTimeoutMs: () => resolveConfig(section, undefined).renderTimeoutMs,
       ...(mounted.proxy === undefined ? {} : { proxy: mounted.proxy }),
       ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
     }),

@@ -128,6 +128,12 @@ export interface RankOptions {
   timeRange?: TimeRange;
   /** Per-engine weight in the pre-fusion interleave. */
   weights?: number[];
+  /**
+   * Evaluation instant in milliseconds for the freshness boost, defaulting to
+   * `Date.now()`. Benchmarks pin this to the fixture's recording time so a
+   * replay does not drift as the fixture ages.
+   */
+  now?: number;
 }
 
 /** Cache knobs. */

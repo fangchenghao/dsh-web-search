@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "en-pip-requests",
+  "query": "pip install requests",
+  "language": "en",
+  "category": "package",
+  "expectedDomains": [
+    "pypi.org",
+    "requests.readthedocs.io"
+  ],
+  "recordedAt": "2026-10-22T14:11:11.935Z",
+  "elapsedMs": 2745,
+  "limit": 8,
+  "lead": "global",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://pypi.org/project/requests/",
+          "title": "Requests",
+          "snippet": "Requests is available on PyPI: pip install requests Requests officially supports Python 3.10+. reliable HTTP–speaking applications,"
+        },
+        {
+          "url": "https://stackoverflow.com/questions/62080010/how-to-install-requests-module-with-pip",
+          "title": "How to install requests module with pip? [duplicate]",
+          "snippet": "This question already has answers here: 'pip' is not recognized as an internal or external command (46 answers) Closed 6 years ago. I'm trying ...",
+          "publishedAt": "2020-10-23T14:11:10.843Z"
+        },
+        {
+          "url": "https://www.reddit.com/r/learnpython/comments/1jkvx0v/pip_install_requests/",
+          "title": "pip install requests : r/learnpython",
+          "snippet": "When I am running pip install requests it is giving error like defaulting to user installation because normal site packages is not writable.",
+          "publishedAt": "2025-10-22T14:11:10.843Z"
+        },
+        {
+          "url": "https://developer.acronis.com/doc/notary/v2/guide/getting-started/setting-python-env.html",
+          "title": "Setting up the Python environment - Notary API",
+          "snippet": "Install the requests package that is required for sending requests to the API: pip install requests. Install pip (a tool for installing and managing Python ..."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ELETSIL8rWI",
+          "title": "How to install Requests in Python 3.14 on Windows 11 in 2025 ...",
+          "snippet": "1. Check the version of Python installed. Check the version of pip installed. Install the requests library using pip (pip install requests) 7. ...",
+          "publishedAt": "2025-11-26T14:11:10.843Z"
+        },
+        {
+          "url": "https://superuser.com/questions/1795824/how-to-install-requests-module-in-python-on-windows-10",
+          "title": "How to install 'requests' module in python on windows 10",
+          "snippet": "Python Package Index (PyPI). For example: pip install requests --index-url=https://pypi.org/simple/ 'requests' module.",
+          "publishedAt": "2023-07-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://requests.readthedocs.io/en/latest/user/install/",
+          "title": "Installation of Requests — Requests 2.34.2 documentation",
+          "snippet": "To install Requests, simply run this simple command in your terminal of choice: $ python -m pip install requests. Requests is an elegant and simple HTTP ..."
+        },
+        {
+          "url": "https://mimo.org/glossary/python/requests-library",
+          "title": "Python requests Library: How to Make HTTP Requests with ...",
+          "snippet": "The requests library is the standard way to make HTTP requests in Python. First, you must install it ( pip install requests ), then import it into your script."
+        },
+        {
+          "url": "https://www.w3schools.com/python/module_requests.asp",
+          "title": "Python Requests Module",
+          "snippet": "The requests module allows you to send HTTP requests using Python. The HTTP request returns a Response Object with all the response data (content, encoding, ..."
+        },
+        {
+          "url": "https://github.com/psf/requests",
+          "title": "psf/requests: A simple, yet elegant, HTTP library.",
+          "snippet": "Installing Requests and Supported Versions. Requests is available on PyPI: $ python -m pip install requests. Requests officially supports Python 3.10+ ..."
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://pypi.org/project/requests/",
+          "title": "requests · PyPI",
+          "snippet": "Requests"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/python/how-to-install-requests-in-python-for-windows-linux-mac/",
+          "title": "How to Install Requests in Python - For Windows, Linux, Mac",
+          "snippet": "Requests"
+        },
+        {
+          "url": "https://docs.python-requests.org/en/master/user/install/",
+          "title": "Installation of Requests — Requests 2.34.2 documentation",
+          "snippet": "Learn how to install"
+        },
+        {
+          "url": "https://www.w3schools.com/python/module_requests.asp",
+          "title": "Python Requests Module - W3Schools",
+          "snippet": "Download and Install"
+        },
+        {
+          "url": "https://stackoverflow.com/questions/62080010/how-to-install-requests-module-with-pip",
+          "title": "How to install requests module with pip? - Stack Overflow",
+          "snippet": "I'm trying to install"
+        },
+        {
+          "url": "https://docs.python-requests.org/en/latest/index.html",
+          "title": "Requests: HTTP for Humans™ — Requests 2.34.2 documentation",
+          "snippet": "Installation of Requests"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/python/python-requests-tutorial/",
+          "title": "Python Requests - GeeksforGeeks",
+          "snippet": "Installation To install"
+        },
+        {
+          "url": "https://pypi.org/project/requests-ccwienk/",
+          "title": "requests-ccwienk · PyPI",
+          "snippet": "Requests"
+        },
+        {
+          "url": "https://pytutorial.com/fix-python-requests-install-error-on-windows-complete-guide/",
+          "title": "Fix Python Requests Install Error on Windows: Complete Guide",
+          "snippet": "Learn how to resolve Python requests"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://blog.csdn.net/csdn122345/article/details/145688754",
+          "title": "Python 3 安装requests 库的详细教程_ pip install requests ...",
+          "snippet": "2025年7月20日 · 文章浏览阅读9.2k次，点赞7次，收藏7次。 本文详细介绍在Python 3环境中安装requests库的方法，可通过pip安装并验证 …",
+          "publishedAt": "2025-07-20T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/python03012/article/details/137588709",
+          "title": "【Python 】： Requests 库 安装 和使用教程（非常详细）_ pip ...",
+          "snippet": "2024年4月10日 · Python 提供了多个用来编写爬虫程序的库，除了前面已经介绍的 urllib 库之外，还有一个很重的 Requests 库，这个库的宗 …",
+          "publishedAt": "2024-04-10T12:00:00.000Z"
+        },
+        {
+          "url": "https://pypi.org/project/requests/",
+          "title": "requests · PyPI",
+          "snippet": "2026年5月14日 · Requests allows you to send HTTP/1.1 requests extremely easily. There’s no need to manually add query strings to …",
+          "publishedAt": "2026-05-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.pingcode.com/ask/1147336.html",
+          "title": "python如何 安装 request库 – PingCode",
+          "snippet": "2025年1月13日 · 通过pip安装requests库是最简单和最快捷的方法。 下面我将详细描述如何在不同环境中安装requests库，并介绍一些常见问 …",
+          "publishedAt": "2025-01-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/374244179",
+          "title": "【python】如何 安装requests 库，以及如何引用（含报错如何 ...",
+          "snippet": "2023年1月21日 · 非常非常重要，后期操作大多都需要requests库，那么这篇文章就来分享下如何安装requests库，以及在python中如何引用 …",
+          "publishedAt": "2023-01-21T12:00:00.000Z"
+        },
+        {
+          "url": "https://liaoxuefeng.com/books/python/third-party-modules/requests/",
+          "title": "requests - Python教程 - 廖雪峰的官方网站",
+          "snippet": "2026年10月6日 · 安装requests 如果安装了Anaconda， requests 就已经可用了。 否则，需要在命令行下通过pip安装： ... 如果遇 …",
+          "publishedAt": "2026-10-06T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1931741244435980327",
+          "title": "【python接口测试】 requests 库 安装 和导入 - 知乎",
+          "snippet": "2025年7月24日 · 1、进入命令框：搜索，输入cmd 2、输入命令：Pip install requests 3、查看是否安装requests 模块：命令 pip list 4、确认 …",
+          "publishedAt": "2025-07-24T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.pingcode.com/insights/ka8ciykreptmyqjlj4dq6nxs",
+          "title": "python如何添加 requests 模块",
+          "snippet": "2026年8月2日 · 文章直接回答了如何在 Python 中添加 requests 模块：通常使用 python -m pip install requests 安装最稳妥。 重点解释了为 …",
+          "publishedAt": "2026-08-02T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.cnblogs.com/chenhongbo-cn/p/19867776",
+          "title": "python 安装requests 及pandas - 神秘剑客 - 博客园",
+          "snippet": "2026年4月14日 · 一个第三方库，专门用于发送 HTTP 请求,几乎所有需要“联网”或“访问 API”的 Python 程序，底层都在用它。 如果是让 …",
+          "publishedAt": "2026-04-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.gitcode.com/48a13008890d224c4e15c1983332bd31.html",
+          "title": "如何 安装 Python requests ？ pip 安装 与从源码 安装 两种方式",
+          "snippet": "2026年9月8日 · 如果你要在 Python 项目里发 HTTP 请求，需要先安装 Requests 这个 HTTP 库。 本文给出仓库文档中记录的两种安装方式： …",
+          "publishedAt": "2026-09-08T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://pypi.org/project/requests/",
+    "https://stackoverflow.com/questions/62080010/how-to-install-requests-module-with-pip",
+    "https://www.w3schools.com/python/module_requests.asp",
+    "https://www.reddit.com/r/learnpython/comments/1jkvx0v/pip_install_requests/",
+    "https://developer.acronis.com/doc/notary/v2/guide/getting-started/setting-python-env.html",
+    "https://www.geeksforgeeks.org/python/how-to-install-requests-in-python-for-windows-linux-mac/",
+    "https://www.youtube.com/watch?v=ELETSIL8rWI",
+    "https://superuser.com/questions/1795824/how-to-install-requests-module-in-python-on-windows-10"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "DSH bundle: a key-free web search provider. Leads with the anonymous AnySearch API and falls back to public result pages (DuckDuckGo, Bing, 360), merged by reciprocal-rank fusion with a bilingual region policy, an engine cooldown and a TTL cache.",
   "type": "module",
   "main": "lib/index.js",

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.13.0
+
+### Added
+- **Optional JS rendering.** A page whose HTML is an empty shell can be rendered
+  by a real browser — but only if `playwright` or `playwright-core` is already
+  installed. Nothing is bundled, nothing is imported at load time, and a missing
+  module is a silent fallback, not an error. `renderJs` picks `auto` (render only
+  suspected shells), `always` or `off`; `renderTimeoutMs` bounds the attempt. A
+  render that fails, times out or is aborted returns the earlier rung's result.
+- **A retrieval quality benchmark.** Twenty queries (ten Chinese, ten English)
+  across documentation, releases, packages and news, each with expected domains.
+  `scripts/bench.mjs` records real engine output once, then replays it offline so
+  a ranking change is a number, not an opinion. Metrics: precision@8, recall@8,
+  MRR@8, per-engine contribution and consensus. Baseline 0.3625 / 0.7417 / 0.7600.
+
+### Fixed
+- An anti-bot page served with HTTP 200 was parsed as "zero results", which
+  removed an engine silently while keeping its slot reserved and never engaging
+  its cooldown. Such pages now report `SEARCH_BLOCKED`, and 360 — walled from
+  this network through both the direct and tunnel paths — moved to the fallback
+  tier so it no longer slows every search.
+
 ## 0.12.0
 
 ### Added

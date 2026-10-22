@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "en-npm-install",
+  "query": "npm install package.json dependencies",
+  "language": "en",
+  "category": "package",
+  "expectedDomains": [
+    "docs.npmjs.com",
+    "npmjs.com"
+  ],
+  "recordedAt": "2026-10-22T14:11:17.659Z",
+  "elapsedMs": 4221,
+  "limit": 8,
+  "lead": "global",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://stackoverflow.com/questions/8367031/how-do-i-install-package-json-dependencies-in-the-current-directory-using-npm",
+          "title": "How do I install package.json dependencies in the current ...",
+          "snippet": "I have a web app: fooapp. I have a package.json in the root. I want to install all the dependencies in a specific node_modules directory. How do I do this? ...",
+          "publishedAt": "2012-10-25T14:11:17.658Z"
+        },
+        {
+          "url": "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+          "title": "Adding dependencies to a package.json file",
+          "snippet": "To specify the packages your project depends on, you must list them as \"dependencies\" or \"devDependencies\" in your package's package.json file."
+        },
+        {
+          "url": "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+          "title": "An introduction to the npm package manager",
+          "snippet": "npm installs, updates and manages downloads of dependencies of your project. Dependencies are pre-built pieces of code, such as libraries and packages, that ..."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=oQSlatfD_gw",
+          "title": "Installing Dependencies with NPM (Node Package Manager)",
+          "snippet": "Installing Dependencies with NPM (Node Package Manager) - Node. ... json as a complete Beginner. Automation Step by Step•39K views · 20:28.",
+          "publishedAt": "2023-10-23T14:11:17.658Z"
+        },
+        {
+          "url": "https://github.com/npm/npm/issues/17282",
+          "title": "npm install not installing dependencies listed in package. ...",
+          "snippet": "My problem was my name had capital letters in it. Running npm init explained that issue. Changing name to all lower case, no spaces, npm install ...",
+          "publishedAt": "2017-06-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://dev.to/salmanarefin74/npm-and-everything-you-need-to-know-about-the-packagejson-33f1",
+          "title": "npm and everything you need to know about the package. ...",
+          "snippet": "npm install : This command will install all the dependencies mentioned in the package. · npm install : Installs the package in the ...",
+          "publishedAt": "2024-11-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.warp.dev/terminus/npm-install-dev-dependencies",
+          "title": "Installing Dev Dependencies With npm - Warp",
+          "snippet": "Once the package.json file is updated, you can run the npm install command to automatically install all the packages listed under the ...",
+          "publishedAt": "2024-01-31T12:00:00.000Z"
+        },
+        {
+          "url": "https://medium.com/openclassrooms-product-design-and-engineering/guide-to-managing-your-npm-packages-in-your-package-json-d315fe2ccab0",
+          "title": "Guide to managing npm packages in your package.json",
+          "snippet": "When someone installs an npm package, the dependencies of that package will also be installed, but the devDependencies will be ignored. In ..."
+        },
+        {
+          "url": "https://www.npmjs.com/package/openai",
+          "title": "openai",
+          "snippet": "Dependencies 13182 Dependents. Installation npm install openai. Install its peer dependencies before importing it: bundlers and serverless packagers can trace ...",
+          "publishedAt": "2026-10-22T04:11:17.658Z"
+        },
+        {
+          "url": "https://www.freecodecamp.org/news/diagnose-vite-not-found-npm-ci-container-build/",
+          "title": "How to Diagnose vite: not found After npm ci in a Container ...",
+          "snippet": "This tutorial shows how to check whether the install completed, find the affected tarball URLs, and check the dependency layer before compiling the application.",
+          "publishedAt": "2026-10-21T16:11:17.658Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://stackoverflow.com/questions/8367031/how-do-i-install-package-json-dependencies-in-the-current-directory-using-npm",
+          "title": "How do I install package.json dependencies in the current directory ...",
+          "snippet": "from inside your app directory (i.e. where package.json"
+        },
+        {
+          "url": "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+          "title": "npm-install | npm Docs",
+          "snippet": "Install"
+        },
+        {
+          "url": "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/?source=post_page---------------------------",
+          "title": "Specifying dependencies and devDependencies in a package.json file",
+          "snippet": "To add dependencies"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/node-js/npm-install-command/",
+          "title": "npm install command - GeeksforGeeks",
+          "snippet": "The npm"
+        },
+        {
+          "url": "https://www.xjavascript.com/blog/how-to-add-npm-dependency-as-peer-dependency/",
+          "title": "How to Add Peer Dependencies in npm: Install Packages to package.json's ...",
+          "snippet": "How to Add Peer Dependencies"
+        },
+        {
+          "url": "https://stackoverflow.com/questions/42969517/how-do-i-install-all-the-requirements-with-npm",
+          "title": "How do I install all the requirements with npm? - Stack Overflow",
+          "snippet": "Just run npm"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/node-js/installing-dev-dependencies-with-npm/",
+          "title": "Installing Dev Dependencies with NPM - GeeksforGeeks",
+          "snippet": "Best Practices for Managing Dev Dependencies"
+        },
+        {
+          "url": "https://www.w3schools.com/nodejs/nodejs_dependencies.asp",
+          "title": "Node.js Managing Dependencies - W3Schools",
+          "snippet": "Dependency management is the process of tracking, installing, updating, and removing the external packages your application depends on. It helps ensure your applications remains stable, secure, and maintainable over time. npm"
+        },
+        {
+          "url": "https://heynode.com/tutorial/install-npm-packages/",
+          "title": "How to Install NPM Packages | HeyNode",
+          "snippet": "How to Install"
+        },
+        {
+          "url": "https://bobbyhadz.com/blog/npm-install-local-dependency-in-package-json",
+          "title": "How to npm install local dependency in package.json",
+          "snippet": "A step-by-step illustrated guide on how to npm"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.npmjs.com/",
+          "title": "npm | Home",
+          "snippet": "3 天之前 · Relied upon by more than 17 million developers worldwide, npm is committed to making JavaScript development elegant, …",
+          "publishedAt": "2026-10-19T14:11:13.629Z"
+        },
+        {
+          "url": "https://nodejs.org/en/download",
+          "title": "Download Node.js ®",
+          "snippet": "Download Node.js® Get Node.js® v24.22.1 LTS for Windows using Chocolatey with npm Info Want new features sooner? Get the latest …"
+        },
+        {
+          "url": "https://www.npmjs.com/package/npm",
+          "title": "npm - npm",
+          "snippet": "2 天之前 · Is \"npm\" an acronym for \"Node Package Manager\"? Contrary to popular belief, npm is not an acronym for \"Node Package …",
+          "publishedAt": "2026-10-20T14:11:13.629Z"
+        },
+        {
+          "url": "https://www.runoob.com/nodejs/nodejs-npm.html",
+          "title": "NPM 使用介绍 | 菜鸟教程",
+          "snippet": "NPM 使用介绍 NPM（Node Package Manager）是一个 JavaScript 包管理工具，也是 Node.js 的默认包管理器。 NPM 允许开发者轻松地下 …"
+        },
+        {
+          "url": "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/?ref=meilisearch-blog",
+          "title": "Downloading and installing Node.js and npm | npm Docs",
+          "snippet": "14 小时之前 · To publish and install packages to and from the public npm registry or a private npm registry, you must install Node.js and …",
+          "publishedAt": "2026-10-22T00:11:13.629Z"
+        },
+        {
+          "url": "https://npm.nodejs.cn/cli/v11/configuring-npm/install/",
+          "title": "安装 | npm 中文网",
+          "snippet": "2026年10月8日 · 🌐 To publish and install packages to and from the public npm registry, you must install Node.js and the npm command …",
+          "publishedAt": "2026-10-08T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.npmjs.com/cli/v9/configuring-npm/install/?v=true",
+          "title": "install | npm Docs",
+          "snippet": "6 天之前 · To publish and install packages to and from the public npm registry, you must install Node.js and the npm command line …",
+          "publishedAt": "2026-10-16T14:11:13.629Z"
+        },
+        {
+          "url": "https://www.cnblogs.com/ljbguanli/p/20134805",
+          "title": "2026最新： npm /yarn/pnpm更换国内源全攻略，彻底告别 ...",
+          "snippet": "2026年5月23日 · 你是否也曾在执行 npm install 时，被漫长的等待、频繁的超时或莫名其妙的失败折磨到抓狂？别担心，这几乎是中国 …",
+          "publishedAt": "2026-05-23T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_62818371/article/details/146175470",
+          "title": "NPM 安装与配置全流程详解（2025最新版）-CSDN博客",
+          "snippet": "2025年3月11日 · 本文详细介绍2025最新版NPM安装与配置全流程。 先阐述环境准备与Node.js安装，接着说明NPM核心配置优化，如全局模 …",
+          "publishedAt": "2025-03-11T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/673541115",
+          "title": "理论篇：什么是 NPM 以及为什么 NPM 如此重要 - 知乎",
+          "snippet": "2023年12月21日 · 现在我们回到最初的问题： 什么是NPM，NPM能够做什么？ NPM是JavaScript包管理工具，它方便开发者进行 代码复用 …",
+          "publishedAt": "2023-12-21T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://stackoverflow.com/questions/8367031/how-do-i-install-package-json-dependencies-in-the-current-directory-using-npm",
+    "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+    "https://www.npmjs.com/package/openai",
+    "https://www.freecodecamp.org/news/diagnose-vite-not-found-npm-ci-container-build/",
+    "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+    "https://www.youtube.com/watch?v=oQSlatfD_gw",
+    "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+    "https://github.com/npm/npm/issues/17282"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

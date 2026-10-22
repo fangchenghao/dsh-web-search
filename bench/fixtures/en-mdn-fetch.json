@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "en-mdn-fetch",
+  "query": "MDN Fetch API documentation",
+  "language": "en",
+  "category": "docs",
+  "expectedDomains": [
+    "developer.mozilla.org"
+  ],
+  "recordedAt": "2026-10-22T14:10:51.460Z",
+  "elapsedMs": 2569,
+  "limit": 8,
+  "lead": "global",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+          "title": "Fetch API - MDN Web Docs",
+          "snippet": "The Fetch API provides an interface for fetching resources (including across the network). It is a more powerful and flexible replacement ...",
+          "publishedAt": "2026-06-08T12:00:00.000Z"
+        },
+        {
+          "url": "https://x.com/MozDevNet/status/1910180948542709955",
+          "title": "MDN Web Docs",
+          "snippet": "The Fetch API provides a JavaScript interface for making HTTP requests and processing the responses. 9:00 PM · Apr 9, 2025·. 1,196. Views.",
+          "publishedAt": "2025-10-22T14:10:51.100Z"
+        },
+        {
+          "url": "https://github.com/mdn/fetch-examples/blob/main/README.md",
+          "title": "fetch-examples/README.md at main",
+          "snippet": "A repository of Fetch examples. See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API for the corresponding documentation.",
+          "publishedAt": "2022-08-16T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.facebook.com/fb-answers/mdn-fetch-api-response-json-documentation/",
+          "title": "MDN Fetch API Response JSON Documentation",
+          "snippet": "The Fetch API is a modern Promise-based way to make HTTP requests directly from JavaScript. For JSON responses, call `response.json()` after confirming the ..."
+        },
+        {
+          "url": "https://www.greatfrontend.com/questions/quiz/what-are-the-different-ways-to-make-an-api-call-in-javascript",
+          "title": "What are the different ways to make an API call in ...",
+          "snippet": "Use the built-in fetch() API for most new browser and modern Node.js code. It supports promises, streaming response bodies, and cancellation with ...",
+          "publishedAt": "2026-10-21T17:10:51.100Z"
+        },
+        {
+          "url": "https://nodejs.org/learn/manipulating-files/writing-files-with-nodejs",
+          "title": "Writing files with Node.js | Node.js Learn",
+          "snippet": "The easiest way to write to files in Node.js is to use the fs.writeFile() API. By default, this API will replace the contents of the file if it does already ...",
+          "publishedAt": "2026-10-22T03:10:51.100Z"
+        },
+        {
+          "url": "https://dev.to/hanzla/the-hidden-bugs-behind-duplicate-api-requests-1npb",
+          "title": "The Hidden Bugs Behind Duplicate API Requests",
+          "snippet": "For operations that must not happen twice, the main defense is an idempotency key: the client generates a unique key per logical operation, the server records ...",
+          "publishedAt": "2026-10-22T06:10:51.100Z"
+        },
+        {
+          "url": "https://docs.netlify.com/",
+          "title": "Netlify Docs: Netlify Documentation",
+          "snippet": "Manage sites, deploys, DNS, and more programmatically with the Netlify REST API—ideal for automating workflows and integrating into your systems.",
+          "publishedAt": "2026-10-22T11:10:51.100Z"
+        },
+        {
+          "url": "https://phrasly.ai/blog/best-ai-humanizer-apis",
+          "title": "6 Best AI Humanizer APIs for Developers (2026)",
+          "snippet": "If you want the best AI humanizer with API access, six options stand out in 2026: Phrasly, WriteHuman, Walter Writes, Undetectable AI, Rephrasy and ToHuman.",
+          "publishedAt": "2026-10-21T16:10:51.100Z"
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch",
+          "title": "Window: fetch() method - Web APIs | MDN",
+          "snippet": "The fetch() method of the Window interface starts the process of fetching a resource from the network, returning a promise that is fulfilled ...",
+          "publishedAt": "2025-12-16T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+          "title": "Using the Fetch API - Web APIs | MDN - MDN Web Docs",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+          "title": "Fetch API - Web APIs | MDN - MDN Web Docs",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://www.devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch.html",
+          "title": "Using Fetch - Web APIs | MDN - devdoc.net",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API.html",
+          "title": "Fetch API - Web APIs | MDN - devdoc.net",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://www.w3schools.com/js/js_api_fetch.asp",
+          "title": "JavaScript Fetch API - W3Schools",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://mdn.org.cn/en-US/docs/Web/API/Fetch_API",
+          "title": "Fetch API - Web APIs | MDN - MDN 文档",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://github.com/mdn/content/blob/main/files/en-us/web/api/fetch_api/using_fetch/index.md",
+          "title": "content/files/en-us/web/api/fetch_api/using_fetch/index.md at ... - GitHub",
+          "snippet": "The official source for MDN"
+        },
+        {
+          "url": "https://fetch.spec.whatwg.org/",
+          "title": "WHATWG - Fetch Standard",
+          "snippet": "The Fetch"
+        },
+        {
+          "url": "https://github.com/mdn/content/blob/main/files/en-us/web/api/fetch_api/index.md?plain=1",
+          "title": "content/files/en-us/web/api/fetch_api/index.md at main · mdn ... - GitHub",
+          "snippet": "The official source for MDN"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/javascript/javascript-fetch-method/",
+          "title": "Fetch API in JavaScript - GeeksforGeeks",
+          "snippet": "The Fetch"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://developer.mozilla.org/en-US/",
+          "title": "MDN Web Docs",
+          "snippet": "1 天前 · The MDN Web Docs site provides information about Open Web technologies including HTML, CSS, and APIs for both Web sites …",
+          "publishedAt": "2026-10-21T14:10:49.485Z"
+        },
+        {
+          "url": "https://developer.mozilla.org/zh-CN/",
+          "title": "MDN Web Docs",
+          "snippet": "1 天前 · MDN closely follows W3C standards which helps me keep up with important topics. It's a complete package as it caters to …",
+          "publishedAt": "2026-10-21T14:10:49.485Z"
+        },
+        {
+          "url": "https://mdn.org.cn/en-US/docs/Learn",
+          "title": "学习网页开发 | MDN - MDN 文档",
+          "snippet": "2025年10月21日 · 提供一个免费且开源的全栈课程，从初学者到高级水平。 MDN 博客 MDN 博客包含来自 MDN 团队和客座作者的文章，内 …",
+          "publishedAt": "2025-10-21T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/MDN/60259532",
+          "title": "MDN （Mozilla基金会的开发者网络平台）_百度百科",
+          "snippet": "MDN（Mozilla Developer Network），现称MDN Web Docs，是Mozilla基金会于2005年启动并维护的、开源的Web开发者文档平台。"
+        },
+        {
+          "url": "https://github.com/mdn/",
+          "title": "MDN Web Docs - GitHub",
+          "snippet": "MDN's mission is to provide a blueprint for a better internet and empower a new generation of developers and content creators to build …"
+        },
+        {
+          "url": "https://github.com/mdn/content",
+          "title": "GitHub - mdn /content: The official source for MDN Web Docs content ...",
+          "snippet": "2026年4月25日 · MDN's mission is to provide a blueprint for a better internet and empower a new generation of developers and content …",
+          "publishedAt": "2026-04-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://mdn.org.cn/en-US/docs/MDN",
+          "title": "MDN Web Docs | MDN - MDN 文档",
+          "snippet": "2025年10月23日 · MDN Web Docs is a free-to-use resource that documents open web technologies. Our mission is to provide …",
+          "publishedAt": "2025-10-23T12:00:00.000Z"
+        },
+        {
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web",
+          "title": "面向开发者的 Web 技术 | MDN",
+          "snippet": "2025年8月1日 · 开放的 Web 为开发者提供了巨大的机遇，为了充分利用这些技术，你需要知道如何使用它们。在下方你可以找到这些 Web 技 …",
+          "publishedAt": "2025-08-01T12:00:00.000Z"
+        },
+        {
+          "url": "https://mdn.org.cn/en-US/docs/Web",
+          "title": "面向开发者的 Web 技术 | MDN - MDN 文档",
+          "snippet": "2025年10月23日 · The open Web presents incredible opportunities for developers. To take full advantage of these technologies, you …",
+          "publishedAt": "2025-10-23T12:00:00.000Z"
+        },
+        {
+          "url": "https://mdn.org.cn/en-US/docs/MDN/Tutorials",
+          "title": "Web 开发教程 - MDN Web Docs | MDN - MDN 文档",
+          "snippet": "2025年10月22日 · The links on this page lead to a variety of tutorials and learning materials. Whether you are a beginner, intermediate, …",
+          "publishedAt": "2025-10-22T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+    "https://nodejs.org/learn/manipulating-files/writing-files-with-nodejs",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+    "https://www.greatfrontend.com/questions/quiz/what-are-the-different-ways-to-make-an-api-call-in-javascript",
+    "https://dev.to/hanzla/the-hidden-bugs-behind-duplicate-api-requests-1npb",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch",
+    "https://docs.netlify.com/",
+    "https://phrasly.ai/blog/best-ai-humanizer-apis"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

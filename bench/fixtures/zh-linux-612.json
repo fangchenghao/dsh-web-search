@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-linux-612",
+  "query": "Linux 内核 6.12 发布",
+  "language": "zh",
+  "category": "news",
+  "expectedDomains": [
+    "kernel.org",
+    "lwn.net"
+  ],
+  "recordedAt": "2026-10-22T14:10:41.845Z",
+  "elapsedMs": 1677,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.reddit.com/r/linux/comments/1gtpo7n/the_612_kernel_has_been_released/?tl=zh-hans",
+          "title": "6.12 内核发布了: r/linux",
+          "snippet": "6.12 内核发布了: 更新:6.12.1 对我来说运行良好。 使用专有的英伟达驱动程序和hyprland。 来自Intel,数据库性能提升18%",
+          "publishedAt": "2025-10-22T14:10:41.845Z"
+        },
+        {
+          "url": "https://blog.csdn.net/easydvlp/article/details/144413398",
+          "title": "Linux内核6.12正式发布，支持实时应用！最新变化一览",
+          "snippet": "1.PREEMPT_RT 纳入主线支持：这是Linux 内核6.12 最为显著和重大的特性之一。经过20 年的开发，从Ubuntu 实时版到内核5.15 中合并锁定代码等一系列铺垫， ...",
+          "publishedAt": "2024-12-12T12:00:00.000Z"
+        },
+        {
+          "url": "https://finance.sina.com.cn/tech/roll/2024-11-18/doc-incwpcek3489277.shtml",
+          "title": "Linux内核6.12发布：适配最新硬件改进安全性",
+          "snippet": "在最新的Linux内核版本6.12中，Linus Torvalds宣布引入了“PREEMPT_RT”（实时补丁）的主线支持，并引入了新调度程序和适配最新硬件的能力。",
+          "publishedAt": "2024-11-18T12:00:00.000Z"
+        },
+        {
+          "url": "https://source.android.com/docs/core/architecture/kernel/gki-android16-6_12-release-builds?hl=zh-cn",
+          "title": "android16-6.12 发布build | Android OS core topics",
+          "snippet": "本文档按月列出了android16-6.12 的GKI 发布build。您可以点击“制品”列中的链接查看相应版本的内核制品或调试内核制品的列表。如需查找特定文件，请参阅制品定义列表。"
+        },
+        {
+          "url": "https://whycan.com/t_11590.html",
+          "title": "LINUX kernel 6.12预计11.18发布,作为最新的适合嵌入式 ...",
+          "snippet": "LINUX kernel 6.12预计11.18发布，将成为2024最重要的版本。这个版本默认内置PREEMPT_RT 功能， Linux 内核转变为完全可抢占的实时操作系统。",
+          "publishedAt": "2024-11-11T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.kernel.org/pub/linux/kernel/projects/rt/6.12/",
+          "title": "Index of /pub/linux/kernel/projects/rt/6.12/",
+          "snippet": "Index of /pub/linux/kernel/projects/rt/6.12/ patch-6.12.111-rt21.patch.gz 28-Sep-2026 08:24 19K patch-6.12.111-rt21.patch. 228 patch-6.12.111-rt21.patch.xz 18K ..."
+        },
+        {
+          "url": "https://baike.baidu.com/en/item/Linux%20kernel%206.12/3706063",
+          "title": "Linux kernel 6.12_Baiduwiki",
+          "snippet": ". Linux内核6.12正式发布,支持实时应用!最新变化一览 . CSDN软件开发网 . 2024-12-12. 7. Linux 6.12 内核发布,新特性解读 . 成都欧飞思网络科技有限公司 . 2025-06-01. 8."
+        },
+        {
+          "url": "https://cn.linkedin.com/pulse/linux-kernel-612-leap-forward-performance-security-kumar-sharma-pz16c?tl=zh",
+          "title": "Linux 内核6.12：性能、安全性和硬件支持的飞跃",
+          "snippet": "Linux 内核6.12 代表了Linux 生态系统的重大进步,引入了提升实时性能、调度灵活性、文件系统能力、安全性和硬件支持的功能",
+          "publishedAt": "2025-10-22T14:10:41.845Z"
+        },
+        {
+          "url": "https://docs.aws.amazon.com/zh_cn/linux/al2023/ug/kernel-update.html",
+          "title": "在AL2023 上更新Linux 内核",
+          "snippet": "2025 年4 月，AL2023 增加了对Linux 内核6.12 的支持。该内核增加了新功能，包括EEVDF调度、FUSE直通I/O 支持、新的Futex API以及eBPF的改进。内核6.12 还 ..."
+        },
+        {
+          "url": "https://lwn.net/Articles/1024717/",
+          "title": "Linux 6.12.33",
+          "snippet": "Linux 6.12.33 ; From: Greg Kroah-Hartman ; To: linux-kernel-AT-vger.kernel.org, akpm-AT-linux-foundation.org, ...",
+          "publishedAt": "2025-06-10T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.runoob.com/linux/linux-tutorial.html",
+          "title": "Linux 教程 | 菜鸟教程",
+          "snippet": "Linux 是一种自由和开放源码的类 UNIX 操作系统。 Linux 英文解释为 Linux is not Unix。 Linux 是在 1991 由林纳斯·托瓦兹在赫尔辛基大学上 …"
+        },
+        {
+          "url": "https://www.linux.org/pages/download/",
+          "title": "Download Linux | Linux .org",
+          "snippet": "2017年5月1日 · 24 Popular Linux Distributions Explore different Linux distributions and find the one that fits your needs. Try …",
+          "publishedAt": "2017-05-01T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/Linux/27050",
+          "title": "Linux _百度百科",
+          "snippet": "1991年10月5日 · Linux是类Unix操作系统内核，由林纳斯·托瓦兹（Linus Torvalds）于1991年开始开发并首次发布，采用开放协作方式持续演 …",
+          "publishedAt": "1991-10-05T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/bigbangbangbang1/article/details/131575669",
+          "title": "Linux 入门教程（非常详细）从零基础入门到精通，看完这 ...",
+          "snippet": "2024年9月3日 · 什么是 Linux Linux 系统内核与 Linux 发行套件的区别 Linux 系统内核指的是由 Linus Torvalds 负责维护，提供硬件抽象层、 …",
+          "publishedAt": "2024-09-03T12:00:00.000Z"
+        },
+        {
+          "url": "https://cn.ubuntu.com/download",
+          "title": "Ubuntu 系统下载 | Ubuntu",
+          "snippet": "2026年4月1日 · Ubuntu 下载 Ubuntu 是世界上最受欢迎的 Linux 操作系统。 您可以在桌面电脑、笔记本、工作站、服务器或物联网设备上运 …",
+          "publishedAt": "2026-04-01T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_47853811/article/details/111054464",
+          "title": "Linux镜像最全版本下载网站 _ linux 系统下载-CSDN博客",
+          "snippet": "2020年12月11日 · 文章浏览阅读10w+次，点赞79次，收藏410次。 本文提供了多个流行的Linux发行版的官方及国内镜像站点链接，包 …",
+          "publishedAt": "2020-12-11T12:00:00.000Z"
+        },
+        {
+          "url": "https://labex.io/zh/linuxjourney",
+          "title": "Linux Journey 官方网站 | 免费学习 Linux",
+          "snippet": "Linux Journey 官方网站，前身为 linuxjourney.com，现已成为 LabEx 的一部分。 通过原汁原味的 Linux Journey 课程、交互式实验和实战教 …"
+        },
+        {
+          "url": "https://www.linux.org/",
+          "title": "Linux .org",
+          "snippet": "1 天前 · Of course, many companies may need an Operating System (OS) other than Linux, such as Windows. So, the setup is not a …",
+          "publishedAt": "2026-10-21T14:10:40.417Z"
+        },
+        {
+          "url": "https://www.debian.org/index.zh-cn.html",
+          "title": "Debian -- 通用操作系统",
+          "snippet": "2026年10月14日 · Debian GNU/Linux 是一个操作系统及自由软件的发行版，它是由一群自愿付出时间和精力的用户来维护并更新的。",
+          "publishedAt": "2026-10-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.sysgeek.cn/linux-distro-beginners/",
+          "title": "2025 年十款最适合初学者的 Linux 发行版（详细对比）",
+          "snippet": "2025年3月21日 · 只有满足这些条件，才能称得上是理想的、适合初学者的 Linux 发行版。 面向初学者的 10 大 Linux 系统推荐 01：Linux …",
+          "publishedAt": "2025-03-21T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://docs.aws.amazon.com/zh_cn/linux/al2023/ug/kernel-update.html",
+    "https://www.reddit.com/r/linux/comments/1gtpo7n/the_612_kernel_has_been_released/?tl=zh-hans",
+    "https://blog.csdn.net/easydvlp/article/details/144413398",
+    "https://www.runoob.com/linux/linux-tutorial.html",
+    "https://finance.sina.com.cn/tech/roll/2024-11-18/doc-incwpcek3489277.shtml",
+    "https://source.android.com/docs/core/architecture/kernel/gki-android16-6_12-release-builds?hl=zh-cn",
+    "https://www.linux.org/",
+    "https://www.linux.org/pages/download/"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)",
+    "ddg-html: aborted once enough results had arrived"
+  ]
+}

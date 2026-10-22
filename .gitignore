@@ -1,5 +1,8 @@
 node_modules/
 lib/
+# The benchmark's scoring module is source, not build output.
+!scripts/lib/
+!scripts/lib/**
 *.tgz
 *.log
 .DS_Store

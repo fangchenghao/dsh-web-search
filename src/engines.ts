@@ -11,7 +11,7 @@
  *
  * @module @fangchenghao/dsh-web-search/engines
  */
-import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, TimeRange, WaitPolicy } from './types.ts';
+import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, Source, TimeRange, WaitPolicy } from './types.ts';
 import { SearchError } from './errors.ts';
 import { filterByTimeRange, preferWindow } from './freshness.ts';
 import { resolveProxy } from './proxy.ts';
@@ -85,7 +85,9 @@ export const HOSTS: readonly HostSpec[] = [
   },
   {
     id: 'so',
-    tier: 'primary',
+    // 360 answers an anti-bot wall from this network and from the tunnel, so it
+    // is demoted: tried only when every primary engine came back empty.
+    tier: 'fallback',
     region: 'cn',
     build: (query) => `https://www.so.com/s?q=${encodeURIComponent(query)}`,
     parse: parseSo,
@@ -288,6 +290,47 @@ export interface EngineRunOptions extends SearchOptions {
   cache?: SearchCache;
   /** Cooldown tracker, when one is configured. */
   health?: EngineHealth;
+  /**
+   * Read-only observer of the fusion inputs.
+   *
+   * Benchmark recorders use it to persist each engine's own list and rerun the
+   * current ranking offline. It never changes the run: the snapshot is a copy
+   * handed over after the fused list is final, and an absent hook costs one
+   * `undefined` check per run.
+   */
+  trace?: (snapshot: SearchTrace) => void;
+}
+
+/**
+ * What one search run handed to the ranking, captured for offline replay.
+ *
+ * `answers` are the exact per-engine lists that produced `sources`, in engine
+ * priority order and already narrowed by an active time window. Only the tier
+ * that actually supplied the fused list is present: when the primary tier
+ * answered, the fallback engines never ran. A cache hit has no fresh answers,
+ * so `answers` is empty and `cached` is `true`.
+ */
+export interface SearchTrace {
+  /** Caller budget, after the engine layer's own clamp. */
+  limit: number;
+  /** Region that led this query. */
+  lead: Region;
+  /** Release policy used for the tier run. */
+  wait: WaitPolicy;
+  /** Active publication window. */
+  timeRange: TimeRange;
+  /** Ranking knobs, with the window folded in. */
+  rank: RankOptions;
+  /** Which path produced `sources`. */
+  tier: 'primary' | 'fallback' | 'none' | 'cache';
+  /** Per-engine lists that were fused, in engine priority order. */
+  answers: EngineAnswer[];
+  /** The fused list `search` returned. */
+  sources: Source[];
+  /** Failure strings accumulated by this run. */
+  failures: string[];
+  /** Whether the result came from the cache. */
+  cached: boolean;
 }
 
 /**
@@ -390,20 +433,49 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   // next identical query into a cache miss.
   const key = options.cache === undefined ? undefined : cacheKey({ query, limit, wait, lead, engines: hosts.map((host) => host.id), timeRange });
   const cached = key === undefined ? undefined : options.cache?.get(key);
-  if (cached !== undefined) return { sources: cached, failures, ...(proxy === undefined ? {} : { proxy }) };
+  if (cached !== undefined) {
+    options.trace?.({
+      limit,
+      lead,
+      wait,
+      timeRange,
+      rank,
+      tier: 'cache',
+      answers: [],
+      sources: cached,
+      failures: [...failures],
+      cached: true,
+    });
+    return { sources: cached, failures, ...(proxy === undefined ? {} : { proxy }) };
+  }
 
   const ordered = [...usable.filter((host) => leadsQuery(host, lead)), ...usable.filter((host) => !leadsQuery(host, lead))];
   const primary = ordered.filter((host) => host.tier === 'primary');
   const fallback = ordered.filter((host) => host.tier === 'fallback');
 
+  let tier: SearchTrace['tier'] = 'none';
   let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health));
+  if (answers.length > 0) tier = 'primary';
   let sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   if (sources.length === 0 && fallback.length > 0) {
+    tier = 'fallback';
     answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health));
     sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   }
 
   if (signal?.aborted === true) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
   if (key !== undefined && sources.length > 0) options.cache?.set(key, sources);
+  options.trace?.({
+    limit,
+    lead,
+    wait,
+    timeRange,
+    rank,
+    tier,
+    answers,
+    sources,
+    failures: [...failures],
+    cached: false,
+  });
   return { sources, failures, ...(proxy === undefined ? {} : { proxy }) };
 }

@@ -46,7 +46,7 @@ function ladder(plan: { direct?: 'ok' | 'fail'; tunnel?: 'ok' | 'fail' | 'missin
 
 test('a direct success never touches the tunnel', async () => {
   const { calls, deps } = ladder({ direct: 'ok' });
-  const provider = createFetchProvider({}, deps);
+  const provider = createFetchProvider({ renderJs: 'off' }, deps);
   const result = await provider.fetch({ url: 'https://example.com' });
   assert.equal(result.statusCode, 200);
   assert.deepEqual(calls, ['direct']);
@@ -54,7 +54,7 @@ test('a direct success never touches the tunnel', async () => {
 
 test('a direct failure escalates to the tunnel', async () => {
   const { calls, deps } = ladder({ direct: 'fail', tunnel: 'ok' });
-  const provider = createFetchProvider({}, deps);
+  const provider = createFetchProvider({ renderJs: 'off' }, deps);
   const result = await provider.fetch({ url: 'https://github.com/x' });
   assert.equal(result.statusCode, 200);
   assert.deepEqual(calls, ['direct', 'tunnel']);
@@ -62,7 +62,7 @@ test('a direct failure escalates to the tunnel', async () => {
 
 test('the tunnel is skipped when it is disabled, and extraction takes over', async () => {
   const { calls, deps } = ladder({ direct: 'fail', tunnel: 'ok', extract: 'ok' });
-  const provider = createFetchProvider({ useProxy: false, anysearchApiKey: 'key' }, deps);
+  const provider = createFetchProvider({ useProxy: false, anysearchApiKey: 'key', renderJs: 'off' }, deps);
   const result = await provider.fetch({ url: 'https://blocked.example/page' });
   assert.deepEqual(calls, ['direct', 'extract']);
   assert.equal(result.statusCode, 200);
@@ -70,7 +70,7 @@ test('the tunnel is skipped when it is disabled, and extraction takes over', asy
 
 test('extraction only runs when a key is configured', async () => {
   const { calls, deps } = ladder({ direct: 'fail', tunnel: 'fail', extract: 'ok' });
-  const withoutKey = createFetchProvider({}, deps);
+  const withoutKey = createFetchProvider({ renderJs: 'off' }, deps);
   await assert.rejects(() => withoutKey.fetch({ url: 'https://x.example/' }), (error: unknown) => {
     assert.ok(error instanceof SearchError);
     assert.match(error.message, /cannot fetch/);
@@ -79,7 +79,7 @@ test('extraction only runs when a key is configured', async () => {
   assert.deepEqual(calls, ['direct', 'tunnel']);
   calls.length = 0;
 
-  const withKey = createFetchProvider({ anysearchApiKey: 'key' }, deps);
+  const withKey = createFetchProvider({ anysearchApiKey: 'key', renderJs: 'off' }, deps);
   const result = await withKey.fetch({ url: 'https://x.example/' });
   assert.deepEqual(calls, ['direct', 'tunnel', 'extract']);
   assert.equal(result.statusCode, 200);
@@ -87,7 +87,7 @@ test('extraction only runs when a key is configured', async () => {
 
 test('a non-http target is rejected without trying any rung', async () => {
   const { calls, deps } = ladder({ direct: 'ok' });
-  const provider = createFetchProvider({}, deps);
+  const provider = createFetchProvider({ renderJs: 'off' }, deps);
   await assert.rejects(() => provider.fetch({ url: 'file:///etc/passwd' }), /not an http\(s\) URL/);
   assert.deepEqual(calls, []);
 });
@@ -122,7 +122,7 @@ test('an oversized body is clamped and flagged', async () => {
   const body = 'x'.repeat(4096);
   globalThis.fetch = (async () => new Response(body, { status: 200, headers: { 'content-type': 'text/plain' } })) as typeof fetch;
   try {
-    const provider = createFetchProvider({ maxBytes: 64 });
+    const provider = createFetchProvider({ maxBytes: 64, renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://x.example/' });
     assert.equal(result.truncated, true);
     assert.equal(result.body.content.length, 64);

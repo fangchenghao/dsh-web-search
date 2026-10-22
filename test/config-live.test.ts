@@ -100,7 +100,7 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
     'cacheEntries', 'cacheFile', 'cachePersist', 'cacheTtlMs',
     'domainLimit', 'domainSources', 'domainTimeoutMs',
     'fetchFormat', 'fetchMaxLength', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
-    'maxCooldownMs', 'proxy', 'rrfConstant', 'timeRange', 'timeoutMs', 'wait',
+    'maxCooldownMs', 'proxy', 'renderJs', 'renderTimeoutMs', 'rrfConstant', 'timeRange', 'timeoutMs', 'wait',
   ]);
 });
 
@@ -154,6 +154,8 @@ test('fetch format and length resolve with defaults and reject out-of-range valu
   const defaults = resolveConfig({}, undefined);
   assert.equal(defaults.fetchFormat, 'markdown');
   assert.equal(defaults.fetchMaxLength, 20000);
+  assert.equal(defaults.renderJs, 'auto', 'rendering is opt-in per shell page, never surprising');
+  assert.equal(defaults.renderTimeoutMs, 15000);
 
   const overridden = resolveConfig({ fetchFormat: 'text', fetchMaxLength: 50000 } as ConfigInput, undefined);
   assert.equal(overridden.fetchFormat, 'text');
@@ -170,5 +172,13 @@ test('fetch format and length resolve with defaults and reject out-of-range valu
   assert.throws(
     () => resolveConfig({ fetchFormat: 'html' } as unknown as ConfigInput, undefined),
     /\$\.fetchFormat expected "markdown" \| "text" but got "html"/,
+  );
+  assert.throws(
+    () => resolveConfig({ renderJs: 'sometimes' } as unknown as ConfigInput, undefined),
+    /\$\.renderJs expected "auto" \| "always" \| "off" but got "sometimes"/,
+  );
+  assert.throws(
+    () => resolveConfig({ renderTimeoutMs: 500 } as ConfigInput, undefined),
+    /\$\.renderTimeoutMs expected number >= 1000 but got 500/,
   );
 });

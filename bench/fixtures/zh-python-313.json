@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-python-313",
+  "query": "Python 3.13 新特性",
+  "language": "zh",
+  "category": "release",
+  "expectedDomains": [
+    "docs.python.org",
+    "python.org"
+  ],
+  "recordedAt": "2026-10-22T14:10:19.599Z",
+  "elapsedMs": 1639,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+          "title": "Python 3.13 有什么新变化",
+          "snippet": "Python 3.13 Python 编程语言的一个稳定发布版，包含多项针对语言、实现和标准库的改变。 最大的变化包括一个新的交互式解释器，对于在自由线程模式 (PEP 703) 下运行以及 ..."
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_42212872/article/details/144067816",
+          "title": "【Python 3.13】新特性解读，重大改进建议升级：JIT编译、免GIL",
+          "snippet": "Python 3.13 · 1. 提升交互式解释器(REPL)体验 · 2. 更清晰友好的错误信息 · 3. 迈向无GIL的自由线程Python · 4. 实验性的JIT编译器 · 5. 静态类型系统的 ...",
+          "publishedAt": "2024-11-26T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.reddit.com/r/Python/comments/1fyeo1g/python_313s_best_new_features/?tl=zh-hans",
+          "title": "Python 3.13 的最佳新功能",
+          "snippet": "Python 3.13 的最佳新功能 · 块级编辑，这对于经常编写代码或大量使用REPL 的人来说是一个巨大的解脱 · 智能粘贴：现在粘贴代码块直接就能用 · 智能复制： ...",
+          "publishedAt": "2024-10-22T14:10:19.598Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/11773309943",
+          "title": "Python3.13封神！将会改变AI和ML的游戏规则",
+          "snippet": "Python 3.13 引入了自由线程和JIT(JIT)编译等实验性功能,这些功能可以显著提高计算密集型工作负载的性能,而计算密集型工作负",
+          "publishedAt": "2024-12-10T12:00:00.000Z"
+        },
+        {
+          "url": "https://juejin.cn/post/7447783762837389338",
+          "title": "Python 3.13 新特性与更新详解",
+          "snippet": "Python 3.13 新特性与更新详解 · 1. 交互式解释器革新 · 2. 错误信息优化 · 3. 实验性无GIL 线程支持(Free-threaded CPython) · 4. 实验性JIT 编译器 · 5.",
+          "publishedAt": "2024-12-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://yanbin.blog/python-3-13-new-features/",
+          "title": "Python 3.13 新特性学习 - 隔叶黄莺Yanbin's Blog - 软件编程实践",
+          "snippet": "Python 3.13 最大的变化就是REPL(Read-Evaluate-Print Loop) Python 控制台交互界面… 改进了错误消息显示和REPL 时一样",
+          "publishedAt": "2025-09-28T12:00:00.000Z"
+        },
+        {
+          "url": "https://cloud.tencent.com/developer/article/2457400",
+          "title": "Python 3.13 来了！更效率、更优雅 - 腾讯云",
+          "snippet": "Python 3.13引入七项类型新特性，如ReadOnly类型、@warnings.deprecated装饰器等，提升代码可靠性与开发效率。同时，性能获改进，部分过时方法被移除 ...",
+          "publishedAt": "2024-10-12T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.comfy.org/zh/changelog",
+          "title": "更新日志",
+          "snippet": "Python 3.13 支持：完全兼容Python 3.13，保持ComfyUI 与最新Python 发展同步; 前端更新：更新到v1.25.10，改进导航和用户界面增强功能; 逐元素融合：通过逐元素操作融合 ...",
+          "publishedAt": "2026-10-22T10:10:19.598Z"
+        },
+        {
+          "url": "https://pypi.org/project/chan-lun-core/0.1.9/",
+          "title": "chan-lun-core",
+          "snippet": "特性. 完整理论链条:包含处理→ 分型→ 笔→ 线段→ 中枢→ 背驰→ 三类买卖 ... CI(GitHub Actions)在Python 3.10 / 3.13 双版本运行同一套测试,打 v* tag 后自动 ...",
+          "publishedAt": "2026-10-22T00:10:19.598Z"
+        },
+        {
+          "url": "https://www.kmf.ac.cn/EN/10.13266/j.issn.2095-5472.2026.038",
+          "title": "A Case Study of Academic Posts on Zhihu and Rednote",
+          "snippet": "本研究使用Anaconda中的Jupyter Notebook开发环境、以Python 3.13作为编程语言，按照图1所示研究框架的步骤进行数据采集、数据处理、情绪分类以及BERTopic主题特征提取， ..."
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.python.org/",
+          "title": "Welcome to Python .org",
+          "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+        },
+        {
+          "url": "https://www.python.org/downloads/",
+          "title": "Download Python | Python .org",
+          "snippet": "Starting with the Python 3.11.0, Python 3.10.7, and Python 3.9.14 releases, CPython release artifacts are signed with Sigstore. See our …"
+        },
+        {
+          "url": "https://pythonlang.cn/",
+          "title": "欢迎来到 Python .org - Python 编程语言",
+          "snippet": "2026年9月29日 · 快速 & 易于学习 任何其他语言的有经验的程序员都可以非常快速地掌握 Python，而初学者会发现其简洁的语法和缩进结构 …",
+          "publishedAt": "2026-09-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.runoob.com/python/python-tutorial.html",
+          "title": "Python 基础教程 | 菜鸟教程",
+          "snippet": "Python 基础教程 Python 是一种解释型、面向对象、动态数据类型的高级程序设计语言。 Python 由 Guido van Rossum 于 1989 年底发明， …"
+        },
+        {
+          "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+          "title": "简介 - Python教程 - 廖雪峰的官方网站",
+          "snippet": "2026年10月6日 · 简介 廖雪峰 资深软件开发工程师，业余马拉松选手。 这是小白的Python新手教程，具有如下特点： 中文，免费，零起点， …",
+          "publishedAt": "2026-10-06T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.python.org/zh-cn/",
+          "title": "Python 3.15.0 文档",
+          "snippet": "1 天前 · Python 开发者指南 有关如何为 Python 做贡献的信息 Python 打包用户指南 与 Python 打包有关的资源 音频/视频讲座 来自社区的播客 …",
+          "publishedAt": "2026-10-21T14:10:18.224Z"
+        },
+        {
+          "url": "https://pythonlang.cn/downloads/",
+          "title": "下载 Python | Python .org - Python 编程语言",
+          "snippet": "2026年9月29日 · 从 python.org 下载的适用于 macOS 的 Python 安装包使用 Apple Developer ID Installer 证书进行签名。 自 Python 3.11.4 …",
+          "publishedAt": "2026-09-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.runoob.com/python/python-basic-syntax.html",
+          "title": "Python 基础语法 | 菜鸟教程",
+          "snippet": "Python 基础语法 Python 语言与 Perl，C 和 Java 等语言有许多相似之处。 但是，也存在一些差异。 在本章中我们将来学习 Python 的基础语 …"
+        },
+        {
+          "url": "https://baike.baidu.com/item/Python/407313",
+          "title": "Python （计算机编程语言）_百度百科",
+          "snippet": "2025年10月7日 · Python 是一种高级、通用、解释型开源编程语言，由 Guido van Rossum 于 1991 年首次发布，现由 Python 软件基金会维 …",
+          "publishedAt": "2025-10-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.python.org/?hl=zh_cn",
+          "title": "Welcome to Python .org",
+          "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+    "https://www.python.org/",
+    "https://docs.python.org/zh-cn/",
+    "https://www.python.org/downloads/",
+    "https://docs.comfy.org/zh/changelog",
+    "https://pypi.org/project/chan-lun-core/0.1.9/",
+    "https://blog.csdn.net/weixin_42212872/article/details/144067816",
+    "https://www.reddit.com/r/Python/comments/1fyeo1g/python_313s_best_new_features/?tl=zh-hans"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)",
+    "ddg-html: aborted once enough results had arrived"
+  ]
+}

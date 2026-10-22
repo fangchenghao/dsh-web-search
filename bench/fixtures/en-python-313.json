@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "en-python-313",
+  "query": "Python 3.13 release notes",
+  "language": "en",
+  "category": "release",
+  "expectedDomains": [
+    "docs.python.org",
+    "python.org"
+  ],
+  "recordedAt": "2026-10-22T14:10:56.399Z",
+  "elapsedMs": 3436,
+  "limit": 8,
+  "lead": "global",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://docs.python.org/3/whatsnew/3.13.html",
+          "title": "What's New In Python 3.13",
+          "snippet": "The biggest changes include a new interactive interpreter, experimental support for running in a free-threaded mode (PEP 703), and a Just-In-Time compiler (PEP ..."
+        },
+        {
+          "url": "https://www.python.org/downloads/release/python-31313/",
+          "title": "Python Release Python 3.13.13",
+          "snippet": "Note: Python 3.13.13 has been superseded by Python 3.13.16. Release date: April 7, 2026. This is the thirteenth maintenance release of Python 3.13.",
+          "publishedAt": "2026-04-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.reddit.com/r/Python/comments/1fyeo1g/python_313s_best_new_features/",
+          "title": "Python 3.13's best new features",
+          "snippet": "Python 3.13's best new features ; Block-level editing, which is a huge relief for folks who live code or make heavy use of the REPL ; Smart ...",
+          "publishedAt": "2024-10-22T14:10:54.752Z"
+        },
+        {
+          "url": "https://realpython.com/python313-new-features/",
+          "title": "Python 3.13: Cool New Features for You to Try",
+          "snippet": "Python 3.13 was published on October 7, 2024. including multiline editing and efficient pasting of code.",
+          "publishedAt": "2024-09-30T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.geeksforgeeks.org/python/python-3-13-new-features/",
+          "title": "Python 3.13 New Features",
+          "snippet": "Python 3.13 introduces an improved interactive REPL (Read-Eval-Print Loop) with syntax highlighting, colorized tracebacks, improved multi-line ...",
+          "publishedAt": "2026-07-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://flocode.substack.com/p/047-python-313-whats-new-and-whats",
+          "title": "Python 3.13: What's New and What's Relevant for Engineers?",
+          "snippet": "Python 3.13 introduces an improved interactive interpreter, with clearer error messages and color-coded tracebacks, pretty nice!",
+          "publishedAt": "2024-10-22T14:10:54.752Z"
+        },
+        {
+          "url": "https://github.com/python/cpython/blob/main/Doc/whatsnew/3.13.rst",
+          "title": "cpython/Doc/whatsnew/3.13.rst at main · python ...",
+          "snippet": "This article explains the new features in Python 3.13, compared to 3.12. Python 3.13 was released on October 7, 2024. For full details, see the :ref:`changelog ..."
+        },
+        {
+          "url": "https://docs.comfy.org/changelog",
+          "title": "Changelog - ComfyUI",
+          "snippet": "Python 3.13 Support: Full compatibility with Python 3.13, keeping ComfyUI current with latest Python developments; Frontend Update: Updated to v1.25.10 with ...",
+          "publishedAt": "2026-10-22T10:10:54.752Z"
+        },
+        {
+          "url": "https://community.chocolatey.org/packages/python",
+          "title": "Chocolatey Software | Python 3.15.1",
+          "snippet": "Notes ; Python 3.12.4, 902647, Friday, June 7, 2024, Approved ; Python 3.12.3, 858573, Tuesday, April 9, 2024, Approved.",
+          "publishedAt": "2026-10-22T04:10:54.752Z"
+        },
+        {
+          "url": "https://romankurnovskii.com/en/blog/python-version-comparison",
+          "title": "Python Version Comparison: 3.15 Down to 3.7 — What's New ...",
+          "snippet": "Python 3.14 vs 3.13. Released October 2025, Python 3.14 makes the experimental 3.13 features production-ready and adds new high-level developer features.",
+          "publishedAt": "2026-10-21T17:10:54.752Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://docs.python.org/3/whatsnew/3.13.html",
+          "title": "What's New In Python 3.13 — Python 3.15.0 documentation",
+          "snippet": "What's New In Python"
+        },
+        {
+          "url": "https://www.python.org/downloads/release/python-3130/?featured_on=pythonbytes",
+          "title": "Python Release Python 3.13.0 | Python.org",
+          "snippet": "Python"
+        },
+        {
+          "url": "https://www.python.org/downloads/release/python-31313/",
+          "title": "Python Release Python 3.13.13 | Python.org",
+          "snippet": "Get the latest release"
+        },
+        {
+          "url": "https://docs.python.org/3.13//contents.html",
+          "title": "Python Documentation contents — Python 3.13.16 documentation",
+          "snippet": "What's New in Python"
+        },
+        {
+          "url": "https://blog.python.org/2026/10/python-3151-3149-31317/",
+          "title": "Python 3.15.1, 3.14.9 and 3.13.17 are out | Python Insider",
+          "snippet": "Here are expedited security releases"
+        },
+        {
+          "url": "https://github.com/python/cpython/blob/main/Doc/whatsnew/3.13.rst",
+          "title": "cpython/Doc/whatsnew/3.13.rst at main · python/cpython",
+          "snippet": "Summary -- Release"
+        },
+        {
+          "url": "https://blog.python.org/2024/10/python-3130-final-released/",
+          "title": "Python 3.13.0 (final) released | Python Insider",
+          "snippet": "New deprecations, most of which are scheduled for removal from Python"
+        },
+        {
+          "url": "https://versionlog.com/python/3.13/",
+          "title": "Python 3.13 - What's New, Support Lifecycle & EOL - VersionLog",
+          "snippet": "What Is New in Python"
+        },
+        {
+          "url": "https://peps.python.org/pep-0719/",
+          "title": "PEP 719 - Python 3.13 Release Schedule | peps.python.org",
+          "snippet": "This document outlines the development and release"
+        },
+        {
+          "url": "https://test.python.org/downloads/release/python-3130a1/",
+          "title": "Python Release Python 3.13.0a1 | Python.org",
+          "snippet": "Release"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.python.org/",
+          "title": "Welcome to Python .org",
+          "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+        },
+        {
+          "url": "https://www.python.org/downloads/",
+          "title": "Download Python | Python .org",
+          "snippet": "Starting with the Python 3.11.0, Python 3.10.7, and Python 3.9.14 releases, CPython release artifacts are signed with Sigstore. See our …"
+        },
+        {
+          "url": "https://pythonlang.cn/",
+          "title": "欢迎来到 Python .org - Python 编程语言",
+          "snippet": "2026年9月29日 · 快速 & 易于学习 任何其他语言的有经验的程序员都可以非常快速地掌握 Python，而初学者会发现其简洁的语法和缩进结构 …",
+          "publishedAt": "2026-09-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.runoob.com/python/python-tutorial.html",
+          "title": "Python 基础教程 | 菜鸟教程",
+          "snippet": "Python 基础教程 Python 是一种解释型、面向对象、动态数据类型的高级程序设计语言。 Python 由 Guido van Rossum 于 1989 年底发明， …"
+        },
+        {
+          "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+          "title": "简介 - Python教程 - 廖雪峰的官方网站",
+          "snippet": "2026年10月6日 · 简介 廖雪峰 资深软件开发工程师，业余马拉松选手。 这是小白的Python新手教程，具有如下特点： 中文，免费，零起点， …",
+          "publishedAt": "2026-10-06T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.python.org/zh-cn/",
+          "title": "Python 3.15.0 文档",
+          "snippet": "1 天前 · Python 开发者指南 有关如何为 Python 做贡献的信息 Python 打包用户指南 与 Python 打包有关的资源 音频/视频讲座 来自社区的播客 …",
+          "publishedAt": "2026-10-21T14:10:53.157Z"
+        },
+        {
+          "url": "https://pythonlang.cn/downloads/",
+          "title": "下载 Python | Python .org - Python 编程语言",
+          "snippet": "2026年9月29日 · 从 python.org 下载的适用于 macOS 的 Python 安装包使用 Apple Developer ID Installer 证书进行签名。 自 Python 3.11.4 …",
+          "publishedAt": "2026-09-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.runoob.com/python/python-basic-syntax.html",
+          "title": "Python 基础语法 | 菜鸟教程",
+          "snippet": "Python 基础语法 Python 语言与 Perl，C 和 Java 等语言有许多相似之处。 但是，也存在一些差异。 在本章中我们将来学习 Python 的基础语 …"
+        },
+        {
+          "url": "https://baike.baidu.com/item/Python/407313",
+          "title": "Python （计算机编程语言）_百度百科",
+          "snippet": "2025年10月7日 · Python 是一种高级、通用、解释型开源编程语言，由 Guido van Rossum 于 1991 年首次发布，现由 Python 软件基金会维 …",
+          "publishedAt": "2025-10-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.python.org/?hl=zh_cn",
+          "title": "Welcome to Python .org",
+          "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://docs.python.org/3/whatsnew/3.13.html",
+    "https://www.python.org/downloads/release/python-31313/",
+    "https://github.com/python/cpython/blob/main/Doc/whatsnew/3.13.rst",
+    "https://www.python.org/downloads/release/python-3130/?featured_on=pythonbytes",
+    "https://docs.python.org/3.13//contents.html",
+    "https://docs.comfy.org/changelog",
+    "https://blog.python.org/2026/10/python-3151-3149-31317/",
+    "https://community.chocolatey.org/packages/python"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

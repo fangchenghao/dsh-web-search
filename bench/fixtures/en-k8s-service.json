@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "en-k8s-service",
+  "query": "Kubernetes Service official documentation",
+  "language": "en",
+  "category": "docs",
+  "expectedDomains": [
+    "kubernetes.io"
+  ],
+  "recordedAt": "2026-10-22T14:10:47.388Z",
+  "elapsedMs": 4041,
+  "limit": 8,
+  "lead": "global",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service | Kubernetes",
+          "snippet": "In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.",
+          "publishedAt": "2026-07-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://repost.aws/questions/QU-ypXTHBoTuuR2fPNqo4l5g/kubernetes-basics-pods-deployments-services-etc",
+          "title": "Kubernetes basics (pods, deployments, services, etc.) | AWS re:Post",
+          "snippet": "Explore official documentation: The official Kubernetes ... Kubernetes. Additionally, since you're learning through AWS, the Amazon EKS ...",
+          "publishedAt": "2025-02-10T12:00:00.000Z"
+        },
+        {
+          "url": "https://learn.microsoft.com/en-us/azure/aks/",
+          "title": "Azure Kubernetes Service (AKS) documentation - Microsoft Learn",
+          "snippet": "AKS allows you to quickly deploy a production ready Kubernetes cluster in Azure. Learn how to use AKS with these quickstarts, tutorials, and samples."
+        },
+        {
+          "url": "https://docs.aws.amazon.com/eks/",
+          "title": "Amazon Elastic Kubernetes Service Documentation",
+          "snippet": "Amazon Elastic Kubernetes Service (Amazon EKS) is a managed service that makes it easy for you to run Kubernetes on AWS without needing to install and ..."
+        },
+        {
+          "url": "https://upcloud.com/docs/changelog/2026-10-22-kubernetes-1.36/",
+          "title": "Kubernetes v1.36 now available",
+          "snippet": "DocumentationComprehensive guides and references for using our services. ... Kubernetes Service version upgrade, as displayed in the Settings tab in the UpCloud.",
+          "publishedAt": "2026-10-22T09:10:46.865Z"
+        },
+        {
+          "url": "https://redis.io/docs/latest/operate/kubernetes/8.2.0/reference/yaml/rack-awareness/",
+          "title": "Rack awareness examples | Docs",
+          "snippet": "For complete deployment instructions, see Deploy on Kubernetes. Service account. The service account for rack-aware deployments is the same as basic deployments ...",
+          "publishedAt": "2026-10-22T04:10:46.865Z"
+        },
+        {
+          "url": "https://kestra.io/blueprints/kubernetes-cert-manager-acme-challenge-timeout-sentinel",
+          "title": "Kubernetes cert-manager ACME Challenge Timeout Sentinel",
+          "snippet": "Kubernetes Python Client Official Documentation · Let's Encrypt Challenge ... Audits Kubernetes CoreDNS cluster service discovery to detect unready DNS resolver ...",
+          "publishedAt": "2026-10-21T16:10:46.865Z"
+        },
+        {
+          "url": "https://portal.nutanix.com/docs/Nutanix-Kubernetes-Platform-v2_19:Nutanix-Kubernetes-Platform-v2_19",
+          "title": "Nutanix Kubernetes® Platform Guide",
+          "snippet": "Documentation. Software Documentation. Hardware Documentation. Knowledge Base ... Deploy applications and services within Kubernetes clusters with Helm.",
+          "publishedAt": "2026-10-21T23:10:46.865Z"
+        },
+        {
+          "url": "https://www.cloudbolt.io/tools/open-source-kubernetes-resource-review-mixin/",
+          "title": "Open-Source Kubernetes Resource Review Mixin",
+          "snippet": "Kubernetes utilization benchmark How does your Kubernetes utilization compare? ... Service offerings · Contact us · Documentation · Support center. © 2026 ...",
+          "publishedAt": "2026-10-22T03:10:46.865Z"
+        },
+        {
+          "url": "https://docs.nvidia.com/dynamo/dev/kubernetes/fault-tolerance/admission-control",
+          "title": "Admission Control | NVIDIA Dynamo Documentation",
+          "snippet": "Configure the backend admission gate in a Kubernetes deployment.",
+          "publishedAt": "2026-10-22T07:10:46.865Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/docs/home/",
+          "title": "Kubernetes Documentation",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service - Kubernetes",
+          "snippet": "In Kubernetes"
+        },
+        {
+          "url": "https://docs.aws.amazon.com/eks/",
+          "title": "Amazon Elastic Kubernetes Service Documentation",
+          "snippet": "Amazon Elastic Kubernetes"
+        },
+        {
+          "url": "https://v1-33.docs.kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service | Kubernetes",
+          "snippet": "The Gateway API for Kubernetes"
+        },
+        {
+          "url": "https://github.com/kubernetes/website",
+          "title": "GitHub - kubernetes/website: Kubernetes website and documentation repo:",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts",
+          "title": "Core concepts for Azure Kubernetes Service (AKS)",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://learn.microsoft.com/en-us/azure/aks/",
+          "title": "Azure Kubernetes Service (AKS) documentation | Microsoft Learn",
+          "snippet": "AKS allows you to quickly deploy a production ready Kubernetes"
+        },
+        {
+          "url": "https://istio.io/latest/docs/",
+          "title": "Istio / Documentation",
+          "snippet": "Learn how to deploy, use, and operate Istio."
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh/",
+          "title": "Kubernetes",
+          "snippet": "Kubernetes 也称为 K8s，是用于自动部署、扩缩和管理容器化应用程序的开源系统。 它将组成应用程序的容器组合成逻辑单元，以便于管理和 … 阅读更多"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/home/",
+          "title": "Kubernetes 文档",
+          "snippet": "尝试 Kubernetes 按照教程学习如何在 Kubernetes 上部署应用。 你好，Minikube 基础知识介绍 无状态应用示例：基于 Redis 的 PHP …"
+        },
+        {
+          "url": "https://cloud.tencent.com/developer/article/2640426",
+          "title": "Kubernetes （K8s）从入门到精通：一篇彻底搞懂云原生核心",
+          "snippet": "2026年3月17日 · Kubernetes (K8s)是云原生时代的容器编排系统，解决Docker单机部署的局限性。 本文详解K8s核心架构 …",
+          "publishedAt": "2026-03-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/sinat_39327967/article/details/158390297",
+          "title": "Kubernetes (K8s) 从入门到实战：超详细教程（2026版）",
+          "snippet": "2026年2月25日 · 本教程系统讲解Kubernetes集群搭建与核心运维实践，涵盖环境准备、单Master多Worker集群部署、Deployment/Service …",
+          "publishedAt": "2026-02-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/kubernetes/22864162",
+          "title": "kubernetes _百度百科",
+          "snippet": "2026年4月13日 · Kubernetes是 Google 开源的一个容器编排引擎，它支持 自动化部署 、大规模可伸缩、应用容器化管理。 在生产环境中部 …",
+          "publishedAt": "2026-04-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_43980547/article/details/137085690",
+          "title": "Kubernetes 超详细教程，一篇文章帮助你从零开始学习k8s ...",
+          "snippet": "2024年3月27日 · 本文是 Kubernetes 超详细教程，介绍了 k8s 概念、特点、架构、使用场景等基础知识，涵盖 minikube 安装、服务器裸机 …",
+          "publishedAt": "2024-03-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ltd/zh-cn/docs/",
+          "title": "文档 | Kubernetes",
+          "snippet": "2026年4月19日 · 文档 Kubernetes 文档 Kubernetes 是一个开源的容器编排引擎，用来对容器化应用进行自动部署、扩缩和管理。 此开源项 …",
+          "publishedAt": "2026-04-19T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/621593509",
+          "title": "一文让你全面了解K8s ( Kubernetes ) - 知乎",
+          "snippet": "2023年4月14日 · 随着时间的推移，Kubernetes 社区逐渐成为了一个庞大的开源生态系统，在全球范围内得到广泛的应用和推广。 目 …",
+          "publishedAt": "2023-04-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ac.cn/docs/home/",
+          "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "2026年9月4日 · 尝试 Kubernetes 通过教程学习如何在 Kubernetes 中部署应用程序。 你好 Minikube 基础知识演练 无状态示例：带 Redis 的 …",
+          "publishedAt": "2026-09-04T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://kubernetes.io/docs/concepts/services-networking/service/",
+    "https://learn.microsoft.com/en-us/azure/aks/",
+    "https://docs.aws.amazon.com/eks/",
+    "https://redis.io/docs/latest/operate/kubernetes/8.2.0/reference/yaml/rack-awareness/",
+    "https://kubernetes.io/docs/home/",
+    "https://upcloud.com/docs/changelog/2026-10-22-kubernetes-1.36/",
+    "https://v1-33.docs.kubernetes.io/docs/concepts/services-networking/service/",
+    "https://kestra.io/blueprints/kubernetes-cert-manager-acme-challenge-timeout-sentinel"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

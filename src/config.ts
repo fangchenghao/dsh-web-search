@@ -21,6 +21,7 @@
  */
 import z from '@deepseek-ai/schemastery';
 import { DEFAULT_FETCH_MAX_LENGTH } from './markdown.ts';
+import type { RenderMode } from './render.ts';
 import type { RankOptions, TimeRange, WaitPolicy } from './types.ts';
 import { VERTICAL_IDS, isVerticalId } from './verticals.ts';
 
@@ -43,6 +44,18 @@ export const Config = z.object({
     .max(200000)
     .default(DEFAULT_FETCH_MAX_LENGTH)
     .description('一次抓取最多返回多少个字符（1000-200000）；超出会在末尾注明原始长度。想一次多读可调到 50000，日常保持 20000 即可。')
+    .volatile(),
+  renderJs: z
+    .union(['auto', 'always', 'off'])
+    .default('auto')
+    .description('脚本渲染页面的处理方式：auto 只在正文像空壳网页时才用浏览器渲染（推荐），always 每次抓取都渲染（更慢），off 从不渲染。需要另外安装 Playwright；没装就静默跳过，不影响抓取。')
+    .volatile(),
+  renderTimeoutMs: z
+    .natural()
+    .min(1000)
+    .max(120000)
+    .default(15000)
+    .description('用浏览器渲染一个页面最多等多久（毫秒，1000-120000）。页面很重可加到 30000；平时保持 15000 即可。')
     .volatile(),
   wait: z
     .union(['auto', 'all', 'fast'])
@@ -144,6 +157,10 @@ export interface ResolvedConfig {
   fetchFormat: 'markdown' | 'text';
   /** `web_fetch` character budget. */
   fetchMaxLength: number;
+  /** Browser rendering policy for `web_fetch`. */
+  renderJs: RenderMode;
+  /** Browser-render deadline in milliseconds. */
+  renderTimeoutMs: number;
   /** Explicit tunnel URL, or `undefined` to detect one. */
   proxy: string | undefined;
   /** Caller budget cap. */
@@ -224,6 +241,8 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     timeoutMs: settings.timeoutMs,
     fetchFormat: settings.fetchFormat,
     fetchMaxLength: settings.fetchMaxLength,
+    renderJs: settings.renderJs,
+    renderTimeoutMs: settings.renderTimeoutMs,
     proxy: proxy.length > 0 ? proxy : undefined,
     limit,
     wait: settings.wait,

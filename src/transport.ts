@@ -13,6 +13,20 @@ import { SearchError, parseRetryAfter } from './errors.ts';
 import { proxyGet } from './proxy.ts';
 import { echoesQuery } from './parsers.ts';
 
+/** Markers of an interstitial anti-bot page, narrow enough not to hit prose. */
+const BOT_WALL_MARKERS = ['qcaptcha', '访问异常', 'unusual traffic', 'verify you are human', '安全验证'];
+
+/**
+ * Whether a payload is an anti-bot interstitial rather than a result page.
+ * @param payload - response body.
+ * @returns true when the page is a wall.
+ */
+function looksLikeBotWall(payload: string): boolean {
+  if (payload.length === 0) return true;
+  const sample = payload.slice(0, 4000).toLowerCase();
+  return BOT_WALL_MARKERS.some((marker) => sample.includes(marker.toLowerCase()));
+}
+
 /** The user agent the scraped engines see. */
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
@@ -111,6 +125,13 @@ async function attempt(
   }
 
   if (status < 200 || status >= 300) return { ok: false, error: statusError(host.id, status, retryAfter) };
+
+  // A wall served with HTTP 200 is not an empty result set. Treating it as one
+  // quietly removed an engine from every search while its slot stayed reserved,
+  // and the cooldown never engaged because nothing had failed.
+  if (looksLikeBotWall(payload)) {
+    return { ok: false, error: new SearchError(`${host.id}: bot verification page`, 'SEARCH_BLOCKED', true, retryAfter) };
+  }
 
   // A JSON API validates itself through its envelope, so the echoed-query check
   // (which exists to catch a rate-limit page served with HTTP 200) does not

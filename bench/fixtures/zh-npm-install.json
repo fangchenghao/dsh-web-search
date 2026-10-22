@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-npm-install",
+  "query": "npm install 依赖 package.json",
+  "language": "zh",
+  "category": "package",
+  "expectedDomains": [
+    "docs.npmjs.com",
+    "npmjs.com"
+  ],
+  "recordedAt": "2026-10-22T14:10:31.341Z",
+  "elapsedMs": 1976,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://blog.csdn.net/lydia_liuY/article/details/80816267",
+          "title": "npm如何一键安装package.json里的依赖文件。 原创 - CSDN博客",
+          "snippet": "npm install 默认安装package.json中的所有模块。 如果只想安装dependencies中的内容，可以使用--dependencies字段： npm install --dependencies."
+        },
+        {
+          "url": "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+          "title": "Adding dependencies to a package.json file - npm Docs",
+          "snippet": "# Specifying dependencies and devDependencies in a package.json file When you (or another user) run `npm install`, npm will download dependencies and devDependencies that are listed in `package.json` that meet the [semantic version](https://docs.npmjs.com/about-semantic-versioning) requirements list..."
+        },
+        {
+          "url": "https://docs.cloud.google.com/run/docs/runtimes/nodejs-dependencies?hl=zh-cn",
+          "title": "指定Node.js 依赖项| Cloud Run",
+          "snippet": "Node.js 中的依赖项可通过npm 进行管理，并在名为 package.json 的元数据文件中表示。您可以使用npm、yarn 或pnpm 来安装Node.js 依赖项。 Node.js Functions 框架是所有 ..."
+        },
+        {
+          "url": "https://stackoverflow.com/questions/6480549/install-dependencies-globally-and-locally-using-package-json",
+          "title": "Install dependencies globally and locally using package.json",
+          "snippet": "Using npm we can install the modules globally using -g option. How can we do this in the package.json file? Suppose, these are my dependencies ..."
+        },
+        {
+          "url": "https://bbs.imbhj.com/t/topic/444",
+          "title": "npm包管理之严格按照package-lock安装本地环境 - CEPD@BBS",
+          "snippet": "要严格按照 package-lock.json 安装，杜绝任何自动升级和不确定性，请使用 npm ci 。 · npm install 用于日常开发中管理（增、删、改）你的项目依赖。 · npm ..."
+        },
+        {
+          "url": "https://juejin.cn/post/7201889983170756664",
+          "title": "浅谈npm install 依赖安装原理 - 稀土掘金",
+          "snippet": "package.json 通常只会锁定大版本，意味着按照 package.json 安装依赖版本可能会发生改变，package-lock.json 可以保证依赖安装的一致性. 加快依赖包 ..."
+        },
+        {
+          "url": "https://nodejs.cn/npm/packages-and-modules/contributing-packages-to-the-registry/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+          "title": "在package.json 文件中指定dependencies 和 ...",
+          "snippet": "要指定您的项目所依赖的包，您必须在包的 package.json 文件中将它们列为 \"dependencies\" 或 \"devDependencies\" 。当您（或其他用户）运行 npm install 时，npm 将下载 ..."
+        },
+        {
+          "url": "https://www.trae.cn/article/660486402",
+          "title": "npm install命令的工作流程与使用场景解析 - TRAE",
+          "snippet": "当你执行这个命令时，npm 会根据package.json 文件中定义的依赖项，自动下载并安装所需的包。这个看似简单的命令背后，隐藏着复杂而精妙的工作机制。 工作 ..."
+        },
+        {
+          "url": "https://gist.github.com/a6555d921659890f69046b788f21f23b",
+          "title": "package.json for NPM 文件详解 - Discover gists · GitHub",
+          "snippet": "package.json文件描述了一个NPM包的所有相关信息，包括作者、简介、包依赖、构建等信息。格式必须是严格的JSON格式。 通常我们在创建一个NPM程序时，可以使用npm init ..."
+        },
+        {
+          "url": "https://docs.npmjs.com/cli/configuring-npm/package-json/",
+          "title": "package.json - npm Docs",
+          "snippet": "# package.json ## [bin](https://docs.npmjs.com/cli/v12/configuring-npm/package-json#bin) ```json { \"bin\": { \"myapp\": \"bin/cli.js\" } } ``` ## [dependencies](https://docs.npmjs.com/cli/v12/configuring-npm/package-json#dependencies) ### [URLs as Dependencies](https://docs.npmjs.com/cli/v12/configuring-..."
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.npmjs.com/",
+          "title": "npm | Home",
+          "snippet": "3 天之前 · Relied upon by more than 17 million developers worldwide, npm is committed to making JavaScript development elegant, …",
+          "publishedAt": "2026-10-19T14:10:30.085Z"
+        },
+        {
+          "url": "https://nodejs.org/en/download",
+          "title": "Download Node.js ®",
+          "snippet": "Download Node.js® Get Node.js® v24.22.1 LTS for Windows using Chocolatey with npm Info Want new features sooner? Get the latest …"
+        },
+        {
+          "url": "https://www.npmjs.com/package/npm",
+          "title": "npm - npm",
+          "snippet": "2 天之前 · Is \"npm\" an acronym for \"Node Package Manager\"? Contrary to popular belief, npm is not an acronym for \"Node Package …",
+          "publishedAt": "2026-10-20T14:10:30.085Z"
+        },
+        {
+          "url": "https://www.runoob.com/nodejs/nodejs-npm.html",
+          "title": "NPM 使用介绍 | 菜鸟教程",
+          "snippet": "NPM 使用介绍 NPM（Node Package Manager）是一个 JavaScript 包管理工具，也是 Node.js 的默认包管理器。 NPM 允许开发者轻松地下 …"
+        },
+        {
+          "url": "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/?ref=meilisearch-blog",
+          "title": "Downloading and installing Node.js and npm | npm Docs",
+          "snippet": "14 小时之前 · To publish and install packages to and from the public npm registry or a private npm registry, you must install Node.js and …",
+          "publishedAt": "2026-10-22T00:10:30.085Z"
+        },
+        {
+          "url": "https://npm.nodejs.cn/cli/v11/configuring-npm/install/",
+          "title": "安装 | npm 中文网",
+          "snippet": "2026年10月8日 · 🌐 To publish and install packages to and from the public npm registry, you must install Node.js and the npm command …",
+          "publishedAt": "2026-10-08T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.npmjs.com/cli/v9/configuring-npm/install/?v=true",
+          "title": "install | npm Docs",
+          "snippet": "6 天之前 · To publish and install packages to and from the public npm registry, you must install Node.js and the npm command line …",
+          "publishedAt": "2026-10-16T14:10:30.085Z"
+        },
+        {
+          "url": "https://www.cnblogs.com/ljbguanli/p/20134805",
+          "title": "2026最新： npm /yarn/pnpm更换国内源全攻略，彻底告别 ...",
+          "snippet": "2026年5月23日 · 你是否也曾在执行 npm install 时，被漫长的等待、频繁的超时或莫名其妙的失败折磨到抓狂？别担心，这几乎是中国 …",
+          "publishedAt": "2026-05-23T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_62818371/article/details/146175470",
+          "title": "NPM 安装与配置全流程详解（2025最新版）-CSDN博客",
+          "snippet": "2025年3月11日 · 本文详细介绍2025最新版NPM安装与配置全流程。 先阐述环境准备与Node.js安装，接着说明NPM核心配置优化，如全局模 …",
+          "publishedAt": "2025-03-11T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/673541115",
+          "title": "理论篇：什么是 NPM 以及为什么 NPM 如此重要 - 知乎",
+          "snippet": "2023年12月21日 · 现在我们回到最初的问题： 什么是NPM，NPM能够做什么？ NPM是JavaScript包管理工具，它方便开发者进行 代码复用 …",
+          "publishedAt": "2023-12-21T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://docs.cloud.google.com/run/docs/runtimes/nodejs-dependencies?hl=zh-cn",
+    "https://nodejs.org/en/download",
+    "https://www.npmjs.com/",
+    "https://www.npmjs.com/package/npm",
+    "https://blog.csdn.net/lydia_liuY/article/details/80816267",
+    "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+    "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/?ref=meilisearch-blog",
+    "https://stackoverflow.com/questions/6480549/install-dependencies-globally-and-locally-using-package-json"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)",
+    "ddg-html: aborted once enough results had arrived"
+  ]
+}

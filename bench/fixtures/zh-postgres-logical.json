@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-postgres-logical",
+  "query": "PostgreSQL 逻辑复制 配置",
+  "language": "zh",
+  "category": "docs",
+  "expectedDomains": [
+    "postgresql.org"
+  ],
+  "recordedAt": "2026-10-22T14:10:12.784Z",
+  "elapsedMs": 3146,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.cnblogs.com/tiany1224/p/18278082",
+          "title": "PostgreSQL 配置逻辑复制- 天涯客1224",
+          "snippet": "PostgreSQL 配置逻辑复制 · 1、发布端复制槽信息如下所示，创建订阅后，自动创建复制槽： · 2、流复制信息如下所示，发布端和订阅端主机之间创建流复制：",
+          "publishedAt": "2024-07-01T12:00:00.000Z"
+        },
+        {
+          "url": "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
+          "title": "逻辑复制和逻辑解码- Azure Database for PostgreSQL",
+          "snippet": "使用本机逻辑复制是将数据从Azure Database for PostgreSQL灵活服务器复制的最简单方法。 你可以使用SQL 接口或流式处理协议来使用更改。 你还可以通过SQL ...",
+          "publishedAt": "2026-07-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+          "title": "为Amazon RDS for PostgreSQL 执行逻辑复制",
+          "snippet": "您可以在实例上设置逻辑复制槽并通过这些槽将数据库更改流式传输到某个客户端（如 pg_recvlogical ）。您可在数据库级别创建逻辑复制槽，它们支持与单个数据库的复制连接。"
+        },
+        {
+          "url": "http://mysql.taobao.org/monthly/2025/03/01/",
+          "title": "一文搞懂PostgreSQL逻辑复制的全部原理",
+          "snippet": "一句话概括，逻辑复制是相对于物理复制的概念，物理复制是把对文件块的改动发送到下游，逻辑复制是把数据的改动（一般是修改前/修改后的行）发送到下游。",
+          "publishedAt": "2025-03-01T12:00:00.000Z"
+        },
+        {
+          "url": "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
+          "title": "设置逻辑复制和解码| Cloud SQL for PostgreSQL",
+          "snippet": "如需使用pglogical 设置逻辑复制，必须在主实例上启用逻辑解码。在Cloud SQL 实例上设置 cloudsql.logical_decoding=on ，或在外部实例上设置 wal_level=logical 。"
+        },
+        {
+          "url": "https://www.tencentcloud.com/zh/document/product/409/64755",
+          "title": "使用pglogical 进行逻辑复制",
+          "snippet": "pglogical 是PostgreSQL 的逻辑复制扩展插件，使用“发布/订阅”的数据模型进行数据复制。该模型包含“发布端”和“订阅端”，发布端用于定义和发布指定的 ...",
+          "publishedAt": "2025-05-21T12:00:00.000Z"
+        },
+        {
+          "url": "http://www.postgres.cn/docs/10/logical-replication.html",
+          "title": "第31 章逻辑复制",
+          "snippet": "配置设置 · 31.9. 快速设置. 逻辑复制是根据复制标识（通常是主键）复制数据对象及其更改的一种方法。 我们使用术语逻辑与物理复制相比，它使用确切的块地址和逐字节复制。"
+        },
+        {
+          "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+          "title": "Documentation: 18: Chapter 29. Logical Replication",
+          "snippet": "Logical replication is a method of replicating data objects and their changes, based upon their replication identity (usually a primary key)."
+        },
+        {
+          "url": "https://www.rockdata.net/zh-cn/docs/14/logical-replication.html",
+          "title": "PostgreSQL 14 文档: 第31 章逻辑复制",
+          "snippet": "逻辑复制是一种基于数据对象的复制标识（通常是主键）复制数据对象及其更改的方法。我们使用术语“逻辑”来与物理复制加以区分，后者使用准确的块地址以及逐字节的复制 ..."
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/579672108",
+          "title": "Windows 环境搭建PostgreSQL 物理复制高可用架构数据库 ...",
+          "snippet": "逻辑复制可以简单理解为解析了WAL归档文件中的信息，处理成为标准的SQL语句，传递给存库进行执行，相对于直接传递WAL性能较低，延迟高。 物理复制不需要像逻辑复制一些去 ..."
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.sysgeek.cn/windows-memory-diagnostic/",
+          "title": "Windows 内存诊断 工具详解：轻松完成 内存 检测与测试",
+          "snippet": "2025年7月29日 · 如果你怀疑电脑内存有问题，可以使用 Windows 自带的**「Windows 内存诊断」**工具（WMD， W indows M emory D …",
+          "publishedAt": "2025-07-29T12:00:00.000Z"
+        },
+        {
+          "url": "https://learn.microsoft.com/zh-cn/answers/questions/4370847/question-4370847",
+          "title": "内存诊断 的使用和查看 - Microsoft Q&A",
+          "snippet": "2025年7月9日 · 内存诊断的使用和查看 内存诊断的使用： 一、若是有任何未保存的文档或工作，请先保存并关闭它们。 内存诊断通常需要较 …",
+          "publishedAt": "2025-07-09T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/qq_57728300/article/details/140484898",
+          "title": "Windows 内存诊断 工具怎么打开？ 诊断 结果又该怎么查看 ...",
+          "snippet": "2024年7月17日 · 本文介绍了多种打开Windows内存诊断工具的方法，包括通过搜索栏、命令提示符、设置面板、运行窗口及控制面板等途 …",
+          "publishedAt": "2024-07-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/qq_39980997/article/details/156063512",
+          "title": "Windows 内存诊断 工具_windows memory diagnostic-CSDN博客",
+          "snippet": "2025年12月19日 · 本文介绍Windows内置内存诊断工具的功能与使用方法，涵盖启动方式、诊断模式选择、测试参数配置及结果查看步骤。 …",
+          "publishedAt": "2025-12-19T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/29019632188",
+          "title": "电脑 内存 好坏怎么判断？Windows 内存诊断 帮你解决",
+          "snippet": "2025年3月9日 · 内存诊断工具可以作为 故障排除 过程中的一个重要步骤，帮助确定故障是否由内存引起 Windows内存诊断工具能够检测内 …",
+          "publishedAt": "2025-03-09T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.pcsoft.com.cn/soft/35206.html",
+          "title": "内存 检测工具 ( memtest )下载- 内存 检测工具 ( memtest )官方 ...",
+          "snippet": "2026年1月30日 · 内存检测工具 (memtest)是一款内存检测工具，内存检测工具 (memtest)能够在Windows系统下自动检测内存，帮助用户发 …",
+          "publishedAt": "2026-01-30T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/261372974",
+          "title": "Windows自带超强工具，集检测、清理、修复于一体！实用 ...",
+          "snippet": "2020年10月3日 · 如果你不确定内存是否出现了问题，可以这样诊断： 第一步：在搜索栏中输入【控制面板】，点击进入；将【查看方式】修 …",
+          "publishedAt": "2020-10-03T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.toutiao.com/article/7531527838235689515/",
+          "title": "Windows自带 内存诊断 工具Mdsched.exe详解 - 今日头条",
+          "snippet": "2025年7月27日 · 作为初步筛查： 它是一个方便、内置的初步诊断工具。 如果它报告错误，那内存很可能有问题；但如果它报告无错误，不能 …",
+          "publishedAt": "2025-07-27T12:00:00.000Z"
+        },
+        {
+          "url": "http://memtest86.com.cn/",
+          "title": "MemTest86中文版官网 - 免费下载 | 使用教程 | 内存 检测工具 ...",
+          "snippet": "2026年7月30日 · MemTest86中文版官网 - 免费下载最新版MemTest86，专业内存检测工具，支持UEFI启动、DDR3/DDR4/DDR5全系列内 …",
+          "publishedAt": "2026-07-30T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.php.cn/faq/2275090.html",
+          "title": "电脑怎么检测 内存 条是不是坏了 Windows自带 内存诊断 工具 ...",
+          "snippet": "2026年3月31日 · Windows内存诊断工具可检测内存硬件故障，支持六种启动方式：运行命令、控制面板、任务栏搜索、高级启动选项、管理 …",
+          "publishedAt": "2026-03-31T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://blog.csdn.net/gitblog_00447/article/details/155830766",
+          "title": "PostgreSQL逻辑复制终极方案：pglogical 2全面解析与实战指南",
+          "snippet": "pglogical是PostgreSQL数据库的终极逻辑复制 解决方案，它提供了高效、灵活的数据同步机制，帮助数据库管理员和开发者轻松实现跨服务器的数据复制与同步。 本文将全面解析pglogical 2的核心功能、安装配置流程以及实战应用技巧，让你快速掌握这一强大工具。"
+        },
+        {
+          "url": "https://raybyte.cn/post/2026/2/28/bed51a51",
+          "title": "PostgreSQL逻辑复制配置：实现数据变更捕获的完整方案 | RayByte",
+          "snippet": "本文详细讲解了PostgreSQL逻辑复制的完整配置方案，涵盖从核心概念、环境准备、发布订阅创建、验证监控到关联技术逻辑解码的全过程。通过详实的示例，深入分析了其实现数据变更捕获(CDC)的原理、典型应用场景、技术优势与重要注意事项，为构建实时数据同步与集成管道提供实用指南。"
+        },
+        {
+          "url": "https://postgres.ac.cn/docs/current/logical-replication.html",
+          "title": "PostgreSQL: 文档: 18: 第 29 章 逻辑复制 - PostgreSQL 数据库",
+          "snippet": "PostgreSQL"
+        },
+        {
+          "url": "https://blog.csdn.net/neweastsun/article/details/149199578",
+          "title": "PostgreSQL复制技术全解析：从物理复制到逻辑复制的实践指南_pg逻辑复制生产实践-CSDN博客",
+          "snippet": "文章浏览阅读1.4k次，点赞44次，收藏17次。本文深入剖析PostgreSQL的物理复制与逻辑复制技术，介绍了它们的实现原理、配置方法和应用场景。对比分析两者特点，助读者按需选方案。还给出配置示例、性能优化建议及实际案例，为数据库管理员和架构师提供实践指导。"
+        },
+        {
+          "url": "https://www.cnblogs.com/wy123/p/18294960",
+          "title": "PostgreSQL逻辑复制搭建 - MSSQL123 - 博客园",
+          "snippet": "查看复制状态 postgresql"
+        },
+        {
+          "url": "https://www.cnblogs.com/wy123/p/20936578",
+          "title": "PostgreSQL 17 流复制中开启逻辑复制槽同步，以及逻辑槽的故障转移 - MSSQL123 - 博客园",
+          "snippet": "PostgreSQL"
+        },
+        {
+          "url": "https://runebook.dev/zh/docs/postgresql/logical-replication-quick-setup",
+          "title": "PostgreSQL 逻辑复制：快速入门、故障排除与替代方案",
+          "snippet": "如果逻辑复制不满足您的需求，以下是几个常见的 PostgreSQL"
+        },
+        {
+          "url": "https://runebook.dev/zh/docs/postgresql/runtime-config-replication/GUC-MAX-LOGICAL-REPLICATION-WORKERS",
+          "title": "深入理解 PostgreSQL 的逻辑复制工作进程：配置、常见问题和分片订阅",
+          "snippet": "max_logical_replication_workers 是 PostgreSQL"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1927041306691077387",
+          "title": "PostgreSQL逻辑复制部署指南 - 知乎",
+          "snippet": "通过以上步骤，您应该能够全面验证 PostgreSQL"
+        },
+        {
+          "url": "https://www.database.ink/postgresql/logical-replication-configuration.html",
+          "title": "PostgreSQL 逻辑复制配置 | 印刻数据库",
+          "snippet": "核心概念 PostgreSQL"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
+    "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+    "https://learn.microsoft.com/zh-cn/answers/questions/4370847/question-4370847",
+    "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
+    "https://www.postgresql.org/docs/current/logical-replication.html",
+    "https://www.cnblogs.com/tiany1224/p/18278082",
+    "https://www.sysgeek.cn/windows-memory-diagnostic/",
+    "http://mysql.taobao.org/monthly/2025/03/01/"
+  ],
+  "failures": [
+    "so: page does not match the query (possibly rate limited)"
+  ]
+}

@@ -147,6 +147,8 @@ interface ResolvedOptions {
   /** Active window, or `undefined`/`off` when no filtering runs. */
   timeRange: TimeRange | undefined;
   weights: readonly number[] | undefined;
+  /** Evaluation instant for the freshness boost. */
+  now: number;
 }
 
 /**
@@ -293,6 +295,10 @@ function resolveOptions(options: RankOptions | undefined): ResolvedOptions {
     freshnessDays: positiveOr(options?.freshnessDays, DEFAULT_FRESHNESS_DAYS),
     timeRange: options?.timeRange,
     weights: Array.isArray(options?.weights) ? options.weights : undefined,
+    now:
+      typeof options?.now === 'number' && Number.isFinite(options.now)
+        ? options.now
+        : Date.now(),
   };
 }
 
@@ -417,7 +423,7 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
   const budget = budgetOf(limit);
   if (budget === 0) return [];
   const config = resolveOptions(options);
-  const now = Date.now();
+  const now = config.now;
 
   // Per-engine lists, deduplicated so one engine gets at most one vote per
   // document and the earliest row keeps its rank.
