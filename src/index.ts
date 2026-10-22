@@ -129,7 +129,10 @@ export { Config, resolveConfig } from './config.ts';
  * a perfectly valid Config. Object-style plugins carry the schema as
  * `static Config`; this is the function-style equivalent.
  */
-export default Object.assign(apply, { Config });
+// `inject` must travel with the runtime object too: Cordis reads the service
+// dependencies from the plugin it mounts, so an object without it rejects every
+// service the plugin touches ("cannot get property "web" without inject").
+export default Object.assign(apply, { Config, inject });
 export { HOSTS, search } from './engines.ts';
 export { SearchCache, cacheKey } from './cache.ts';
 export { EngineHealth } from './health.ts';
