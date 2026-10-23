@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.10
+
+### Security
+- The macOS system-proxy probe now spawns `/usr/sbin/scutil` by absolute path
+  instead of resolving `scutil` through `PATH`, so a hijacked `PATH` entry cannot
+  receive that spawn. This also makes the process list in `SECURITY.md` exact.
+
 ## 0.13.9
 
 ### Fixed

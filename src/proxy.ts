@@ -247,7 +247,9 @@ export async function proxyFromSystem(): Promise<string | undefined> {
       clearTimeout(timer);
       resolve(value);
     };
-    const child = spawn('scutil', ['--proxy'], { stdio: ['ignore', 'pipe', 'ignore'] });
+    // Absolute path: a hijacked PATH entry must not be able to receive this
+    // spawn. macOS ships scutil at /usr/sbin/scutil.
+    const child = spawn('/usr/sbin/scutil', ['--proxy'], { stdio: ['ignore', 'pipe', 'ignore'] });
     // `scutil` answers in milliseconds; a wedged system call must not hold a
     // search open, so the probe is capped and the child is killed on expiry.
     const timer = setTimeout(() => {
