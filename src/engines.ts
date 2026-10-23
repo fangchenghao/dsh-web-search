@@ -15,7 +15,7 @@ import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, Search
 import { SearchError } from './errors.ts';
 import { filterByTimeRange, preferWindow } from './freshness.ts';
 import { resolveProxy } from './proxy.ts';
-import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseSo } from './parsers.ts';
+import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseExaMcp, parseFirecrawl, parseSo } from './parsers.ts';
 import { mergeRegions } from './rank.ts';
 import { cacheKey } from './cache.ts';
 import type { SearchCache } from './cache.ts';
@@ -52,6 +52,49 @@ export const HOSTS: readonly HostSpec[] = [
     build: () => 'https://api.anysearch.com/v1/search',
     body: (query) => JSON.stringify({ query, max_results: ANYSEARCH_MAX_RESULTS }),
     parse: parseAnySearch,
+  },
+  {
+    id: 'exa',
+    // A semantic (embedding) index rather than a keyword page: it answers with
+    // the page itself plus highlights. The MCP endpoint accepts anonymous
+    // calls, so it costs no key. Measured on the same recorded fixtures with the
+    // tier-aware replay, MRR@8 0.8071 with Exa in the primary tier versus
+    // 0.7738 without it, and it removes the one zero-hit query.
+    tier: 'primary',
+    region: 'global',
+    weight: 1,
+    viaProxy: true,
+    method: 'POST',
+    skipEcho: true,
+    headers: { accept: 'application/json, text/event-stream' },
+    build: () => 'https://mcp.exa.ai/mcp',
+    body: (query) =>
+      JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: { name: 'web_search_exa', arguments: { query, numResults: 10 } },
+      }),
+    parse: parseExaMcp,
+  },
+  {
+    id: 'firecrawl',
+    // The keyless tier of the Firecrawl search API. It returns extracted page
+    // Markdown rather than snippets, so only the opening prose is kept as the
+    // row's snippet; it handled a Chinese query with the same shape. It ships as
+    // a fallback because it diluted the fusion when it led: MRR@8 0.7208 with
+    // Firecrawl in the primary tier versus 0.8071 with Exa there instead, on the
+    // same fixtures (standalone 0.4625). `hostIds: ['firecrawl']` still forces
+    // it, and it answers whenever every primary came back empty.
+    tier: 'fallback',
+    region: 'both',
+    weight: 1,
+    viaProxy: true,
+    method: 'POST',
+    skipEcho: true,
+    build: () => 'https://api.firecrawl.dev/v1/search',
+    body: (query) => JSON.stringify({ query, limit: 10 }),
+    parse: parseFirecrawl,
   },
   {
     id: 'ddg-html',

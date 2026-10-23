@@ -14,7 +14,9 @@ measurement. This page is both.
 
 1. **Fan out.** Every enabled engine is queried concurrently with its own
    deadline (`timeoutMs`, default 15 s) and its own cooldown state. An engine
-   that just failed is skipped instead of being retried on every query.
+   that just failed is skipped instead of being retried on every query. The
+   primary tier answers first; the fallback tier only runs when every primary
+   came back empty.
 2. **Normalise.** Each parser returns `{title, url, snippet, position, votes}`
    with the engine's own result order preserved. URLs are canonicalised before
    de-duplication so `?utm_source=…` cannot smuggle the same page in twice.
@@ -75,16 +77,18 @@ comparable across commits; `--record` is the only mode that touches the network.
 
 ![Baseline and sweep](images/bench.png)
 
-Baseline (v0.13.0, 20 queries, k=8):
+Baseline (v0.15.0, 20 queries, k=8, tier-aware replay):
 
 | metric | overall | Chinese | English |
 |---|---:|---:|---:|
-| P@8 | 0.3625 | 0.3250 | 0.4000 |
-| R@8 | 0.7417 | 0.7333 | 0.7500 |
-| MRR@8 | 0.7600 | 0.6700 | 0.8500 |
+| P@8 | 0.4375 | 0.4000 | 0.4750 |
+| R@8 | 0.7917 | 0.8167 | 0.7667 |
+| MRR@8 | 0.8071 | 0.7976 | 0.8167 |
 
-One query (`zh-linux-612`) returns zero expected domains; that is visible in
-the output on purpose rather than averaged away.
+Replay is tier-aware: it applies the same primary-then-fallback gate the live
+`search()` applies, instead of ranking every recorded engine as if it had
+answered. That changed the protocol in 0.15.0, so numbers from earlier releases
+(0.7600 MRR) are not directly comparable to these.
 
 ## Parameter sweep
 
@@ -97,24 +101,35 @@ node scripts/sweep.mjs --quick   # 27-config subset
 node scripts/sweep.mjs --json    # includes the per-config CI data
 ```
 
-Marginal MRR@8 (all other knobs at defaults):
+Marginal means over the whole grid (every other knob varies with it):
 
 | `rrfConstant` | MRR@8 | `authorityBoost` | MRR@8 | `freshnessBoost` | MRR@8 |
 |---:|---:|---:|---:|---:|---:|
-| 40 | 0.7712 | 0.1 | 0.7733 | 0.1 | 0.7681 |
-| **60** | **0.7604** | **0.25** | **0.7645** | **0.2** | **0.7598** |
-| 80 | 0.7456 | 0.4 | 0.7395 | 0.35 | 0.7494 |
+| 40 | 0.8339 | 0.1 | 0.8275 | 0.1 | 0.8230 |
+| **60** | **0.8278** | **0.25** | **0.8262** | **0.2** | **0.8245** |
+| 80 | 0.8195 | 0.4 | 0.8275 | 0.35 | 0.8336 |
 
-The best grid point (`rrf=40, authority=0.1, freshness=0.1`) measures MRR 0.8042
-against the default 0.7600 — a gain of +0.0442 — but its 95 % paired-bootstrap
-interval is `[-0.0038, +0.1229]`, which straddles zero. The entire gain comes
-from two of twenty queries. That is a promising direction, not a proven win, so
-the defaults did not change. The sweep is kept as a script precisely so this
-question can be re-asked after the query set grows.
+The best grid point (`rrf=40, authority=0.25, freshness=0.35`) measures MRR
+0.8583 against the default 0.8071 — a gain of +0.0512 — but its 95 %
+paired-bootstrap interval `[0.0000, +0.1250]` touches zero, and the marginals
+above differ from the default by less than the interval width. On a 20-query
+corpus that is a direction, not a proven win, so the defaults did not change.
+The sweep is kept as a script precisely so this question can be re-asked after
+the query set grows.
 
-The same discipline applied to engine weights: dropping `cn.bing` to weight 0.25
-and raising `ddg-html` to 2 measured MRR 0.7708 with a lower bound of 0.0000 —
-inside noise, so it was not adopted.
+The same discipline decided the new engines' tiers. On one recorded fixture
+set, with the tier-aware replay:
+
+| configuration | MRR@8 |
+|---|---:|
+| previous primaries only | 0.7738 |
+| **previous primaries + Exa** | **0.8071** |
+| previous primaries + Firecrawl | 0.7208 |
+| previous primaries + both | 0.7542 |
+
+Exa therefore leads; Firecrawl is parsed and tested but ships as the fallback,
+available through `hostIds: ['firecrawl']` and used whenever every primary
+returns nothing.
 
 ## Known limits
 
@@ -122,6 +137,9 @@ inside noise, so it was not adopted.
   constraint in the words themselves. The freshness boost can only act on dates
   it can parse out of snippets; when an engine's snippet omits the date, the
   ranker cannot recover it. This is documented rather than papered over.
+- **Replay, not live search.** The bench replays recorded rows, so it measures
+  the ranker and the fusion, not today's engine availability. `--record` is the
+  only mode that touches the network.
 - **Snippet quality bounds ranking.** If no engine returns the expected domain
   in its top 20, fusion cannot invent it; `bench/` makes that visible per query.
 - **The fixture set is 20 queries.** Small enough to run on every change, too

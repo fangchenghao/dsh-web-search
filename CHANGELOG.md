@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.15.0
+
+### Added
+- **`research` tool.** One call runs up to three searches, opens the leading
+  pages through the same fetch ladder as `web_fetch`, and returns an evidence
+  pack in which every excerpt sits under its URL. Pages that fail to load are
+  reported by URL and reason; the search rows still arrive. Registers as
+  `web_research` when another plugin owns the name, and uses its own
+  `http-proxy-research` fetch provider so it cannot disturb the host renderer
+  cache.
+- **Two keyless engines.** `exa` (anonymous MCP semantic search) joins the
+  primary tier; `firecrawl` (key-free search API) ships as the fallback.
+- **26 new `domain_search` sources** (34 in total): GitLab, Codeberg, Docker
+  Hub, Maven, NuGet, RubyGems, Packagist, pub.dev, Hugging Face models and
+  datasets, Open VSX, Terraform modules and providers, WordPress, JetBrains,
+  OpenAlex, Crossref, Europe PMC, UniProt, ClinicalTrials.gov, NVD, CoinGecko,
+  Internet Archive, Wikidata, Nominatim, GitHub issues. All are opt-in through
+  `sources`; the default remains the historical eight so GitHub's anonymous
+  10-requests-per-minute limit is not spent by every call.
+
+### Changed
+- The benchmark replay is **tier-aware**: a fallback engine only contributes
+  when every recorded primary came back empty, matching what `search()` does in
+  production. The baseline was restated accordingly (MRR@8 0.8071, P@8 0.4375,
+  zero-hit queries 0) and the 81-configuration sweep was re-run; numbers before
+  0.15.0 used a different replay and are not directly comparable.
+- Engine tiers were decided by measurement on one recorded fixture set: previous
+  primaries 0.7738 MRR, +Exa 0.8071, +Firecrawl 0.7208, +both 0.7542.
+- `SECURITY.md` lists the two new providers and all 34 vertical hosts.
+
+### Fixed
+- See 0.13.11: the 25 s fetch budget is per request instead of per plugin mount.
+
 ## 0.14.0
 
 Distribution release. No runtime behaviour changed; the search and fetch paths are

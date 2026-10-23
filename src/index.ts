@@ -22,6 +22,8 @@ import { registerSearchManyTool } from './search-many.ts';
 import type { SearchManyOutcome, SearchManyRegistryLike } from './search-many.ts';
 import { registerReadPageTool } from './read-page.ts';
 import type { ReadPageRegistryLike } from './read-page.ts';
+import { registerResearchTool } from './research.ts';
+import type { ResearchFetcher, ResearchRegistryLike } from './research.ts';
 import type { Source } from './types.ts';
 
 export const name = 'dsh-web-search';
@@ -291,6 +293,39 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       if (paged !== undefined) {
         onDispose(ctx, paged.dispose);
       }
+
+      // Research: search -> fetch -> cite in one call. The fetch side reuses the
+      // same ladder as `web_fetch`, but through its own provider: the renderer
+      // load is cached per provider, and a research pack must not replace the
+      // page the host already fetched for the user.
+      const researchProvider = createFetchProvider({
+        id: 'http-proxy-research',
+        timeoutMs: mounted.timeoutMs,
+        format: 'markdown',
+        maxLength: 6_000,
+        renderJs: () => resolveConfig(section, undefined).renderJs,
+        renderTimeoutMs: () => resolveConfig(section, undefined).renderTimeoutMs,
+        ...(mounted.proxy === undefined ? {} : { proxy: mounted.proxy }),
+        ...(mounted.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: mounted.anysearchApiKey }),
+      });
+      const researchFetch: ResearchFetcher = async (url, signal) => {
+        const outcome = await researchProvider.fetch({ url }, signal);
+        return {
+          url: outcome.url,
+          status: outcome.statusCode,
+          text: outcome.body.kind === 'text' ? outcome.body.content : '',
+          truncated: outcome.truncated,
+        };
+      };
+      const research = registerResearchTool(
+        tools as unknown as ResearchRegistryLike,
+        (query, limit, signal) => runQuery(query, limit, signal),
+        researchFetch,
+        { warn: warnTool },
+      );
+      if (research !== undefined) {
+        onDispose(ctx, research.dispose);
+      }
     }
   } catch (error) {
     warnTool(`optional tool registration skipped: ${error instanceof Error ? error.message : String(error)}`);
@@ -350,6 +385,7 @@ export {
 } from './freshness.ts';
 export { parseProxy, proxyFromEnv, resolveProxy, proxyGet } from './proxy.ts';
 export {
+  DEFAULT_VERTICAL_IDS,
   VERTICAL_IDS,
   VERTICALS,
   searchVerticals,
@@ -393,6 +429,31 @@ export type {
   SearchManySource,
   SearchManyValue,
 } from './search-many.ts';
+export {
+  RESEARCH_TOOL_NAME,
+  RESEARCH_TOOL_FALLBACK_NAME,
+  RESEARCH_DEFAULT_SOURCES,
+  RESEARCH_MAX_SOURCES,
+  RESEARCH_MAX_QUERIES,
+  RESEARCH_EXCERPT_CHARS,
+  RESEARCH_BUDGET_MS,
+  createResearchDefinition,
+  registerResearchTool,
+  pickResearchToolName,
+  formatResearchValue,
+} from './research.ts';
+export type {
+  ResearchDefinition,
+  ResearchFetcher,
+  ResearchFetchedPage,
+  ResearchFetchFailure,
+  ResearchPage,
+  ResearchRegistration,
+  ResearchRegistryLike,
+  ResearchSearcher,
+  ResearchSearchOutcome,
+  ResearchValue,
+} from './research.ts';
 export {
   READ_PAGE_TOOL_NAME,
   READ_PAGE_TOOL_FALLBACK_NAME,

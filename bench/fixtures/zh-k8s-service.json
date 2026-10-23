@@ -8,8 +8,8 @@
   "expectedDomains": [
     "kubernetes.io"
   ],
-  "recordedAt": "2026-10-22T14:10:08.135Z",
-  "elapsedMs": 2690,
+  "recordedAt": "2026-10-23T08:30:54.532Z",
+  "elapsedMs": 3519,
   "limit": 8,
   "lead": "cn",
   "wait": "auto",
@@ -30,61 +30,53 @@
       "sources": [
         {
           "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
-          "title": "Service",
-          "snippet": "In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.",
-          "publishedAt": "2026-07-07T12:00:00.000Z"
+          "title": "Service | Kubernetes",
+          "snippet": "# Service ## Defining a Service [Heading self-link](https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service) ```yaml apiVersion: v1 kind: Service metadata: name: my-service spec: selector: app.kubernetes.io/name: MyApp ports: - protocol: TCP port: 80 targetPort: 9376 ``` ..."
         },
         {
           "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
-          "title": "了解Kubernetes 服务| GKE networking",
+          "title": "了解Kubernetes 服务| GKE networking - Google Cloud Documentation",
           "snippet": "本页面介绍了不同类型的Kubernetes Service，以及Google Kubernetes Engine (GKE) 如何使用Service 对Pod 端点进行分组。 您将通过YAML 示例来了解如何创建Service。"
         },
         {
           "url": "https://www.trae.cn/article/3133450242",
-          "title": "K8s Service服务发现：原理、类型与实战配置指南",
-          "snippet": "Kubernetes 官方文档- Service … 可快速生成代码、技术文档和教程,支持多语言框架,理解上下文需求,自动化重复性工作,提供实时优化建议,提升开发效率",
-          "publishedAt": "2025-10-15T12:00:00.000Z"
+          "title": "K8s Service服务发现：原理、类型与实战配置指南 - TRAE",
+          "snippet": "Kubernetes Service 的核心是一个虚拟IP（ClusterIP）配合kube-proxy组件实现的网络代理机制。当创建一个Service 时，K8s 会为其分配一个集群内部唯一的 ..."
         },
         {
           "url": "https://spacelift.io/blog/kubernetes-service",
-          "title": "Kubernetes Service - What It is, Types & Examples",
-          "snippet": "Kubernetes Services are resources that map network traffic to the Pods in your cluster. You need to create a Service each time you expose a set ...",
-          "publishedAt": "2025-05-29T12:00:00.000Z"
-        },
-        {
-          "url": "https://www.mongodb.com/zh-cn/docs/kubernetes/v1.13/reference/k8s-operator-om-specification/",
-          "title": "Ops Manager 资源规范",
-          "snippet": "Kubernetes Operator 创建MongoDB Ops Manager所需的服务和自定义Kubernetes资源，然后在Kubernetes环境中的容器中部署MongoDB Ops Manager及其后端应用程序数据库。 每个 ...",
-          "publishedAt": "2026-10-22T03:10:08.134Z"
-        },
-        {
-          "url": "https://code.visualstudio.com/docs/devcontainers/containers",
-          "title": "Developing inside a Container",
-          "snippet": "The Visual Studio Code Dev Containers extension lets you use a container as a full-featured development environment. It allows you to open any folder inside",
-          "publishedAt": "2026-10-22T05:10:08.134Z"
-        },
-        {
-          "url": "https://azure.microsoft.com/zh-cn/resources/cloud-computing-dictionary/what-is-cloud-architecture",
-          "title": "什么是云体系结构？",
-          "snippet": "Kubernetes 服务(AKS) 借助Kubernetes 等编排平台,团队能够高效地部署和管理复杂的工作负载。 云博客、行业新闻和文档更新,实时跟进信息。",
-          "publishedAt": "2026-10-21T15:10:08.134Z"
-        },
-        {
-          "url": "https://github.com/iflytek/skillhub",
-          "title": "iflytek/skillhub: Self-hosted, open-source agent skill registry ...",
-          "snippet": "SkillHub is a self-hosted platform that gives teams a private, governed place to share agent skills. Publish a skill package, push it to a namespace, ...",
-          "publishedAt": "2026-10-21T20:10:08.134Z"
-        },
-        {
-          "url": "https://www.alachisoft.com/zh-CN/resources/docs/ncache/admin-guide/service-health-check.html",
-          "title": "服务健康检查| NCache 文档",
-          "snippet": "Kubernetes 可以使用NCache 通过其标准健康探测机制进行健康检查：. 启动探针决定是否NCache 初始化成功。 准备就绪探针确定是否NCache 实例已准备好接收流量。 活体检测 ...",
-          "publishedAt": "2026-10-22T01:10:08.134Z"
+          "title": "Kubernetes Service - What It is, Types & Examples - Spacelift",
+          "snippet": "Kubernetes Services are resources that map network traffic to the Pods in your cluster. You need to create a Service each time you expose a set ..."
         },
         {
           "url": "https://kubernetes.io/docs/home/",
           "title": "Kubernetes Documentation",
           "snippet": "Kubernetes is an open source container orchestration engine for automating deployment, scaling, and management of containerized applications. The open source ..."
+        },
+        {
+          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+          "title": "Configure Service Accounts for Pods - Kubernetes",
+          "snippet": "# Configure Service Accounts for Pods ## Use the default service account to access the API server [Heading self-link](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server) ```shell kubectl get pods/ -o yaml ``` #..."
+        },
+        {
+          "url": "https://kubernetes.io/docs/reference/kubernetes-api/core/service-v1/",
+          "title": "Service | Kubernetes",
+          "snippet": "Service is a named abstraction of software service (for example, mysql) consisting of local port (for example 3306) that the proxy listens ..."
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/",
+          "title": "Services, Load Balancing, and Networking - Kubernetes",
+          "snippet": "Kubernetes Documentation · Concepts; Services, Load Balancing, and Networking ... A service proxy implementation monitors the set of Service and EndpointSlice ..."
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/",
+          "title": "服务（Service） | Kubernetes",
+          "snippet": "Kubernetes 中的Service 是一个对象 （与Pod 或ConfigMap 类似）。你可以使用Kubernetes API 创建、查看或修改Service 定义。 通常你会使用 kubectl 这类工具来替你发起 ..."
+        },
+        {
+          "url": "https://kubernetes.io/",
+          "title": "Kubernetes",
+          "snippet": "Kubernetes, also known as K8s, is an open source system for automating deployment, scaling, and management of containerized applications. It groups containers ..."
         }
       ]
     },
@@ -122,10 +114,16 @@
           "publishedAt": "2026-04-13T12:00:00.000Z"
         },
         {
-          "url": "https://blog.csdn.net/weixin_43980547/article/details/137085690",
-          "title": "Kubernetes 超详细教程，一篇文章帮助你从零开始学习k8s ...",
-          "snippet": "2024年3月27日 · 本文是 Kubernetes 超详细教程，介绍了 k8s 概念、特点、架构、使用场景等基础知识，涵盖 minikube 安装、服务器裸机 …",
-          "publishedAt": "2024-03-27T12:00:00.000Z"
+          "url": "https://blog.csdn.net/SinnetCloud/article/details/105580566",
+          "title": "关于kubernetes（k8s），这可能是讲的最通俗易懂的一次了",
+          "snippet": "2020年4月17日 · 文章浏览阅读10w+次，点赞149次，收藏586次。 本文深入浅出地讲解了Kubernetes的基本概念，包括容器技术、Docker …",
+          "publishedAt": "2020-04-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://github.com/kubernetes/kubernetes",
+          "title": "GitHub - kubernetes / kubernetes : Production-Grade Container …",
+          "snippet": "2023年3月16日 · Kubernetes, also known as K8s, is an open source system for managing containerized applications across multiple …",
+          "publishedAt": "2023-03-16T12:00:00.000Z"
         },
         {
           "url": "https://kubernetes.ltd/zh-cn/docs/",
@@ -138,12 +136,111 @@
           "title": "一文让你全面了解K8s ( Kubernetes ) - 知乎",
           "snippet": "2023年4月14日 · 随着时间的推移，Kubernetes 社区逐渐成为了一个庞大的开源生态系统，在全球范围内得到广泛的应用和推广。 目 …",
           "publishedAt": "2023-04-14T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "exa",
+      "region": "global",
+      "weight": 1,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/",
+          "title": "服务（Service） | Kubernetes",
+          "snippet": "服务（Service） | Kubernetes # 服务（Service） 将在集群中运行的应用通过同一个面向外界的端点公开出去，即使工作负载分散于多个后端也完全可行。 Kubernetes 中 Service 是 将运行在一个或一组 Pod 上的网络应用程序公开为网络服务的方法。 Kubernetes 中 Service 的一个关键目标是让你无需修改现有应用以使用某种不熟悉的服务发现机制。 你可以在 Pod 集合中运行代码，无论该代码是为云原生环境设计的，还是被容器化的…"
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service | Kubernetes",
+          "snippet": "Service | Kubernetes # Service Expose an application running in your cluster behind a single outward-facing endpoint, even when the workload is split across multiple backends. In Kubernetes, a Service is a method for exposing a network app…"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/tasks/access-application-cluster/service-access-application-cluster/",
+          "title": "使用服务来访问集群中的应用 | Kubernetes",
+          "snippet": "使用服务来访问集群中的应用 本文展示如何创建一个 Kubernetes 服务对象，能让外部客户端访问在集群中运行的应用。 该服务为一个应用的两个运行实例提供负载均衡。 ... ## 教程目标 - 运行 Hello World 应用的两个实例。 - 创建一个服务对象来暴露 NodePort。 - 使用服务对象来访问正在运行的应用。 ... shell kubectl expose deployment hello-world --type=NodePort --name=ex…"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/service-resources/service-v1/",
+          "title": "Service | Kubernetes",
+          "snippet": "Service | Kubernetes # Service Service 是软件服务（例如 mysql）的命名抽象，包含代理要侦听的本地端口（例如 3306）和一个选择算符，选择算符用来确定哪些 Pod 将响应通过代理发送的请求。 Concept documentation for Service - 服务（Service） 将在集群中运行的应用通过同一个面向外界的端点公开出去，即使工作负载分散于多个后端也完全可行。 1. Kubernetes 中的 Service 2…"
+        },
+        {
+          "url": "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/",
+          "title": "Service | Kubernetes",
+          "snippet": "Service | Kubernetes # Service Service is a named abstraction of software service (for example, mysql) consisting of local port (for example 3306) that the proxy listens on, and the selector that determines which pods will answer requests…"
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/",
+          "title": "Services, Load Balancing, and Networking",
+          "snippet": "pods on that node. - The Service API lets you provide a stable (long lived) IP address or hostname for a service implemented by one or more backend pods, where the individual pods making up the service can change over time. - Kubernetes au…"
+        },
+        {
+          "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/expose/expose-intro/",
+          "title": "Using a Service to Expose Your App | Kubernetes",
+          "snippet": "A Kubernetes Service is an abstraction layer which defines a logical set of Pods and enables external traffic exposure, load balancing and service discovery for those Pods. A Service in Kubernetes is an abstraction which defines a logical…"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/reference/networking/service-protocols/",
+          "title": "Service 所用的协议 | Kubernetes",
+          "snippet": "Service 所用的协议 如果你配置 Service， 你可以从 Kubernetes 支持的任何网络协议中选择一个协议。 Kubernetes 支持以下协议用于 Service： - `SCTP` - `TCP`（默认值） - `UDP` 当你定义 Service 时， 你还可以指定其使用的应用协议。 本文详细说明了一些特殊场景，这些场景通常均使用 TCP 作为传输协议： - HTTP 和 HTTPS - PROXY 协议 - TLS 终止于负载均衡器处"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/reference/kubectl/generated/kubectl_create/kubectl_create_service/",
+          "title": "kubectl create service | Kubernetes",
+          "snippet": "kubectl create service | Kubernetes 使用指定的子命令创建 Service ## 简介 使用指定的子命令创建 Service。 ```shell kubectl create service [flags] ``` ## 选项 | -h, --help | | | --- | --- | | | service 操作的帮助命令。 | ... 打印版本信息并退出；`--version=vX.Y.Z...` 设置报告的版本。 | | --war…"
+        },
+        {
+          "url": "https://kubernetes.io/docs/reference/kubernetes-api/core/service-v1/",
+          "title": "Service | Kubernetes",
+          "snippet": "Service | Kubernetes # Service Service is a named abstraction of software service (for example, mysql) consisting of local port (for example 3306) that the proxy listens on, and the selector that determines which pods will answer requests…"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh/docs/home/",
+          "title": "Kubernetes 文档",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://kubernetes.io/zh/docs/concepts/services-networking/service/",
+          "title": "服务（Service） | Kubernetes",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://v1-34.docs.kubernetes.io/zh-cn/docs/concepts/services-networking/service/",
+          "title": "服务（Service） | Kubernetes",
+          "snippet": "Kubernetes"
         },
         {
           "url": "https://kubernetes.ac.cn/docs/home/",
           "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
-          "snippet": "2026年9月4日 · 尝试 Kubernetes 通过教程学习如何在 Kubernetes 中部署应用程序。 你好 Minikube 基础知识演练 无状态示例：带 Redis 的 …",
-          "publishedAt": "2026-09-04T12:00:00.000Z"
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://v1-31.kubernetes.ac.cn/docs/home/",
+          "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://v1-30.kubernetes.ac.cn/docs/home/",
+          "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://kubernetes.ac.cn/docs/concepts/services-networking/service/",
+          "title": "服务 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "每当 Service"
+        },
+        {
+          "url": "https://v1-34.kubernetes.ac.cn/docs/concepts/services-networking/service/",
+          "title": "Service | Kubernetes (K8s) 容器编排系统",
+          "snippet": "Kubernetes"
         }
       ]
     }
@@ -153,13 +250,12 @@
     "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
     "https://kubernetes.io/zh/",
     "https://kubernetes.io/zh-cn/docs/home/",
-    "https://www.mongodb.com/zh-cn/docs/kubernetes/v1.13/reference/k8s-operator-om-specification/",
-    "https://code.visualstudio.com/docs/devcontainers/containers",
-    "https://azure.microsoft.com/zh-cn/resources/cloud-computing-dictionary/what-is-cloud-architecture",
-    "https://kubernetes.io/docs/home/"
+    "https://kubernetes.io/docs/home/",
+    "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+    "https://kubernetes.io/docs/reference/kubernetes-api/core/service-v1/",
+    "https://kubernetes.io/docs/concepts/services-networking/"
   ],
   "failures": [
-    "so: page does not match the query (possibly rate limited)",
-    "ddg-html: aborted once enough results had arrived"
+    "firecrawl: still running at deadline"
   ]
 }

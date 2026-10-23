@@ -10,8 +10,8 @@
     "theverge.com",
     "techcrunch.com"
   ],
-  "recordedAt": "2026-10-22T14:10:38.667Z",
-  "elapsedMs": 2671,
+  "recordedAt": "2026-10-23T08:31:25.727Z",
+  "elapsedMs": 3367,
   "limit": 8,
   "lead": "cn",
   "wait": "auto",
@@ -36,15 +36,9 @@
           "snippet": "我们最先进的代码生成与智能体任务模型. GPT‑5 能够生成高质量的代码，仅需少量提示即可创建前端用户界面，并在个性化、可控性以及执行复杂工具调用链方面展现出显著提升。"
         },
         {
-          "url": "https://www.ultralytics.com/zh/blog/exploring-openais-gpt-5-a-smart-unified-system",
-          "title": "OpenAI 发布GPT-5：智能统一系统",
-          "snippet": "2025 年8 月7 日，OpenAI推出了GPT-5，这是其ChatGPT 模型中最新、能力最强的版本。这个智能统一模型融合了快速回答、高级推理和多模态能力，能在编程、 ...",
-          "publishedAt": "2025-08-12T12:00:00.000Z"
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/GPT-5",
-          "title": "GPT-5",
-          "snippet": "Preceded in the series by GPT-4, it was launched on August 7, 2025. It is publicly accessible to users of the chatbot products ChatGPT and Microsoft Copilot as ..."
+          "url": "https://zh.wikipedia.org/wiki/GPT-5",
+          "title": "GPT-5 - 維基百科，自由的百科全書",
+          "snippet": "生成式預訓練變換模型5（GPT-5）是由OpenAI開發並託管的大型語言模型。作為該公司的旗艦代理式模型，GPT-5於2025年8月7日正式發佈，用戶可透過ChatGPT免費或付費使用， ..."
         },
         {
           "url": "https://www.bbc.com/zhongwen/articles/c5ylq0je4v2o/simp",
@@ -53,40 +47,104 @@
           "publishedAt": "2025-08-08T12:00:00.000Z"
         },
         {
-          "url": "https://help.openai.com/zh-hant-hk/articles/20001354-gpt-6-and-other-models-in-chatgpt",
-          "title": "ChatGPT 中的GPT-6 及其他模型",
-          "snippet": "GPT-5.6 Luna 正逐步成為Free 及Go 用戶的預設模型。GPT-5.6 Sol Pro 仍是GPT-5.6 系列中的Pro 選項。推出GPT-6 並不會停用原有可選的 ...",
-          "publishedAt": "2026-10-22T03:10:38.667Z"
+          "url": "https://www.youtube.com/watch?v=4H9pIAXkELw",
+          "title": "Everything Announced at OpenAI's Summer Update in 12 ...",
+          "snippet": "Sam Altman and the OpenAI team demonstrated the new GPT-5 Reasoning Model, which will be free for all ChatGPT users starting today.",
+          "publishedAt": "2025-10-23T08:31:25.727Z"
         },
         {
-          "url": "https://music.youtube.com/podcast/DVYJ1nm7RnE",
-          "title": "Codex 逆袭：从失败到ChatGPT 底座​ | OpenAI",
-          "snippet": "本期复盘OpenAI 的Codex 如何从一次失败的云端产品，逆袭成为ChatGPT 的底座。故事从GPT-5 发布前夜讲起，串起三代计算范式的跃迁、推理模型o1 的诞生、内部多团队并行探索 ...",
-          "publishedAt": "2026-10-22T07:10:38.667Z"
+          "url": "https://help.openai.com/en/articles/20001530-getting-started-with-your-dot",
+          "title": "Getting started with your dot",
+          "snippet": "Your dot is an always-on agent in ChatGPT that can help you take a project from an idea to work you can use. Give it a goal, share the context, ...",
+          "publishedAt": "2026-10-22T11:31:25.727Z"
+        },
+        {
+          "url": "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/",
+          "title": "OpenAI makes its Jev competitor widely available as ...",
+          "snippet": "OpenAI made its Decisions API model widely available to users for the first time, entering the market for fast, cheap intelligence that recently made ...",
+          "publishedAt": "2026-10-22T18:31:25.727Z"
+        },
+        {
+          "url": "https://www.elser.ai/zh/blog/gpt-5-6-sol-vs-terra-vs-luna-which-model-should-you-use",
+          "title": "GPT-5.6 Sol、Terra与Luna：你该选择哪款模型？",
+          "snippet": "OpenAI将GPT-5.6 Sol的定价定为每100万令牌输入5美元，输出30美元。这使其成为GPT ... 这是理解GPT-5.6模型选择最清晰的思路。 最新发布. 2026年10月22日. 故事板中 ...",
+          "publishedAt": "2026-10-22T10:31:25.727Z"
         },
         {
           "url": "https://openai.com/index/introducing-gpt-5/",
           "title": "Introducing GPT-5",
-          "snippet": "Introducing GPT-5 | OpenAI. August 7, 2025. ReleaseProduct. Introducing GPT‑5. Our smartest, fastest, most useful model yet, with built-in ...",
+          "snippet": "GPT‑5 is a significant leap in intelligence over all our previous models, featuring state-of-the-art performance across coding, math, writing, ...",
           "publishedAt": "2025-08-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://finance.sina.cn/stock/jdts/2026-09-13/detail-inirscya7861103.d.html?vt=4",
+          "title": "GPT-6 Astra开放Plus！20美元只能拿它干活，不能聊天",
+          "snippet": "OpenAI Plus用户的GPT-6 Astra，终于开始陆续到账了。 9月3日，OpenAI发布GPT-6 Astra，官方说「未来数日」将推送给所有Plus、Pro、Business和 ...",
+          "publishedAt": "2026-10-22T23:31:25.727Z"
         },
         {
           "url": "https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261960045-openai-ipo-openai-chatgpt-mu-tradingkey",
           "title": "关于OpenAI IPO，你需要了解的一些关键信息",
           "snippet": "2022年11月发布的ChatGPT成为互联网历史上用户增长最快的消费级应用。目前，OpenAI的产品矩阵涵盖大语言模型、图像生成、视频生成、AI代理及企业级API服务，最新模型GPT-5 ...",
-          "publishedAt": "2026-10-21T22:10:38.667Z"
+          "publishedAt": "2026-10-22T11:31:25.727Z"
+        }
+      ]
+    },
+    {
+      "id": "firecrawl",
+      "region": "both",
+      "weight": 1,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://openai.com/zh-Hans-CN/gpt-5/",
+          "title": "GPT-5 正式发布 - OpenAI",
+          "snippet": "GPT-5 正式发布 | OpenAI GPT‑5 正式发布 迄今为止最智能、速度最快、最实用的模型，且内置了思考能力。 所有人均可使用。 在 ChatGPT 中试用（在新窗口中打开） 阅读研究 Update GPT‑5 was introduced in August 2025. 00:00 ChatGPT 开发人员专用 企业解决方案 由 GPT-5 提供支持的 ChatGPT 专家智慧，人人可享 通往 GPT-5 的道路 了解更多（在新窗口中打开） 开发人员专用 我们最…"
         },
         {
-          "url": "https://m.lwjz365.com/news/gongyi12674/",
-          "title": "OpenAI 称GPT-4.5 AI 模型采用全新监督技术“减少幻觉”",
-          "snippet": "OpenAI 于2 月28 日推出GPT-4.5 AI 模型“研究预览版”，号称交互更自然，知识库更广，更能理解用户意图，并且“情商”更高。OpenAI 的CEO Sam Altman 介绍了该模型的一些 ...",
-          "publishedAt": "2026-10-21T17:10:38.667Z"
+          "url": "https://openai.com/index/introducing-gpt-5/",
+          "title": "Introducing GPT-5 - OpenAI",
+          "snippet": "Introducing GPT-5 | OpenAI Introducing GPT‑5 This post introduced GPT-5. We are introducing GPT‑5, our best AI system yet. inspect events to see if Wi-Fi was unblocked Availability and access GPT‑5 is starting to roll out today **to all Pl…"
         },
         {
-          "url": "https://help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites",
-          "title": "Creating and using ChatGPT Sites",
-          "snippet": "ChatGPT Sites lets you create, preview, publish, and share interactive websites and lightweight apps. You can create Sites in Work on ChatGPT web, and in Work ...",
-          "publishedAt": "2026-10-22T07:10:38.667Z"
+          "url": "https://openai.com/index/introducing-gpt-5-5/",
+          "title": "Introducing GPT-5.5 - OpenAI",
+          "snippet": "Introducing GPT-5.5 | OpenAI"
+        },
+        {
+          "url": "https://openai.com/gpt-5/",
+          "title": "GPT-5 is here - OpenAI",
+          "snippet": "GPT‑5 is here At its August 2025 launch, GPT‑5 was our smartest, fastest, and most useful model, with thinking built in. Update GPT‑5 was introduced in August 2025. Our most advanced model for coding and agentic tasks at its August 2025 la…"
+        },
+        {
+          "url": "https://www.ultralytics.com/zh/blog/exploring-openais-gpt-5-a-smart-unified-system",
+          "title": "OpenAI 发布GPT-5：智能统一系统",
+          "snippet": "2025 年8 月7 日，OpenAI推出了GPT-5，这是其ChatGPT 模型中最新、能力最强的版本。这个智能统一模型融合了快速回答、高级推理和多模态能力，能在编程、 ..."
+        },
+        {
+          "url": "https://openai.com/zh-Hant/index/introducing-gpt-5/",
+          "title": "隆重推出GPT-5 - OpenAI",
+          "snippet": "隆重推出 GPT-5 | OpenAI 隆重推出 GPT‑5 This post introduced GPT-5. 隆重推出迄今最強大的 AI 模型 GPT‑5。 相較於先前的所有模型，GPT‑5 的智慧大幅進化，在程式設計、數學、寫作、健康、視覺感知及更多領域的表現，皆達到頂尖水準。 GPT‑5 開放所有使用者使用，而 Plus 方案訂戶可獲得更高的使用限額，Pro 方案訂戶則擁有 GPT‑5 Pro 存取權，這個版本具備延伸推理能力，可提供更全面且準確的回應。"
+        },
+        {
+          "url": "https://openai.com/zh-Hant/gpt-5/",
+          "title": "GPT-5 隆重登場 - OpenAI",
+          "snippet": "GPT‑5 智慧全方位升級，針對數學、科學、財務、法律和眾多領域提供更實用的回應。就像擁有一支專家團隊隨時待命，提供任何您想知道的資訊。"
+        },
+        {
+          "url": "https://zh.wikipedia.org/wiki/GPT-5",
+          "title": "GPT-5 - 維基百科，自由的百科全書",
+          "snippet": "生成式預訓練變換模型5（GPT-5）是由OpenAI開發並託管的大型語言模型。作為該公司的旗艦代理式模型，GPT-5於2025年8月7日正式發佈，用戶可透過ChatGPT免費或付費使用， ..."
+        },
+        {
+          "url": "https://www.actuia.com/cn/news/openaigpt-5/",
+          "title": "OpenAI发布GPT-5 - ActuIA",
+          "snippet": "Sam Altman 发布了GPT-5，一个人工智能模型，被誉为实现通用人工智能的重大进步，提供博士级专家能力。该模型比其前代更快更准确，现在是ChatGPT 的默认 ..."
+        },
+        {
+          "url": "https://www.bbc.com/zhongwen/articles/c5ylq0je4v2o/simp",
+          "title": "OpenAI发布新版本GPT-5 自称已达到“博士水平” - BBC",
+          "snippet": "OpenAI发布新版本GPT-5 自称已达到“博士水平” 图像加注文字，ChatGPT发布了新一代模型。 GPT-5能做什么？ OpenAI强调GPT-5能够完整地创建软体，并展现出更强大的推理能力——其答案能够展现其工作原理、逻辑和推理能力。 “GPT-5是第一次真正让人感觉像是在与任何领域的专家交谈，就像一位博士级别的专家。” 然而，对于人工智慧伦理研究所的卡丽莎·维利兹（Carissa Véliz）教授来说，GPT-5的发布可能并没有其行销宣传的那么重要。 “有人担心…"
         }
       ]
     },
@@ -111,15 +169,15 @@
           "snippet": "OpenAI's Codex Security CLI and TypeScript SDK for finding, validating, and fixing security vulnerabilities. npm: …"
         },
         {
+          "url": "https://www.codex-chinese.com/chatgpt/guides/chatgpt-official-entry-domestic-guide-2026",
+          "title": "ChatGPT 官网入口、ChatGPT中文版、网页版与 GPT-6 ...",
+          "snippet": "1 天前 · ChatGPT 官方入口是 https://chatgpt.com，这是 OpenAI 提供 ChatGPT 网页版服务的主要域名。 访问或登录前，请先核对地址栏中 …",
+          "publishedAt": "2026-10-22T08:31:22.657Z"
+        },
+        {
           "url": "https://apifox.com/apiskills/openai-official-portal/",
           "title": "OpenAI 官网入口地址：如何轻松找到",
           "snippet": "OpenAI OpenAI是一个强大的开放人工智能研究平台，其提供了一系列深度学习和自然语言处理的工具和技术。 使用OpenAI可以获得以下优 …"
-        },
-        {
-          "url": "https://www.codex-chinese.com/chatgpt/guides/chatgpt-official-entry-domestic-guide-2026",
-          "title": "ChatGPT 官网入口、ChatGPT中文版、网页版与 GPT-6 ...",
-          "snippet": "14 小时之前 · ChatGPT 官方入口是 https://chatgpt.com，这是 OpenAI 提供 ChatGPT 网页版服务的主要域名。 访问或登录前，请先核对地 …",
-          "publishedAt": "2026-10-22T00:10:36.219Z"
         },
         {
           "url": "https://www.zhihu.com/question/572946129",
@@ -128,16 +186,15 @@
           "publishedAt": "2023-05-23T12:00:00.000Z"
         },
         {
+          "url": "https://www.holysheep.cn/articles/openai-api-china.html",
+          "title": "国内使用 OpenAI API 完整指南（2026）- 无需翻墙 ...",
+          "snippet": "› 国内使用 OpenAI API 完整指南 国内使用 OpenAI API 完整指南（2026） 更新时间：2026年3月 · 阅读时间：约5分钟 很多国内开发者在接 …"
+        },
+        {
           "url": "https://developers.openai.ac.cn/",
           "title": "- AI 教程",
           "snippet": "2026年4月16日 · OpenAI SDK OpenAI CLI 更新日志 弃用说明 支持的国家/地区 OpenAI 爬虫 概述 迁移指南 节点参考 构建 Agent 的安全性 开 …",
           "publishedAt": "2026-04-16T12:00:00.000Z"
-        },
-        {
-          "url": "https://www.gpt-chinese-guide.com/guides/chatgpt/openai-chatgpt-guide",
-          "title": "OpenAI ChatGPT 官方指南：2026 国内接入 GPT-5 与企业级 ...",
-          "snippet": "2026年7月6日 · 2026 年最新 OpenAI ChatGPT Guide。深度解析 OpenAI 官网的使用门槛与风控现状。推荐国内最佳接入方案：基于 …",
-          "publishedAt": "2026-07-06T12:00:00.000Z"
         }
       ]
     },
@@ -179,40 +236,40 @@
           "publishedAt": "2025-08-08T12:00:00.000Z"
         },
         {
+          "url": "https://baike.baidu.com/item/GPT-5/63973698",
+          "title": "Gpt-5 - 百度百科",
+          "snippet": "GPT-5是美国开放人工智能研究中心（OpenAI）于2025年8月发布的人工智能语言模型，整合了GPT系列的大语言处理能力与o系列的深度推理功能，可实现子模型调度及复杂任务处理。该模型支持编码、写作、多模态输入及长上下文理解，提供自动切换响应模式与个性化交互选项，适用于编程、数学推导和 ..."
+        },
+        {
           "url": "https://www.toutiao.com/article/7536089005960495652/",
           "title": "OpenAI GPT-5系列模型发布：AI领域的新里程碑与未来展望",
           "snippet": "2025年8月7日，OpenAI正式发布了其最新一代大型语言模型GPT-5，这标志着人工智能技术发展进入了一个全新阶段。 作为OpenAI迄今为止\"最智能、最实用\"的AI模型，GPT-5系列不仅在技术性能上实现了重大突破，更在产品策略和用户体验方面进行了全面革新。",
           "publishedAt": "2025-08-07T12:00:00.000Z"
         },
         {
-          "url": "https://baike.baidu.com/item/GPT-5/63973698",
-          "title": "Gpt-5 - 百度百科",
-          "snippet": "GPT-5是美国开放人工智能研究中心（OpenAI）于2025年8月发布的人工智能语言模型，整合了GPT系列的大语言处理能力与o系列的深度推理功能，可实现子模型调度及复杂任务处理。该模型支持编码、写作、多模态输入及长上下文理解，提供自动切换响应模式与个性化交互选项，适用于编程、数学推导和 ..."
+          "url": "https://news.cctv.com/2025/08/08/ARTInTLmDEelf0bTHbqeYXv7250808.shtml",
+          "title": "OpenAI推出最新人工智能模型GPT-5_新闻频道_央视网 (cctv.com)",
+          "snippet": "新华社旧金山8月7日电（记者吴晓凌）美国开放人工智能研究中心（OpenAI）7日发布其最新人工智能模型GPT-5。 据 OpenAI"
         },
         {
           "url": "https://zh.wikipedia.org/zh-hans/GPT-5",
           "title": "GPT-5 - 维基百科，自由的百科全书 - zh.wikipedia.org",
           "snippet": "生成式预训练变换模型 5"
-        },
-        {
-          "url": "https://news.cctv.com/2025/08/08/ARTInTLmDEelf0bTHbqeYXv7250808.shtml",
-          "title": "OpenAI推出最新人工智能模型GPT-5_新闻频道_央视网 (cctv.com)",
-          "snippet": "新华社旧金山8月7日电（记者吴晓凌）美国开放人工智能研究中心（OpenAI）7日发布其最新人工智能模型GPT-5。 据 OpenAI"
         }
       ]
     }
   ],
   "finalUrls": [
-    "https://help.openai.com/zh-hant-hk/articles/20001354-gpt-6-and-other-models-in-chatgpt",
-    "https://music.youtube.com/podcast/DVYJ1nm7RnE",
-    "https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261960045-openai-ipo-openai-chatgpt-mu-tradingkey",
     "https://openai.com/zh-Hans-CN/gpt-5/",
-    "https://m.lwjz365.com/news/gongyi12674/",
-    "https://help.openai.com/en/articles/20001339-creating-and-using-chatgpt-sites",
-    "https://www.ultralytics.com/zh/blog/exploring-openais-gpt-5-a-smart-unified-system",
+    "https://zh.wikipedia.org/wiki/GPT-5",
+    "https://www.bbc.com/zhongwen/articles/c5ylq0je4v2o/simp",
+    "https://openai.com/index/introducing-gpt-5/",
+    "https://help.openai.com/en/articles/20001530-getting-started-with-your-dot",
+    "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/",
+    "https://www.elser.ai/zh/blog/gpt-5-6-sol-vs-terra-vs-luna-which-model-should-you-use",
     "https://www.codex-chinese.com/chatgpt/guides/chatgpt-official-entry-domestic-guide-2026"
   ],
   "failures": [
-    "so: page does not match the query (possibly rate limited)"
+    "exa: no results"
   ]
 }

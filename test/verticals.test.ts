@@ -13,6 +13,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import {
+  DEFAULT_VERTICAL_IDS,
   MAX_VERTICAL_LIMIT,
   VERTICALS,
   VERTICAL_IDS,
@@ -109,10 +110,10 @@ async function emptyRoutes(): Promise<Record<string, Reply>> {
   };
 }
 
-test('all eight fixtures are real, non-empty captures under the 3 KB budget', async () => {
-  assert.equal(VERTICAL_IDS.length, 8);
+test('all eight default fixtures are real, non-empty captures under the 3 KB budget', async () => {
+  assert.equal(DEFAULT_VERTICAL_IDS.length, 8);
   assert.deepEqual(VERTICALS.map((spec) => spec.id), [...VERTICAL_IDS]);
-  for (const id of VERTICAL_IDS) {
+  for (const id of DEFAULT_VERTICAL_IDS) {
     const normal = CASES[id].normal;
     const info = await stat(new URL(`./fixtures/${normal}`, import.meta.url));
     assert.ok(info.size > 0, `${normal} is empty`);
@@ -122,7 +123,17 @@ test('all eight fixtures are real, non-empty captures under the 3 KB budget', as
   }
 });
 
-for (const id of VERTICAL_IDS) {
+test('every expanded source is present and opt-in', () => {
+  const expanded = VERTICAL_IDS.filter((id) => !DEFAULT_VERTICAL_IDS.includes(id));
+  assert.ok(expanded.length >= 20, `only ${expanded.length} expanded source(s)`);
+  for (const id of expanded) {
+    const spec = VERTICALS.find((candidate) => candidate.id === id);
+    assert.ok(spec !== undefined, `${id} is missing from VERTICALS`);
+    assert.equal(spec.defaultOn, false, `${id} must not be on by default`);
+  }
+});
+
+for (const id of DEFAULT_VERTICAL_IDS) {
   test(`${id} parses a real response into citable sources`, async () => {
     const spec = VERTICALS.find((candidate) => candidate.id === id);
     assert.ok(spec !== undefined);
@@ -226,7 +237,9 @@ test('crates reports name + version and the crate page', async () => {
 });
 
 test('build URLs encode the query and carry the requested limit', () => {
-  for (const spec of VERTICALS) {
+  for (const id of DEFAULT_VERTICAL_IDS) {
+    const spec = VERTICALS.find((candidate) => candidate.id === id);
+    assert.ok(spec !== undefined);
     const url = spec.build('a b&c', 7);
     assert.match(url, /^https:\/\//, `${spec.id} must use https`);
     assert.doesNotMatch(url, / /, `${spec.id} left a raw space in ${url}`);

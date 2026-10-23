@@ -28,6 +28,10 @@ Outbound TCP/HTTPS only, plus one local system query described below.
 | `cn.bing.com`, `www.bing.com` | key-free HTML search |
 | `html.duckduckgo.com` | key-free HTML search |
 | `www.so.com` | key-free HTML search, fallback tier, usually bot-walled |
+| `mcp.exa.ai` | key-free semantic search (anonymous MCP endpoint), primary tier |
+| `api.firecrawl.dev` | key-free search API, fallback tier |
+| `api.github.com`, `registry.npmjs.org`, `pypi.org`, `export.arxiv.org`, `*.wikipedia.org`, `hn.algolia.com`, `api.stackexchange.com`, `crates.io` | the eight default `domain_search` sources |
+| `gitlab.com`, `codeberg.org`, `hub.docker.com`, `search.maven.org`, `azuresearch-usnc.nuget.org`, `rubygems.org`, `packagist.org`, `pub.dev`, `huggingface.co`, `open-vsx.org`, `registry.terraform.io`, `api.wordpress.org`, `plugins.jetbrains.com`, `api.openalex.org`, `api.crossref.org`, `www.ebi.ac.uk`, `rest.uniprot.org`, `clinicaltrials.gov`, `services.nvd.nist.gov`, `api.coingecko.com`, `archive.org`, `www.wikidata.org`, `nominatim.openstreetmap.org` | the 26 opt-in `domain_search` sources; contacted only when named in `sources` or `domainSources` |
 | `api.anysearch.com` | optional: search and page extraction, **only when an AnySearch key is configured** |
 | your configured proxy | HTTP `CONNECT` tunnel for the hosts above |
 

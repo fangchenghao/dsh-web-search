@@ -8,8 +8,8 @@
   "expectedDomains": [
     "postgresql.org"
   ],
-  "recordedAt": "2026-10-22T14:10:12.784Z",
-  "elapsedMs": 3146,
+  "recordedAt": "2026-10-23T08:30:58.624Z",
+  "elapsedMs": 2588,
   "limit": 8,
   "lead": "cn",
   "wait": "auto",
@@ -29,6 +29,11 @@
       "tier": "primary",
       "sources": [
         {
+          "url": "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+          "title": "为Amazon RDS for PostgreSQL 执行逻辑复制",
+          "snippet": "在RDS for PostgreSQL 中，可以使用逻辑复制将数据从源表复制到目标表。逻辑复制首先对源表中的现有数据执行初始加载，然后继续复制持续发生的更改。"
+        },
+        {
           "url": "https://www.cnblogs.com/tiany1224/p/18278082",
           "title": "PostgreSQL 配置逻辑复制- 天涯客1224",
           "snippet": "PostgreSQL 配置逻辑复制 · 1、发布端复制槽信息如下所示，创建订阅后，自动创建复制槽： · 2、流复制信息如下所示，发布端和订阅端主机之间创建流复制：",
@@ -37,13 +42,8 @@
         {
           "url": "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
           "title": "逻辑复制和逻辑解码- Azure Database for PostgreSQL",
-          "snippet": "使用本机逻辑复制是将数据从Azure Database for PostgreSQL灵活服务器复制的最简单方法。 你可以使用SQL 接口或流式处理协议来使用更改。 你还可以通过SQL ...",
+          "snippet": "逻辑复制提供对数据复制的精细控制,包括表级数据复制。 机逻辑复制是将数据从Azure Database for PostgreSQL灵活服务器复制的最简单方法。 则会在故障转 ...",
           "publishedAt": "2026-07-29T12:00:00.000Z"
-        },
-        {
-          "url": "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
-          "title": "为Amazon RDS for PostgreSQL 执行逻辑复制",
-          "snippet": "您可以在实例上设置逻辑复制槽并通过这些槽将数据库更改流式传输到某个客户端（如 pg_recvlogical ）。您可在数据库级别创建逻辑复制槽，它们支持与单个数据库的复制连接。"
         },
         {
           "url": "http://mysql.taobao.org/monthly/2025/03/01/",
@@ -55,6 +55,11 @@
           "url": "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
           "title": "设置逻辑复制和解码| Cloud SQL for PostgreSQL",
           "snippet": "如需使用pglogical 设置逻辑复制，必须在主实例上启用逻辑解码。在Cloud SQL 实例上设置 cloudsql.logical_decoding=on ，或在外部实例上设置 wal_level=logical 。"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1927041306691077387",
+          "title": "PostgreSQL逻辑复制部署指南",
+          "snippet": "在配置A库作为发布者之前，需要确保其满足逻辑复制的基本要求，并进行相应的参数调整。 2.1 前提条件. 1.PostgreSQL版本：发布者和订阅者都应使用PostgreSQL 10或更高版本 ..."
         },
         {
           "url": "https://www.tencentcloud.com/zh/document/product/409/64755",
@@ -75,12 +80,65 @@
         {
           "url": "https://www.rockdata.net/zh-cn/docs/14/logical-replication.html",
           "title": "PostgreSQL 14 文档: 第31 章逻辑复制",
-          "snippet": "逻辑复制是一种基于数据对象的复制标识（通常是主键）复制数据对象及其更改的方法。我们使用术语“逻辑”来与物理复制加以区分，后者使用准确的块地址以及逐字节的复制 ..."
+          "snippet": "逻辑复制使用一种发布和订阅模型，其中有一个或者更多订阅者订阅一个发布者节点上的一个或者更多发布。订阅者从它们所订阅的发布拉取数据并且可能后续重新发布这些数据以 ..."
+        }
+      ]
+    },
+    {
+      "id": "firecrawl",
+      "region": "both",
+      "weight": 1,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+          "title": "为Amazon RDS for PostgreSQL 执行逻辑复制",
+          "snippet": "为 Amazon RDS for PostgreSQL 执行逻辑复制 使用逻辑复制槽 ``` SELECT * FROM pg_replication_slots; ```"
         },
         {
-          "url": "https://zhuanlan.zhihu.com/p/579672108",
-          "title": "Windows 环境搭建PostgreSQL 物理复制高可用架构数据库 ...",
-          "snippet": "逻辑复制可以简单理解为解析了WAL归档文件中的信息，处理成为标准的SQL语句，传递给存库进行执行，相对于直接传递WAL性能较低，延迟高。 物理复制不需要像逻辑复制一些去 ..."
+          "url": "https://www.cnblogs.com/tiany1224/p/18278082",
+          "title": "PostgreSQL 配置逻辑复制- 天涯客1224 - 博客园",
+          "snippet": "PostgreSQL 配置逻辑复制 · 1、发布端复制槽信息如下所示，创建订阅后，自动创建复制槽： · 2、流复制信息如下所示，发布端和订阅端主机之间创建流复制："
+        },
+        {
+          "url": "http://mysql.taobao.org/monthly/2025/03/01/",
+          "title": "一文搞懂PostgreSQL逻辑复制的全部原理 - 数据库内核月报",
+          "snippet": "一句话概括，逻辑复制是相对于物理复制的概念，物理复制是把对文件块的改动发送到下游，逻辑复制是把数据的改动（一般是修改前/修改后的行）发送到下游。"
+        },
+        {
+          "url": "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
+          "title": "Azure Database for PostgreSQL 灵活服务器中的逻辑复制和逻辑解码",
+          "snippet": "Azure Database for PostgreSQL 灵活服务器中的逻辑复制和逻辑解码 使用逻辑复制和逻辑解码 逻辑解码 SQL 接口 ```sql SELECT * FROM pg_create_logical_replication_slot('test_slot', 'wal2json'); ```"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1927041306691077387",
+          "title": "PostgreSQL逻辑复制部署指南 - 知乎专栏",
+          "snippet": "在配置A库作为发布者之前，需要确保其满足逻辑复制的基本要求，并进行相应的参数调整。 2.1 前提条件. 1.PostgreSQL版本：发布者和订阅者都应使用PostgreSQL 10或更高版本 ..."
+        },
+        {
+          "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+          "title": "Documentation: 18: Chapter 29. Logical Replication - PostgreSQL",
+          "snippet": "Logical replication is a method of replicating data objects and their changes, based upon their replication identity (usually a primary key)."
+        },
+        {
+          "url": "https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-logical-replication&locale=zh-CN",
+          "title": "Databases for PostgreSQL 作为逻辑复制目的地| IBM Cloud Docs",
+          "snippet": "PostgreSQL 支持逻辑复制,您可以创建订阅者或发布者。 配置用户 要配置Databases for PostgreSQL部署并确保正确复制数据,请确保以下几点。"
+        },
+        {
+          "url": "https://www.rockdata.net/zh-cn/docs/14/logical-replication.html",
+          "title": "PostgreSQL 14 文档: 第31 章逻辑复制",
+          "snippet": "逻辑复制使用一种发布和订阅模型，其中有一个或者更多订阅者订阅一个发布者节点上的一个或者更多发布。订阅者从它们所订阅的发布拉取数据并且可能后续重新发布这些数据以 ..."
+        },
+        {
+          "url": "https://www.tencentcloud.com/zh/document/product/409/64755",
+          "title": "使用pglogical 进行逻辑复制",
+          "snippet": "pglogical 是PostgreSQL 的逻辑复制扩展插件，使用“发布/订阅”的数据模型进行数据复制。该模型包含“发布端”和“订阅端”，发布端用于定义和发布指定的 ..."
+        },
+        {
+          "url": "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
+          "title": "设置逻辑复制和解码| Cloud SQL for PostgreSQL",
+          "snippet": "设置逻辑复制和解码 使用集合让一切井井有条 根据您的偏好保存内容并对其进行分类。 MySQL | PostgreSQL | SQL Server 您可以在 Cloud SQL for PostgreSQL 中使用 逻辑复制和解码 功能。 配置 PostgreSQL 实例 创建复制用户 如需使用逻辑解码功能，请创建具有 `REPLICATION` 特性的 PostgreSQL 用户。 PostgreSQL 资源 | 最大内存 (GB) | 复制槽数上限 | |-|-| | 4…"
         }
       ]
     },
@@ -90,64 +148,60 @@
       "tier": "primary",
       "sources": [
         {
-          "url": "https://www.sysgeek.cn/windows-memory-diagnostic/",
-          "title": "Windows 内存诊断 工具详解：轻松完成 内存 检测与测试",
-          "snippet": "2025年7月29日 · 如果你怀疑电脑内存有问题，可以使用 Windows 自带的**「Windows 内存诊断」**工具（WMD， W indows M emory D …",
-          "publishedAt": "2025-07-29T12:00:00.000Z"
+          "url": "https://www.postgresql.org/",
+          "title": "PostgreSQL : The world's most advanced open source database",
+          "snippet": "8 小时之前 · The PostgreSQL Global Development Group announces that the 1st rc release of PostgreSQL 19 is now available for … 阅读更多",
+          "publishedAt": "2026-10-23T00:30:56.249Z"
         },
         {
-          "url": "https://learn.microsoft.com/zh-cn/answers/questions/4370847/question-4370847",
-          "title": "内存诊断 的使用和查看 - Microsoft Q&A",
-          "snippet": "2025年7月9日 · 内存诊断的使用和查看 内存诊断的使用： 一、若是有任何未保存的文档或工作，请先保存并关闭它们。 内存诊断通常需要较 …",
-          "publishedAt": "2025-07-09T12:00:00.000Z"
+          "url": "https://www.postgresql.org/download/",
+          "title": "PostgreSQL : Downloads",
+          "snippet": "PostgreSQL is available for download as ready-to-use packages or installers for various platforms, as well as a source code archive if …"
         },
         {
-          "url": "https://blog.csdn.net/qq_57728300/article/details/140484898",
-          "title": "Windows 内存诊断 工具怎么打开？ 诊断 结果又该怎么查看 ...",
-          "snippet": "2024年7月17日 · 本文介绍了多种打开Windows内存诊断工具的方法，包括通过搜索栏、命令提示符、设置面板、运行窗口及控制面板等途 …",
-          "publishedAt": "2024-07-17T12:00:00.000Z"
+          "url": "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+          "title": "PostgreSQL 教程 | 菜鸟教程",
+          "snippet": "PostgreSQL 教程 PostgreSQL 是一个免费的对象-关系数据库服务器 (ORDBMS)，在灵活的BSD许可证下发行。 PostgreSQL 开发者把它念作 …"
         },
         {
-          "url": "https://blog.csdn.net/qq_39980997/article/details/156063512",
-          "title": "Windows 内存诊断 工具_windows memory diagnostic-CSDN博客",
-          "snippet": "2025年12月19日 · 本文介绍Windows内置内存诊断工具的功能与使用方法，涵盖启动方式、诊断模式选择、测试参数配置及结果查看步骤。 …",
-          "publishedAt": "2025-12-19T12:00:00.000Z"
+          "url": "https://developer.aliyun.com/article/1752221",
+          "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用一篇搞定 ...",
+          "snippet": "2026年7月31日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …",
+          "publishedAt": "2026-07-31T12:00:00.000Z"
         },
         {
-          "url": "https://zhuanlan.zhihu.com/p/29019632188",
-          "title": "电脑 内存 好坏怎么判断？Windows 内存诊断 帮你解决",
-          "snippet": "2025年3月9日 · 内存诊断工具可以作为 故障排除 过程中的一个重要步骤，帮助确定故障是否由内存引起 Windows内存诊断工具能够检测内 …",
-          "publishedAt": "2025-03-09T12:00:00.000Z"
+          "url": "https://postgresql.ac.cn/docs/current/index.html",
+          "title": "PostgreSQL 18.0 文档",
+          "snippet": "版权所有 © 1996–2025 PostgreSQL 全球开发组 法律声明 目录 前言 1. 什么是 PostgreSQL？ 2. PostgreSQL 简史 3. 约定 4. 更多信息 5. 错 …"
         },
         {
-          "url": "https://www.pcsoft.com.cn/soft/35206.html",
-          "title": "内存 检测工具 ( memtest )下载- 内存 检测工具 ( memtest )官方 ...",
-          "snippet": "2026年1月30日 · 内存检测工具 (memtest)是一款内存检测工具，内存检测工具 (memtest)能够在Windows系统下自动检测内存，帮助用户发 …",
-          "publishedAt": "2026-01-30T12:00:00.000Z"
-        },
-        {
-          "url": "https://zhuanlan.zhihu.com/p/261372974",
-          "title": "Windows自带超强工具，集检测、清理、修复于一体！实用 ...",
-          "snippet": "2020年10月3日 · 如果你不确定内存是否出现了问题，可以这样诊断： 第一步：在搜索栏中输入【控制面板】，点击进入；将【查看方式】修 …",
-          "publishedAt": "2020-10-03T12:00:00.000Z"
-        },
-        {
-          "url": "https://www.toutiao.com/article/7531527838235689515/",
-          "title": "Windows自带 内存诊断 工具Mdsched.exe详解 - 今日头条",
-          "snippet": "2025年7月27日 · 作为初步筛查： 它是一个方便、内置的初步诊断工具。 如果它报告错误，那内存很可能有问题；但如果它报告无错误，不能 …",
-          "publishedAt": "2025-07-27T12:00:00.000Z"
-        },
-        {
-          "url": "http://memtest86.com.cn/",
-          "title": "MemTest86中文版官网 - 免费下载 | 使用教程 | 内存 检测工具 ...",
-          "snippet": "2026年7月30日 · MemTest86中文版官网 - 免费下载最新版MemTest86，专业内存检测工具，支持UEFI启动、DDR3/DDR4/DDR5全系列内 …",
+          "url": "https://zhuanlan.zhihu.com/p/2066273753013789584",
+          "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用保姆级 ...",
+          "snippet": "2026年7月30日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …",
           "publishedAt": "2026-07-30T12:00:00.000Z"
         },
         {
-          "url": "https://www.php.cn/faq/2275090.html",
-          "title": "电脑怎么检测 内存 条是不是坏了 Windows自带 内存诊断 工具 ...",
-          "snippet": "2026年3月31日 · Windows内存诊断工具可检测内存硬件故障，支持六种启动方式：运行命令、控制面板、任务栏搜索、高级启动选项、管理 …",
-          "publishedAt": "2026-03-31T12:00:00.000Z"
+          "url": "https://blog.csdn.net/m0_58648890/article/details/155314594",
+          "title": "Windows 安装 PostgreSQL18 超详细保姆级教程-CSDN博客",
+          "snippet": "2025年11月27日 · 本文详细介绍在Windows 10/11系统上安装PostgreSQL 18的完整流程，涵盖下载、安装、组件选择、pgAdmin配置、中文 …",
+          "publishedAt": "2025-11-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/PostgreSQL/530240",
+          "title": "PostgreSQL _百度百科",
+          "snippet": "PostgreSQL支持大部分的SQL标准并且提供了很多其他现代特性，如复杂查询、外键、触发器、视图、事务完整性、多版本并发控制等。 同 …"
+        },
+        {
+          "url": "https://blog.csdn.net/2403_89073657/article/details/148105776",
+          "title": "postgreSQL 安装教程及使用方法（保姆级）-CSDN博客",
+          "snippet": "2025年5月21日 · 本文是PostgreSQL的保姆级教程，介绍了其安装过程、环境变量设置、增删改查操作等。 还给出了psql指令大全，涵盖数据 …",
+          "publishedAt": "2025-05-21T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/645899384",
+          "title": "最全、最详细、最全面的学习教程！ PostgreSQL 打怪升级 ...",
+          "snippet": "2023年7月25日 · 所以，从今天开始，我们进入下一个知识体系的学习： PostgreSQL 数据库。 PostgreSQL 简介 PostgreSQL 是一个功能强 …",
+          "publishedAt": "2023-07-25T12:00:00.000Z"
         }
       ]
     },
@@ -167,19 +221,14 @@
           "snippet": "本文详细讲解了PostgreSQL逻辑复制的完整配置方案，涵盖从核心概念、环境准备、发布订阅创建、验证监控到关联技术逻辑解码的全过程。通过详实的示例，深入分析了其实现数据变更捕获(CDC)的原理、典型应用场景、技术优势与重要注意事项，为构建实时数据同步与集成管道提供实用指南。"
         },
         {
+          "url": "https://blog.csdn.net/Auspicious_air/article/details/161422611",
+          "title": "PostgreSQL逻辑复制全解析：从原理到跨区域实战 - CSDN博客",
+          "snippet": "文章浏览阅读440次，点赞10次，收藏7次。 PostgreSQL"
+        },
+        {
           "url": "https://postgres.ac.cn/docs/current/logical-replication.html",
           "title": "PostgreSQL: 文档: 18: 第 29 章 逻辑复制 - PostgreSQL 数据库",
           "snippet": "PostgreSQL"
-        },
-        {
-          "url": "https://blog.csdn.net/neweastsun/article/details/149199578",
-          "title": "PostgreSQL复制技术全解析：从物理复制到逻辑复制的实践指南_pg逻辑复制生产实践-CSDN博客",
-          "snippet": "文章浏览阅读1.4k次，点赞44次，收藏17次。本文深入剖析PostgreSQL的物理复制与逻辑复制技术，介绍了它们的实现原理、配置方法和应用场景。对比分析两者特点，助读者按需选方案。还给出配置示例、性能优化建议及实际案例，为数据库管理员和架构师提供实践指导。"
-        },
-        {
-          "url": "https://www.cnblogs.com/wy123/p/18294960",
-          "title": "PostgreSQL逻辑复制搭建 - MSSQL123 - 博客园",
-          "snippet": "查看复制状态 postgresql"
         },
         {
           "url": "https://www.cnblogs.com/wy123/p/20936578",
@@ -192,34 +241,39 @@
           "snippet": "如果逻辑复制不满足您的需求，以下是几个常见的 PostgreSQL"
         },
         {
-          "url": "https://runebook.dev/zh/docs/postgresql/runtime-config-replication/GUC-MAX-LOGICAL-REPLICATION-WORKERS",
-          "title": "深入理解 PostgreSQL 的逻辑复制工作进程：配置、常见问题和分片订阅",
-          "snippet": "max_logical_replication_workers 是 PostgreSQL"
-        },
-        {
-          "url": "https://zhuanlan.zhihu.com/p/1927041306691077387",
-          "title": "PostgreSQL逻辑复制部署指南 - 知乎",
-          "snippet": "通过以上步骤，您应该能够全面验证 PostgreSQL"
+          "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+          "title": "PostgreSQL: Documentation: 18: Chapter 29. Logical Replication",
+          "snippet": "PostgreSQL"
         },
         {
           "url": "https://www.database.ink/postgresql/logical-replication-configuration.html",
           "title": "PostgreSQL 逻辑复制配置 | 印刻数据库",
           "snippet": "核心概念 PostgreSQL"
+        },
+        {
+          "url": "https://runebook.dev/zh/docs/postgresql/runtime-config-replication/GUC-MAX-LOGICAL-REPLICATION-WORKERS",
+          "title": "深入理解 PostgreSQL 的逻辑复制工作进程：配置、常见问题和分片订阅",
+          "snippet": "max_logical_replication_workers 是 PostgreSQL"
+        },
+        {
+          "url": "https://blog.51cto.com/fgedu/15025315",
+          "title": "数据库教程FGMT63‑PostgreSQL逻辑复制技术与项目实战",
+          "snippet": "数据库教程FGMT63‑PostgreSQL逻辑复制技术与项目实战，前言与内容大纲介绍PostgreSQL逻辑复制是数据库架构设计、数据迁移、高可用建设与业务系统改造中的关键能力之一。与传统物理复制不同，逻辑复制基于数据行变化和逻辑解码机制，可以实现更细粒度的数据订阅、跨版本数据同步、部分表迁移 ..."
         }
       ]
     }
   ],
   "finalUrls": [
-    "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
     "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
-    "https://learn.microsoft.com/zh-cn/answers/questions/4370847/question-4370847",
+    "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
     "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
     "https://www.postgresql.org/docs/current/logical-replication.html",
     "https://www.cnblogs.com/tiany1224/p/18278082",
-    "https://www.sysgeek.cn/windows-memory-diagnostic/",
-    "http://mysql.taobao.org/monthly/2025/03/01/"
+    "http://mysql.taobao.org/monthly/2025/03/01/",
+    "https://zhuanlan.zhihu.com/p/1927041306691077387",
+    "https://www.tencentcloud.com/zh/document/product/409/64755"
   ],
   "failures": [
-    "so: page does not match the query (possibly rate limited)"
+    "exa: aborted once enough results had arrived"
   ]
 }

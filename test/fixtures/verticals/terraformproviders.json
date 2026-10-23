@@ -1,0 +1,1 @@
+{"providers":[{"namespace":"hashicorp","name":"helm","version":"3.3.0","description":"terraform-provider-helm","published_at":"2026-09-02T09:49:41Z"},{"namespace":"hashicorp","name":"tls","version":"4.4.2","description":"terraform-provider-tls","published_at":"2026-10-21T17:17:06Z"}]}

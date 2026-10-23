@@ -413,10 +413,17 @@ async function loadFixture(query) {
 
 /** Evaluate one query from its fixture with the current ranker. */
 function evaluateOne(query, fixture, config, options) {
-  const answers = fixture.engines.map((engine) => ({
+  const recorded = fixture.engines.map((engine) => ({
     host: hostFor(engine),
     sources: Array.isArray(engine.sources) ? engine.sources : [],
   }));
+  // Mirror `search()`: the primary tier answers, and a fallback engine only
+  // contributes when every primary came back empty. Replaying all recorded
+  // engines regardless of tier measured a pipeline production never runs.
+  const primaries = recorded.filter((answer) => answer.host.tier === 'primary' && answer.sources.length > 0);
+  const answers = primaries.length > 0
+    ? primaries
+    : recorded.filter((answer) => answer.sources.length > 0);
   const rank = rankOptions(config, options);
   if (Object.keys(options.weights).length > 0) {
     // `weights` is indexed like `answers`, so fill every slot: an override for

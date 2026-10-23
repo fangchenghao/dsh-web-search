@@ -1,0 +1,15 @@
+{
+ "success": true,
+ "data": [
+  {
+   "url": "https://kubernetes.io/",
+   "title": "Kubernetes",
+   "description": "[Kubernetes](https://kubernetes.io/docs/concepts/overview/), also known as K8s, is an open source system for automating deployment, scaling, and management of containerized applications.\n\nKubernetes builds upon [15 years of experience of running production workloads at Google](https://queue.acm.org/detail.cfm?id=2898444), combined with best-of-breed ideas and practices from the community.\n\n#### Run K8s anywhere [Heading self-link](https://kubernetes.io/#run-k8s-anywhere)\nKubernetes is open source giving you the freedom to take advantage of on-premises, hybrid, or public cloud infrastructure, l"
+  },
+  {
+   "url": "https://en.wikipedia.org/wiki/Kubernetes",
+   "title": "Kubernetes - Wikipedia",
+   "description": "| Kubernetes (K8s) |\n|-|\n| [![](https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Kubernetes_logo_without_workmark.svg/120px-Kubernetes_logo_without_workmark.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail)](https://en.wikipedia.org/wiki/File:Kubernetes_logo_without_workmark.svg) |\n| [Original author](https://en.wikipedia.org/wiki/Programmer) | [Google](https://en.wikipedia.org/wiki/Google) |\n| [Developer](https://en.wikipedia.org/wiki/Programmer) | [Cloud Native Computing Foundation](https://en.wikipedia.org/wiki/Cloud_Native_Computing_Foundation) |\n| Rele"
+  }
+ ]
+}

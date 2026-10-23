@@ -138,12 +138,14 @@ export { resolveHref, parseDdgHtml, parseDdgLite, parseBing, parseSo, parseAnySe
 export { fuse, interleave, dedupe, mergeRegions } from './rank.ts';
 export { MS_PER_DAY, TIME_RANGE_MS, TIME_RANGES, parsePublishedAt, extractPublishedAt, publishedTimestamp, isWithinTimeRange, filterByTimeRange, } from './freshness.ts';
 export { parseProxy, proxyFromEnv, resolveProxy, proxyGet } from './proxy.ts';
-export { VERTICAL_IDS, VERTICALS, searchVerticals, verticalById, isVerticalId, parseGithub, parseNpm, parsePypi, parseArxiv, parseWikipedia, parseHn, parseStackExchange, parseCrates, } from './verticals.ts';
+export { DEFAULT_VERTICAL_IDS, VERTICAL_IDS, VERTICALS, searchVerticals, verticalById, isVerticalId, parseGithub, parseNpm, parsePypi, parseArxiv, parseWikipedia, parseHn, parseStackExchange, parseCrates, } from './verticals.ts';
 export { DOMAIN_TOOL_NAME, DOMAIN_TOOL_FALLBACK_NAME, createDomainToolDefinition, registerDomainTool, formatDomainValue, } from './domain-tool.ts';
 export type { VerticalId, VerticalSpec, VerticalOutcome, VerticalSearchOptions } from './verticals.ts';
 export type { DomainToolSettings, DomainToolValue, DomainToolDefinition, ToolRegistryLike } from './domain-tool.ts';
 export { SEARCH_MANY_TOOL_NAME, SEARCH_MANY_FALLBACK_NAME, SEARCH_MANY_CONCURRENCY, SEARCH_MANY_DEFAULT_LIMIT, createSearchManyDefinition, registerSearchManyTool, pickSearchManyToolName, formatSearchManyValue, } from './search-many.ts';
 export type { SearchManyDefinition, SearchManyOutcome, SearchManyRegistration, SearchManyRegistryLike, SearchManyResult, SearchManyRunner, SearchManySource, SearchManyValue, } from './search-many.ts';
+export { RESEARCH_TOOL_NAME, RESEARCH_TOOL_FALLBACK_NAME, RESEARCH_DEFAULT_SOURCES, RESEARCH_MAX_SOURCES, RESEARCH_MAX_QUERIES, RESEARCH_EXCERPT_CHARS, RESEARCH_BUDGET_MS, createResearchDefinition, registerResearchTool, pickResearchToolName, formatResearchValue, } from './research.ts';
+export type { ResearchDefinition, ResearchFetcher, ResearchFetchedPage, ResearchFetchFailure, ResearchPage, ResearchRegistration, ResearchRegistryLike, ResearchSearcher, ResearchSearchOutcome, ResearchValue, } from './research.ts';
 export { READ_PAGE_TOOL_NAME, READ_PAGE_TOOL_FALLBACK_NAME, READ_PAGE_MIN_LENGTH, READ_PAGE_MAX_LENGTH, READ_PAGE_DEFAULT_LENGTH, READ_PAGE_INTERNAL_MAX_CHARS, READ_PAGE_CACHE_ENTRIES, READ_PAGE_PROVIDER_ID, createReadPageDefinition, registerReadPageTool, pickReadPageToolName, formatReadPageValue, } from './read-page.ts';
 export type { ReadPageDefinition, ReadPageOptions, ReadPageRegistration, ReadPageRegistryLike, ReadPageSettings, ReadPageValue, } from './read-page.ts';
 export type { Source, SearchOutcome, RankOptions, SearchOptions, HostSpec, Region, TimeRange, WaitPolicy } from './types.ts';

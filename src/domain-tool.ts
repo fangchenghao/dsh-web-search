@@ -20,7 +20,7 @@
  */
 import type { Source } from './types.ts';
 import { resolveProxy } from './proxy.ts';
-import { searchVerticals, isVerticalId, VERTICAL_IDS } from './verticals.ts';
+import { DEFAULT_VERTICAL_IDS, searchVerticals, isVerticalId, VERTICAL_IDS } from './verticals.ts';
 import type { FetchLike, VerticalId } from './verticals.ts';
 
 /** The name this tool prefers. */
@@ -166,7 +166,7 @@ function parseArgs(
   if (query.length === 0) throw new Error('domain_search requires a non-empty query');
 
   const enabled = settings.sourceIds.filter(isVerticalId);
-  let ids: VerticalId[] = enabled.length > 0 ? enabled : [...VERTICAL_IDS];
+  let ids: VerticalId[] = enabled.length > 0 ? enabled : [...DEFAULT_VERTICAL_IDS];
   if (Array.isArray(args.sources) && args.sources.length > 0) {
     const asked = args.sources.filter(isVerticalId);
     if (asked.length === 0) {

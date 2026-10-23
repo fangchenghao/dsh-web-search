@@ -1,0 +1,1 @@
+{"response":{"docs":[{"g":"org.eclipse.apoapsis.ortserver.transport","a":"kubernetes","latestVersion":"0.10.0","timestamp":1748948573612,"versionCount":28},{"g":"com.pulumi","a":"kubernetes","latestVersion":"4.23.0","timestamp":1746207317000,"versionCount":385}]}}

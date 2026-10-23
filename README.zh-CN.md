@@ -9,8 +9,8 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-361%20passing-brightgreen" alt="测试">
-  <img src="https://img.shields.io/badge/engines-6%2C%20zero%20API%20key-brightgreen" alt="引擎">
+  <img src="https://img.shields.io/badge/tests-466%20passing-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="许可证"></a>
@@ -18,10 +18,10 @@
 
 ## 为什么选这个
 
-- **不要 API key，六个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索并发查询，装好就能用。
+- **不要 API key，八个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索直接抓取；Exa 走它的免密钥 MCP 通道加入主引擎，Firecrawl 的搜索 API 作为实测后的兜底。装好就能用。
 - **排序是量出来的，不是写出来的。** 跨引擎 RRF 融合，叠加权威度与时效加权；20 条离线基准 + 81 组参数扫描，是这类插件里唯一同时公开指标和置信区间的。方法见 [排序是怎么做的](docs/rrf-ranking.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
-- **26 个测试文件、361 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **28 个测试文件、466 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -34,10 +34,10 @@ DSH 插件生态里的「联网搜索」这一块已经很挤，大多数竞品�
 
 | | 本插件 | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
 |---|---|---|---|---|
-| 免 key 引擎 | 6 | ~30 | 7 条通道（含 X） | 1 个官方 API |
-| 专门数据源 | 8 | 41 | — | — |
-| 面向模型的工具 | 5 | ~10 | 3 | 5 |
-| 测试 | 26 文件 / 361 用例 | 无 | 29 文件 | 6 文件 |
+| 免 key 引擎 | 8 | ~30 | 7 条通道（含 X） | 1 个官方 API |
+| 专门数据源 | 34（默认开 8 个）| 41 | — | — |
+| 面向模型的工具 | 6 | ~10 | 3 | 5 |
+| 测试 | 28 文件 / 466 用例 | 无 | 29 文件 | 6 文件 |
 | 排序基准 | 20 查询 + 81 组扫描 | — | — | — |
 | 商店状态 | 源码契约已满足，待复核 | unlisted | 无条目 | blocked（review-required） |
 
@@ -55,7 +55,7 @@ DSH 插件生态里的「联网搜索」这一块已经很挤，大多数竞品�
 - 问包、仓库、论文、问答时，模型能直接查对应的数据源，不用拿网页搜索去碰运气。
 - 你不需要准备搜索 API key，也不需要为搜索单独付费。
 
-说白了就一句话：它给 Harness 的 `web` 服务插上两个「提供方」——搜索用 `bing`，抓网页用 `http-proxy`；再给模型加三个工具：`domain_search` 专查包、代码仓库、论文、问答和百科，`search_many` 一次跑多条查询，`read_page` 把长页面分段接着读。这几个名字后面会反复出现，先混个脸熟就行。
+说白了就一句话：它给 Harness 的 `web` 服务插上两个「提供方」——搜索用 `bing`，抓网页用 `http-proxy`；再给模型加四个工具：`domain_search` 专查包、代码仓库、论文、问答和百科，`search_many` 一次跑多条查询，`read_page` 把长页面分段接着读，`research` 把几次搜索变成一份带引用的证据包。这几个名字后面会反复出现，先混个脸熟就行。
 
 ## 它解决什么问题
 
@@ -138,7 +138,7 @@ fetch 拿回来的则是**正文**，不是页面的装修：导航、广告、�
 
 `web_search` 问的是「公开网页上有什么」。`domain_search` 问的是更窄的一件事：「这个包存在吗、这个仓库还维护吗、有没有这篇论文、这个问题有人答过吗」。
 
-它直接问八家公开数据源：GitHub、npm、PyPI、arXiv、Wikipedia、Hacker News、Stack Exchange、crates.io。每家都提供不用密钥的公开接口，拿回的是结构化条目（标题、链接、摘要），而不是一张搜索结果页。
+它直接问 34 家公开数据源，其中 8 家默认开启：GitHub、npm、PyPI、arXiv、Wikipedia、Hacker News、Stack Exchange、crates.io。另外 26 家——GitLab、Codeberg、Docker Hub、Maven、NuGet、RubyGems、Packagist、pub.dev、Hugging Face 模型与数据集、Open VSX、Terraform 模块与 provider、WordPress、JetBrains、OpenAlex、Crossref、Europe PMC、UniProt、ClinicalTrials.gov、NVD、CoinGecko、Internet Archive、Wikidata、Nominatim——通过 `sources` 参数按需开启。每家都提供不用密钥的公开接口，拿回的是结构化条目（标题、链接、摘要），而不是一张搜索结果页。
 
 类比：`web_search` 像在街上问路人「这附近哪有五金店」，得到的是各种指路；`domain_search` 像直接走到五金店柜台报型号——问对了店，回答就干脆。
 
@@ -152,7 +152,7 @@ fetch 拿回来的则是**正文**，不是页面的装修：导航、广告、�
 
 两个一起用最顺：先用 `domain_search` 找到包或论文，再用 `web_fetch` 打开它的主页或 README 读细节。
 
-旁边还有两个帮手：**`search_many`** 和 **`read_page`**。当一个问题需要分别查好几件事——比如每个候选库各查一次——`search_many` 一次接住 1–5 条查询，把每条查询的结果分开返回，某一条失败也不会拖垮整批；`read_page` 则在网页长到一次抓不完时，接着上一次的位置继续往下读。
+旁边还有三个帮手：**`search_many`**、**`read_page`** 和 **`research`**。当一个问题需要分别查好几件事——比如每个候选库各查一次——`search_many` 一次接住 1–5 条查询，把每条查询的结果分开返回，某一条失败也不会拖垮整批；`read_page` 则在网页长到一次抓不完时，接着上一次的位置继续往下读；`research` 则在摘要不够、又必须决定该信哪一页时，先跑最多三条查询，再打开靠前的页面，返回一份每个摘录都带出处的证据包。
 
 ### 分段读长页（read_page）：一次读不完，就接着读
 
@@ -289,8 +289,8 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
     *技术补充：`looksLikeBotWall` 在解析前检查 `qcaptcha`、`访问异常`、`unusual traffic`、`verify you are human`、`安全验证` 等标记；命中就返回 `SEARCH_BLOCKED`（可重试、参与冷却），而不是空列表。`so` 的 `tier` 从 `primary` 改为 `fallback`，只在主引擎一条都没给时才尝试，不再拖慢每次搜索。实测单独查该引擎现在返回失败 `so: bot verification page`，而不是 0 条。*
 
 17. **包、仓库、论文、问答能直接查。**
-    问「这个 npm 包还维护吗」「有没有讲 RAG 的论文」时，模型可以用 `domain_search` 直接查八个专门的数据源，而不是拿网页搜索碰运气。
-    *技术补充：八个免密钥源——`github`、`npm`、`pypi`、`arxiv`、`wikipedia`、`hn`（Hacker News）、`stackexchange`、`crates`（crates.io）；参数 `query`（必填）、`sources`（可选数组，缺省 = 全部启用的源）、`limit`（可选，默认 5、上限 20）。每个源独立超时（默认 8000 毫秒），单源失败不影响其他源，失败名单从 `failures` 返回。实测 `react`、limit 3 时 github/npm/arxiv/wikipedia/hn/stackexchange/crates 各 3 条、pypi 1 条。已知限制：PyPI 没有公开搜索 API，只按**精确包名**查（取查询的第一个词）；Wikipedia 按提问语言只查单一语言（含中日韩字符查 `zh`，否则查 `en`）。宿主没有 `ctx.tools` 服务时，工具不注册，插件其余功能照常。*
+    问「这个 npm 包还维护吗」「有没有讲 RAG 的论文」时，模型可以用 `domain_search` 直接查 34 个专门的数据源，而不是拿网页搜索碰运气。
+    *技术补充：34 个免密钥源，默认开 8 个——`github`、`npm`、`pypi`、`arxiv`、`wikipedia`、`hn`（Hacker News）、`stackexchange`、`crates`（crates.io）；其余 26 个通过 `sources` 指定。参数 `query`（必填）、`sources`（可选数组，缺省 = 默认 8 个）、`limit`（可选，默认 5、上限 20）。每个源独立超时（默认 8000 毫秒），单源失败不影响其他源，失败名单从 `failures` 返回。实测 `react`、limit 3 时 github/npm/arxiv/wikipedia/hn/stackexchange/crates 各 3 条、pypi 1 条。已知限制：PyPI 没有公开搜索 API，只按**精确包名**查（取查询的第一个词）；Wikipedia 按提问语言只查单一语言（含中日韩字符查 `zh`，否则查 `en`）。宿主没有 `ctx.tools` 服务时，工具不注册，插件其余功能照常。*
 
 18. **可以只看最近发布的结果。**
     设置里选「最近 24 小时 / 7 天 / 30 天 / 1 年」，就只留窗口内发布的结果，适合追新闻和版本更新。
@@ -306,7 +306,11 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 21. **搜索质量有了可重复的基准。**
     改排序不再靠感觉：仓库里有一组固定的 20 条查询，每次改完都能跑出同一套分数。
-    *技术补充：`bench/` 下 20 条查询（中文 10、英文 10），四类各 5 条（文档 / 版本发布 / 包与库 / 新闻），每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线读夹具重放，不联网，输出 precision@8、recall@8、MRR@8 与每个引擎的贡献；`--record` 联网重新录制（每条限速 1.5 秒），用于更新夹具；`--json` 输出机器可读结果，便于版本间对比，历史结果存在 `bench/results/`。当前基线（0.13.0）：P@8 `0.3625`、R@8 `0.7417`、MRR@8 `0.7600`；中文 `0.3250 / 0.7333 / 0.6700`，英文 `0.4000 / 0.7500 / 0.8500`。对照实验和已知短板见附录。*
+    *技术补充：`bench/` 下 20 条查询（中文 10、英文 10），四类各 5 条（文档 / 版本发布 / 包与库 / 新闻），每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线读夹具重放，不联网，输出 precision@8、recall@8、MRR@8 与每个引擎的贡献；`--record` 联网重新录制（每条限速 1.5 秒），用于更新夹具；`--json` 输出机器可读结果，便于版本间对比，历史结果存在 `bench/results/`。当前基线（0.15.0，按 tier 回放）：P@8 `0.4375`、R@8 `0.7917`、MRR@8 `0.8071`；中文 `0.4000 / 0.8167 / 0.7976`，英文 `0.4750 / 0.7667 / 0.8167`。对照实验和已知短板见附录。*
+
+22. **一次调用完成小调研。**
+    问「官方文档和另外两个来源到底怎么说」时，`research` 先跑最多三条查询，再用与 `web_fetch` 相同的抓取阶梯打开靠前的页面，最后返回一份证据包：每段摘录下面就是它的 URL。打不开的页面按 URL 和原因列出，不会让整份证据包失败。
+    *技术补充：参数 `query`（必填）、`queries`（最多再加三条）、`maxSources`（1–5，默认 3）；整次调用共享 45 秒预算，最多 3 个页面并发抓，剩余不足 2.5 秒就不再开新页。若 `research` 名字已被别的插件占用，则注册为 `web_research`。抓取侧使用独立的 `http-proxy-research` provider，不会干扰宿主的 `web_fetch` 渲染缓存；搜索侧复用 `web_search` 的同一条链路、缓存与冷却。*
 
 > **0.13.0 修了什么（一个真实缺陷）**：360（`so`）从部分网络访问会返回验证码页（302 到 qcaptcha 的「访问异常页面」），但 HTTP 状态是 200。旧代码把它当作「0 条结果」静默吞掉：引擎等于消失，冷却也没触发。现在识别到验证码/人机校验页面就报 `SEARCH_BLOCKED` 失败，并把 360 降为**兜底档**（主引擎都空时才尝试），不再拖慢每次搜索。实测：单独查该引擎现在返回失败 `so: bot verification page`，而不是 0 条。
 
@@ -450,7 +454,7 @@ pnpm install
 
 | 控件 | 配置键 | 默认 | 人话 |
 | --- | --- | --- | --- |
-| 查哪些专用源 | `domainSources` | 八个全开 | `github`、`npm`、`pypi`、`arxiv`、`wikipedia`、`hn`、`stackexchange`、`crates` 里只留几个，逗号分隔；留空表示全开 |
+| 查哪些专用源 | `domainSources` | 默认八个 | 在 34 个源里只留几个（如 `github,npm`），逗号分隔；留空表示默认八个。`sources` 参数可以点名任意一个源 |
 | 每个源返回几条 | `domainLimit` | `5` | `domain_search` 每个源最多返回几条，1–20 |
 | 每个源等多久 | `domainTimeoutMs` | `8000` | 单个专用源最多等多久（毫秒），最小 500；网慢可调到 15000 |
 
@@ -482,7 +486,7 @@ pnpm install
 
 - **代理没被自动探测到**：在 `proxy` 里填上你的本地代理地址，比如 `http://127.0.0.1:7890`。只支持 HTTP 代理，`socks5://` 要换成客户端的 HTTP/mixed 端口。
 - **你想要 AnySearch 的更高额度或正文抽取**：填 `anysearchApiKey`；想只搜某个垂直领域再填 `anysearchDomain`。
-- **你只想让 `domain_search` 查某几个源**：把 `domainSources` 收窄成 `github,npm` 这类组合；留空就是八个全开。
+- **你只想让 `domain_search` 查某几个源**：把 `domainSources` 收窄成 `github,npm` 这类组合；留空就是默认八个；其余 26 个（如 `dockerhub,openalex`）通过 `sources` 按需开启。
 - **抓回来的正文断得太早，或只想要纯文字**：把 `fetchMaxLength` 调到 `50000`，或把 `fetchFormat` 改成 `text`；如果调大也不够、要接着读下半段，用 `read_page`（见能力清单第 11 条）。
 - **抓回来是个空壳页面**：先确认正文是不是靠 JavaScript 生成。自己装了 Playwright 就把 `renderJs` 留在 `auto`，重载插件后再试；没装就换一个来源（打印版、静态镜像、站点 API）。调大 `fetchMaxLength` 只对「抓到了但被截断」有用，变不出正文。
 - **浏览器渲染太慢**：把 `renderJs` 改成 `off`，或把 `renderTimeoutMs` 调小。
@@ -559,7 +563,7 @@ pnpm install
 
 ### 你们怎么知道搜索质量变好了？
 
-靠 `bench/` 里的固定查询集，而不是拍脑袋。20 条查询（中文 10、英文 10），文档 / 版本发布 / 包与库 / 新闻四类各 5 条，每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线重放录好的夹具，输出 P@8 / R@8 / MRR@8。0.13.0 的基线是 **0.3625 / 0.7417 / 0.7600**；中文 0.3250 / 0.7333 / 0.6700，英文 0.4000 / 0.7500 / 0.8500。改排序前后各跑一次，数字是变好还是变坏一目了然。样本只有 20 条，不能当统计显著性；新闻类 recall 只有 0.367，`zh-linux-612` 还是 0 命中——这些短板都写在附录里。
+靠 `bench/` 里的固定查询集，而不是拍脑袋。20 条查询（中文 10、英文 10），文档 / 版本发布 / 包与库 / 新闻四类各 5 条，每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线重放录好的夹具，输出 P@8 / R@8 / MRR@8。0.15.0 的基线（按 tier 回放）是 **0.4375 / 0.7917 / 0.8071**；中文 0.4000 / 0.8167 / 0.7976，英文 0.4750 / 0.7667 / 0.8167。改排序前后各跑一次，数字是变好还是变坏一目了然。样本只有 20 条，不能当统计显著性；新闻类 recall 只有 0.467，逐条输出会把每次没命中都打出来——这些短板都写在附录里。
 
 ### 为什么搜索结果和我手动搜的不一样？
 
@@ -740,12 +744,12 @@ domain_search 调用
   → 读配置（domainSources / domainLimit / domainTimeoutMs 每次调用重读）
   → 解析代理（配置 → 环境变量 → 系统代理）
   → sources 缺省 = 设置里启用的源；limit 夹到 1–20，缺省用 domainLimit
-  → 八个源并发 GET，各自独立超时（domainTimeoutMs）
+  → 默认八个源并发 GET，各自独立超时（domainTimeoutMs）；其余 26 个按需开启
   → 按源交错合并，截到 limit
   → 返回 { sources, failures, truncated }
 ```
 
-八个源都是公开、免密钥的接口：GitHub 仓库搜索、npm registry、PyPI、arXiv Atom、Wikipedia API、Hacker News（Algolia）、Stack Exchange API、crates.io。每个源各有解析器，上游改版时该源退化成空结果，不会让整次调用失败；单个源超时、回 5xx 或网络不通，只记一条 `failures`，其余源照常返回。GitHub 与 crates.io 要求带 `User-Agent`，请求里已经带上。
+34 个源都是公开、免密钥的接口。默认八个是 GitHub 仓库搜索、npm registry、PyPI、arXiv Atom、Wikipedia API、Hacker News（Algolia）、Stack Exchange API、crates.io；按需的 26 个覆盖包仓库（Docker Hub、Maven、NuGet、RubyGems、Packagist、pub.dev）、代码托管（GitLab、Codeberg、GitHub issues）、模型与数据集（Hugging Face）、编辑器（Open VSX、JetBrains）、基础设施（Terraform 模块与 provider、WordPress）和数据源（OpenAlex、Crossref、Europe PMC、UniProt、ClinicalTrials.gov、NVD、CoinGecko、Internet Archive、Wikidata、Nominatim）。每个源各有解析器，上游改版时该源退化成空结果，不会让整次调用失败；单个源超时、回 5xx 或网络不通，只记一条 `failures`，其余源照常返回。GitHub 与 crates.io 要求带 `User-Agent`，请求里已经带上。
 
 两个源的行为需要单独说明：
 
@@ -807,28 +811,28 @@ read_page 调用
 
 指标：P@8 = 前 8 条里命中期望域名的行数 ÷ 8（固定分母，返回不足 8 条也不放宽）；R@8 = 前 8 条覆盖的期望域名 ÷ 全部期望域名；MRR@8 = 第一条命中的排名倒数，20 条取平均，没命中记 0。域名匹配允许「子域命中父域」单向成立：`docs.python.org` 命中期望的 `python.org`，反过来不算。
 
-**0.13.0 基线**：
+**0.15.0 基线**（按 tier 回放）：
 
 | 范围 | P@8 | R@8 | MRR@8 |
 | --- | --- | --- | --- |
-| 全部 20 条 | 0.3625 | 0.7417 | 0.7600 |
-| 中文 10 条 | 0.3250 | 0.7333 | 0.6700 |
-| 英文 10 条 | 0.4000 | 0.7500 | 0.8500 |
+| 全部 20 条 | 0.4375 | 0.7917 | 0.8071 |
+| 中文 10 条 | 0.4000 | 0.8167 | 0.7976 |
+| 英文 10 条 | 0.4750 | 0.7667 | 0.8167 |
 
 **对照实验**（同一批夹具，只改一个参数）：
 
 | 配置 | P@8 | R@8 | MRR@8 |
 | --- | --- | --- | --- |
-| 默认（rrf 60、AnySearch 权重 2） | 0.3625 | 0.7417 | 0.7600 |
-| AnySearch 权重 1 | 0.3875 | 0.7417 | 0.7433 |
-| rrf 40 | 0.3500 | 0.7417 | 0.7767 |
-| rrf 120 | 0.3875 | 0.7417 | 0.7338 |
-| 关掉权威域名（authority 0） | 0.2813 | 0.6917 | 0.6950 |
+| 默认（rrf 60、AnySearch 权重 2） | 0.4375 | 0.7917 | 0.8071 |
+| AnySearch 权重 1 | 0.4625 | 0.7917 | 0.8167 |
+| rrf 40 | 0.4313 | 0.7833 | 0.8333 |
+| rrf 120 | 0.4375 | 0.7917 | 0.8167 |
+| 关掉权威域名（authority 0） | 0.3438 | 0.7917 | 0.8071 |
 
 结论：
 
-- 默认 `rrfConstant=60` 的 MRR 是 0.7600，高于 `rrf 120` 的 0.7338。`rrf 40` 的 MRR 更高（0.7767），但 P@8 从 0.3625 掉到 0.3500，R@8 不变——这是拿精度换更靠前的首条命中，所以默认仍保持 60。
-- 权威域名加权明显有效：关掉后 P@8 从 0.3625 掉到 0.2813，R@8 从 0.7417 掉到 0.6917，MRR 从 0.7600 掉到 0.6950；中文整体崩掉，`zh-postgres-logical` 直接 0 命中。
+- 在这份语料上，单变量改动都不能与默认显著分开。`rrf 40` 把 MRR 从 0.8071 抬到 0.8333，但 P@8 从 0.4375 降到 0.4313，还多出一条 0 命中；`rrf 120` 和权重 1 大约提升 0.01 MRR、P@8 不掉，但 81 组扫描的配对 bootstrap 区间都压到 0，所以默认值都没有改。
+- 权威域名加权改变的是同分排序，而不是找出新行：关掉后 P@8 从 0.4375 掉到 0.3438，但 MRR 和 R@8 不变。它存在的意义就是把同排名上的 `kubernetes.io` 压过 SEO 页，数字与这个定位一致。
 - AnySearch 权重 2 时它占了 76% 的 top-8 槽位（160 行里 122 行）；降到权重 1，P@8 升到 0.3875，但 MRR 掉到 0.7433，偏重与偏轻各有代价。这几组参数的差异只值 1–4 个命中，样本又只有 20 条，所以默认暂时不改。
 - 已知短板：新闻类 recall 只有 0.3667（约 0.367）；`zh-linux-612` 0 命中（kernel.org / lwn 被 AWS 文档、菜鸟教程压过）；20 条样本没有统计显著性。这些数字用来判断方向，不用来宣布「质量已达标」。
 
@@ -899,7 +903,7 @@ npm run build                  # 编译 src/ 到 lib/
 npm run check                  # typecheck + 测试
 ```
 
-测试默认全程离线、全部通过；唯一需要联网的分段验证默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含八个专用源的正常/空响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过，联网验证时用 `READ_PAGE_LIVE=1 node --test test/read-page.test.ts` 运行。
+测试默认全程离线、全部通过；唯一需要联网的分段验证默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含默认八个与 26 个按需源的真实响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过，联网验证时用 `READ_PAGE_LIVE=1 node --test test/read-page.test.ts` 运行。
 
 CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu 与 macOS 上跑 `npm ci`、`npm run typecheck`、`npm test`、`npm run build`，并检查构建确实产出了 `lib/index.js` 和 `lib/index.d.ts`，且 `apply` 与 `Config` 都可导入。
 

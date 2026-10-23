@@ -9,8 +9,8 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-361%20passing-brightgreen" alt="tests">
-  <img src="https://img.shields.io/badge/engines-6%2C%20zero%20API%20key-brightgreen" alt="engines">
+  <img src="https://img.shields.io/badge/tests-466%20passing-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license"></a>
@@ -18,10 +18,10 @@
 
 ## Why this one
 
-- **No API key, six engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are queried concurrently; the plugin works out of the box.
+- **No API key, eight engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are scraped directly; Exa joins the primary tier through its keyless MCP endpoint, and Firecrawl's search API is the measured fallback. The plugin works out of the box.
 - **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — the only search plugin here that publishes both its metric and its confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
 - **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **361 tests across 26 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **466 tests across 28 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -34,10 +34,10 @@ The web-search corner of the DSH plugin ecosystem is crowded, and most rivals ar
 
 | | this plugin | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
 |---|---|---|---|---|
-| Key-free engines | 6 | ~30 | 7 channels (+X) | 1 official API |
-| Dedicated vertical sources | 8 | 41 | — | — |
-| Model-facing tools | 5 | ~10 | 3 | 5 |
-| Test suite | 26 files / 361 cases | none | 29 files | 6 files |
+| Key-free engines | 8 | ~30 | 7 channels (+X) | 1 official API |
+| Dedicated vertical sources | 34 (8 on by default) | 41 | — | — |
+| Model-facing tools | 6 | ~10 | 3 | 5 |
+| Test suite | 28 files / 466 cases | none | 29 files | 6 files |
 | Ranking benchmark | 20 queries + 81-config sweep | — | — | — |
 | Store status | source contract satisfied, awaiting review | unlisted | no entry | blocked (review-required) |
 
@@ -55,7 +55,7 @@ Three things change for you:
 - When a question is about a package, a repository or a paper, the model can ask the matching source directly instead of hoping a web search understands.
 - You do not need a search API key, and you do not pay for search separately.
 
-Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds three more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, `search_many` for several searches in one call, and `read_page` for walking a long page in chunks. These names come up again below.
+Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds four more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, `search_many` for several searches in one call, `read_page` for walking a long page in chunks, and `research` for turning a few searches into one cited evidence pack. These names come up again below.
 
 ## The problem it solves
 
@@ -138,7 +138,7 @@ What fetch hands back is the **article**, not the page's furniture: navigation, 
 
 `web_search` asks "what is on the open web". `domain_search` asks something narrower: "does this package exist, is this repository maintained, is there a paper on this, has someone answered this?"
 
-It queries eight public sources directly: GitHub, npm, PyPI, arXiv, Wikipedia, Hacker News, Stack Exchange and crates.io. Each offers a keyless public endpoint and returns structured records — title, link, snippet — rather than a page of search results.
+It queries 34 public sources directly; eight are on by default: GitHub, npm, PyPI, arXiv, Wikipedia, Hacker News, Stack Exchange and crates.io. The other 26 — GitLab, Codeberg, Docker Hub, Maven, NuGet, RubyGems, Packagist, pub.dev, Hugging Face models and datasets, Open VSX, Terraform modules and providers, WordPress, JetBrains, OpenAlex, Crossref, Europe PMC, UniProt, ClinicalTrials.gov, NVD, CoinGecko, Internet Archive, Wikidata and Nominatim — are opt-in through the `sources` argument. Each offers a keyless public endpoint and returns structured records — title, link, snippet — rather than a page of search results.
 
 Analogy: `web_search` is asking passers-by where the hardware shop is and getting directions; `domain_search` is walking to the counter and quoting a part number. Ask the right shop and the answer is short.
 
@@ -152,7 +152,7 @@ Analogy: `web_search` is asking passers-by where the hardware shop is and gettin
 
 They team up well: use `domain_search` to find the package or paper, then `web_fetch` to open its homepage or README and read the detail.
 
-Two more helpers sit beside them: **`search_many`** and **`read_page`**. When one question needs several distinct searches — one per candidate library, say — `search_many` runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch; when a page is too long for one fetch, `read_page` continues from where the previous chunk stopped.
+Three more helpers sit beside them: **`search_many`**, **`read_page`** and **`research`**. When one question needs several distinct searches — one per candidate library, say — `search_many` runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch; when a page is too long for one fetch, `read_page` continues from where the previous chunk stopped; and when snippets are not enough but the model still has to decide which page to trust, `research` searches up to three queries, opens the leading pages and returns one evidence pack with a citation under every excerpt.
 
 ### Reading a long page in chunks (read_page): when one pass is not enough
 
@@ -225,8 +225,8 @@ Why does a code change need a restart? Because Node.js evaluates a module once p
 Each line is the plain version first, the technical note second. The technical note is safe to skip.
 
 1. **Ask several search engines at once.**
-   Three primaries run together (AnySearch, DuckDuckGo HTML, Bing China). If none of them returns anything, Bing International, 360 and DuckDuckGo Lite step in. Six sources in total.
-   *Technical: `tier: primary` and `tier: fallback` in `HOSTS`; 360 is a fallback because of its verification wall; the three `viaProxy` engines (`ddg-html`, `www.bing`, `ddg-lite`) only join when a proxy is detected.*
+   Four primaries run together (AnySearch, DuckDuckGo HTML, Bing China, Exa). If none of them returns anything, Bing International, 360, DuckDuckGo Lite and Firecrawl step in. Eight sources in total.
+   *Technical: `tier: primary` and `tier: fallback` in `HOSTS`; 360 is a fallback because of its verification wall; the three `viaProxy` engines (`ddg-html`, `www.bing`, `ddg-lite`, `exa`, `firecrawl`) only join when a proxy is detected.*
 
 2. **No API key at all.**
    AnySearch answers anonymously; the domestic engines and DuckDuckGo are scraped from public result pages. No sign-up needed.
@@ -289,8 +289,8 @@ Each line is the plain version first, the technical note second. The technical n
      *Technical: `looksLikeBotWall` checks for `qcaptcha`, `访问异常`, `unusual traffic`, `verify you are human` and `安全验证` before parsing; a hit returns `SEARCH_BLOCKED` (retryable and subject to cooldown) instead of an empty list. `so` moved from `tier: primary` to `tier: fallback`, so it is tried only when no primary engine returned anything and no longer slows every search. Measured: querying that engine alone now returns the failure `so: bot verification page`, not zero results.*
 
 17. **Packages, repositories, papers and Q&A are one hop away.**
-     For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against eight dedicated sources instead of hoping a web search finds them.
-     *Technical: eight keyless sources — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); arguments `query` (required), `sources` (optional array, default = every enabled source), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
+     For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against 34 dedicated sources instead of hoping a web search finds them.
+     *Technical: 34 keyless sources, eight on by default — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); the other 26 are reachable through `sources`. Arguments `query` (required), `sources` (optional array, default = the default eight), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
 
 18. **You can look only at recently published results.**
      Choose "last 24 hours / 7 days / 30 days / 1 year" in Settings and only results inside that window stay — useful for news and releases.
@@ -306,7 +306,11 @@ Each line is the plain version first, the technical note second. The technical n
 
 21. **Search quality has a repeatable benchmark.**
     Ranking changes are no longer judged by feel: a fixed set of 20 queries produces the same scores every time.
-    *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Baseline for 0.13.0: P@8 `0.3625`, R@8 `0.7417`, MRR@8 `0.7600`; Chinese `0.3250 / 0.7333 / 0.6700`, English `0.4000 / 0.7500 / 0.8500`. The controlled experiments and known gaps are in the appendix.*
+    *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Baseline for 0.15.0 (tier-aware replay, so the recorded fallback engines only count when production would run them): P@8 `0.4375`, R@8 `0.7917`, MRR@8 `0.8071`; Chinese `0.4000 / 0.8167 / 0.7976`, English `0.4750 / 0.7667 / 0.8167`. The controlled experiments and known gaps are in the appendix.*
+
+22. **Research, in one call.**
+    For "what do the official docs and two other sources actually say about X", `research` runs up to three searches, opens the leading pages through the same fetch ladder, and returns one evidence pack in which every excerpt sits under its URL. A page that will not load is reported by URL and reason instead of aborting the pack.
+    *Technical: `query` (required), `queries` (up to three extra), `maxSources` (1–5, default 3); one 45 s budget for the whole call, three page fetches in flight, and a page fetch is not started with less than 2.5 s left. The tool registers as `web_research` if another plugin owns `research`. Its fetch side uses its own `http-proxy-research` provider so it cannot disturb the host `web_fetch` renderer cache. The search side is the same `web_search` path, cache and cooling included.*
 
 > **What 0.13.0 fixes (a real defect)**: from some networks 360 (`so`) returns a verification page — a 302 to the qcaptcha "unexpected access" page — while the HTTP status is still 200. The old code read that as "zero results" and swallowed it: the engine effectively disappeared and its cooldown never fired. Such pages now fail as `SEARCH_BLOCKED`, and 360 has been demoted to the **fallback tier** (tried only when the primary engines are empty), so it no longer slows every search. Measured: querying that engine alone now returns the failure `so: bot verification page` instead of zero results.
 
@@ -450,7 +454,7 @@ Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five gro
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
-| Sources | `domainSources` | all eight | Keep only some of `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn`, `stackexchange`, `crates`, comma-separated; empty means all |
+| Sources | `domainSources` | the default eight | Keep only some of the 34 sources (e.g. `github,npm`), comma-separated; empty means the default eight. `sources` on the tool call can name any of the 34 |
 | Results per source | `domainLimit` | `5` | How many results `domain_search` takes from each source, 1–20 |
 | Deadline per source | `domainTimeoutMs` | `8000` | Per-source deadline in ms, at least 500; raise it to 15000 on a slow network |
 
@@ -482,7 +486,7 @@ Only these situations are worth changing:
 
 - **Your proxy is not detected**: put the local proxy address in `proxy`, for example `http://127.0.0.1:7890`. HTTP proxies only — swap `socks5://` for the client's HTTP/mixed port.
 - **You want AnySearch's higher limits or page extraction**: fill in `anysearchApiKey`, and add `anysearchDomain` if you want one vertical index.
-- **You only want `domain_search` to hit a few sources**: narrow `domainSources` to a set such as `github,npm`; empty means all eight.
+- **You only want `domain_search` to hit a few sources**: narrow `domainSources` to a set such as `github,npm`; empty means the default eight. The other 26 (e.g. `dockerhub,openalex`) are opt-in through `sources`.
 - **A fetched page is cut too early, or you want plain text**: raise `fetchMaxLength` to `50000`, or set `fetchFormat` to `text`; if that is still not enough and you need the other half, use `read_page` (item 11 above).
 - **A fetched page is an empty shell**: first check whether its body is built by JavaScript. If Playwright is installed, leave `renderJs` on `auto` and reload the plugin, then retry; without it, try another source (a print view, a static mirror, the site's API). Raising `fetchMaxLength` only helps when text was fetched but cut at the tail — it cannot turn a shell into an article.
 - **Browser rendering is too slow**: set `renderJs` to `off`, or lower `renderTimeoutMs`.
@@ -559,7 +563,7 @@ No. `package.json` does not list Playwright, and the plugin never downloads or i
 
 ### How do you know search quality improved?
 
-From the fixed query set in `bench/`, not from intuition. There are 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline and prints P@8 / R@8 / MRR@8. The 0.13.0 baseline is **0.3625 / 0.7417 / 0.7600**; Chinese 0.3250 / 0.7333 / 0.6700, English 0.4000 / 0.7500 / 0.8500. Run it before and after a ranking change and the direction is a number. Twenty queries are not statistical significance; news recall is only 0.367 and `zh-linux-612` still misses everything — the appendix says so.
+From the fixed query set in `bench/`, not from intuition. There are 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline and prints P@8 / R@8 / MRR@8. The 0.15.0 baseline (tier-aware replay) is **0.4375 / 0.7917 / 0.8071**; Chinese 0.4000 / 0.8167 / 0.7976, English 0.4750 / 0.7667 / 0.8167. Run it before and after a ranking change and the direction is a number. Twenty queries are not statistical significance; news recall is only 0.467 and the per-query table still prints every miss — the appendix says so.
 
 ### Why do the results differ from what I get searching by hand?
 
@@ -740,12 +744,12 @@ domain_search call
   → read config (domainSources / domainLimit / domainTimeoutMs, re-read per call)
   → resolve the proxy (config → environment → system proxy)
   → sources default to the enabled set; limit clamped to 1–20, default domainLimit
-  → eight sources in parallel GET, each with its own deadline (domainTimeoutMs)
+  → the default eight sources in parallel GET, each with its own deadline (domainTimeoutMs); 26 more are opt-in
   → interleave by source, slice to limit
   → return { sources, failures, truncated }
 ```
 
-All eight are public, keyless endpoints: GitHub repository search, the npm registry, PyPI, arXiv Atom, the Wikipedia API, Hacker News (Algolia), the Stack Exchange API and crates.io. Each has its own parser; when upstream markup drifts, that source degrades to an empty answer instead of failing the run. A timeout, a 5xx or an unreachable host on one source adds one `failures` line and leaves the others answering. GitHub and crates.io require a `User-Agent`, which every request carries.
+All 34 are public, keyless endpoints. The default eight are GitHub repository search, the npm registry, PyPI, arXiv Atom, the Wikipedia API, Hacker News (Algolia), the Stack Exchange API and crates.io; the opt-in 26 cover package registries (Docker Hub, Maven, NuGet, RubyGems, Packagist, pub.dev), code hosts (GitLab, Codeberg, GitHub issues), models and datasets (Hugging Face), editors (Open VSX, JetBrains), infrastructure (Terraform modules and providers, WordPress), and data sources (OpenAlex, Crossref, Europe PMC, UniProt, ClinicalTrials.gov, NVD, CoinGecko, Internet Archive, Wikidata, Nominatim). Each has its own parser; when upstream markup drifts, that source degrades to an empty answer instead of failing the run. A timeout, a 5xx or an unreachable host on one source adds one `failures` line and leaves the others answering. GitHub and crates.io require a `User-Agent`, which every request carries.
 
 Two sources need a word of their own:
 
@@ -807,28 +811,28 @@ Measured on `https://docs.python.org/3/library/asyncio-task.html`: starting at `
 
 Metrics: P@8 = matched rows in the top 8 ÷ 8 (fixed denominator; a short list is not excused); R@8 = distinct expected domains found in the top 8 ÷ all expected domains; MRR@8 = the mean reciprocal rank of the first match over 20 queries, with a miss scoring 0. Domain matching is one-way from subdomain to parent: `docs.python.org` matches expected `python.org`, but the reverse does not.
 
-**0.13.0 baseline**:
+**0.15.0 baseline** (tier-aware replay):
 
 | Scope | P@8 | R@8 | MRR@8 |
 | --- | --- | --- | --- |
-| All 20 queries | 0.3625 | 0.7417 | 0.7600 |
-| Chinese (10) | 0.3250 | 0.7333 | 0.6700 |
-| English (10) | 0.4000 | 0.7500 | 0.8500 |
+| All 20 queries | 0.4375 | 0.7917 | 0.8071 |
+| Chinese (10) | 0.4000 | 0.8167 | 0.7976 |
+| English (10) | 0.4750 | 0.7667 | 0.8167 |
 
 **Controlled experiments** (same fixtures, one knob changed):
 
 | Configuration | P@8 | R@8 | MRR@8 |
 | --- | --- | --- | --- |
-| Default (rrf 60, AnySearch weight 2) | 0.3625 | 0.7417 | 0.7600 |
-| AnySearch weight 1 | 0.3875 | 0.7417 | 0.7433 |
-| rrf 40 | 0.3500 | 0.7417 | 0.7767 |
-| rrf 120 | 0.3875 | 0.7417 | 0.7338 |
-| Authority domains off (authority 0) | 0.2813 | 0.6917 | 0.6950 |
+| Default (rrf 60, AnySearch weight 2) | 0.4375 | 0.7917 | 0.8071 |
+| AnySearch weight 1 | 0.4625 | 0.7917 | 0.8167 |
+| rrf 40 | 0.4313 | 0.7833 | 0.8333 |
+| rrf 120 | 0.4375 | 0.7917 | 0.8167 |
+| Authority domains off (authority 0) | 0.3438 | 0.7917 | 0.8071 |
 
 Conclusions:
 
-- The default `rrfConstant=60` has an MRR of 0.7600, above `rrf 120`'s 0.7338. `rrf 40` has a higher MRR (0.7767), but P@8 falls from 0.3625 to 0.3500 while R@8 stays put — precision traded for a better first hit, so the default remains 60.
-- Authority weighting clearly works: turning it off drops P@8 from 0.3625 to 0.2813, R@8 from 0.7417 to 0.6917 and MRR from 0.7600 to 0.6950; Chinese collapses and `zh-postgres-logical` scores zero hits.
+- No single-knob change separates from the default on this corpus. `rrf 40` raises MRR from 0.8071 to 0.8333 but lowers P@8 from 0.4375 to 0.4313 and introduces one zero-hit query; `rrf 120` and weight 1 raise MRR by about 0.01 with no P@8 loss, but the 81-configuration sweep puts every one of those differences inside a paired-bootstrap interval that touches zero. The defaults therefore did not change.
+- Authority weighting reorders ties rather than finding new rows: turning it off drops P@8 from 0.4375 to 0.3438 while MRR and R@8 stay put. It exists to put `kubernetes.io` above an SEO page at the same rank, and that is what the numbers show.
 - AnySearch at weight 2 takes 76% of the top-8 slots (122 of 160 rows); at weight 1, P@8 rises to 0.3875 but MRR falls to 0.7433, so heavier and lighter both cost something. These settings differ by only 1–4 hits on 20 queries, so the defaults stay.
 - Known gaps: news recall is only 0.3667 (about 0.367); `zh-linux-612` has zero hits (AWS docs and a runoob tutorial outrank kernel.org and LWN); and 20 queries carry no statistical significance. The numbers show direction, not a claim that quality has arrived.
 
@@ -899,7 +903,7 @@ npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline by default and passes in full; the one live paging check is skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
+The suite runs offline by default and passes in full; the one live paging check is skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for the default eight and the 26 opt-in sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
 
 CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 

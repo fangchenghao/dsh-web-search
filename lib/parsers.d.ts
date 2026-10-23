@@ -90,3 +90,28 @@ export declare function parseAnySearch(payload: string, baseUrl: string): Source
  * @returns whether the payload contains a distinctive query token.
  */
 export declare function echoesQuery(payload: string, query: string): boolean;
+/**
+ * Parse the Firecrawl `/v1/search` JSON API.
+ *
+ * The endpoint is credential-free and answers
+ * `{ success: true, data: [{ title, url, description }] }`, where `description`
+ * is the page's extracted Markdown rather than a search snippet. Only the
+ * opening prose is kept: a whole page in one snippet would push every other
+ * engine's result out of the model-facing row.
+ * @param payload - the response body.
+ * @param baseUrl - the endpoint URL, used to resolve relative links.
+ * @returns parsed sources in the served order; empty on drift.
+ */
+export declare function parseFirecrawl(payload: string, baseUrl: string): Source[];
+/**
+ * Parse an Exa MCP `web_search_exa` answer.
+ *
+ * The MCP server replies with one SSE frame whose `text` content lists results
+ * as `Title: … / URL: … / Published: … / Author: … / Highlights: …` blocks
+ * separated by `---`. The block is the only stable shape here, so it is parsed
+ * line-wise; anything unexpected yields fewer rows, never an exception.
+ * @param payload - the raw SSE body.
+ * @param baseUrl - the MCP endpoint, used to resolve relative links.
+ * @returns parsed sources in the served order; empty on drift.
+ */
+export declare function parseExaMcp(payload: string, baseUrl: string): Source[];
