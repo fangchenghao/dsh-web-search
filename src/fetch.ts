@@ -458,7 +458,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
         }
         if (candidate !== undefined && mode === 'auto') {
           const verdict = detectShellPage(candidate);
-          if (!verdict.shell) {
+          if (!verdict.shellPage) {
             return { done: true, outcome: candidate, report: makeReport(mode, false, false, verdict.reason) };
           }
         }

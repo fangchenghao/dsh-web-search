@@ -50,7 +50,7 @@ export interface ShellInput {
 /** A shell decision plus the numbers and reason behind it. */
 export interface ShellVerdict {
     /** Whether a browser render is worth attempting. */
-    readonly shell: boolean;
+    readonly shellPage: boolean;
     /** Characters of visible text, tags and script bodies removed. */
     readonly readableChars: number;
     /** Short, content-free explanation, safe to surface in a report. */

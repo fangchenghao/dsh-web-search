@@ -476,26 +476,26 @@ test('the shell heuristic uses readable length, markers, 403/429 and skips error
     detectShellPage({ statusCode, body: { kind, content: html } });
 
   const below = verdict(`<html><body><p>${'x'.repeat(SHELL_READABLE_LIMIT - 1)}</p></body></html>`);
-  assert.equal(below.shell, true);
+  assert.equal(below.shellPage, true);
   assert.equal(below.readableChars, SHELL_READABLE_LIMIT - 1);
   assert.match(below.reason, /below the 500-character shell limit/);
 
   const markerShort = verdict(`<html><body><div id="root"></div><p>${'y'.repeat(700)}</p></body></html>`);
-  assert.equal(markerShort.shell, true);
+  assert.equal(markerShort.shellPage, true);
   assert.match(markerShort.reason, /client-render marker id="root"/);
 
   const markerLong = verdict(`<html><body><div id="root"></div><p>${'y'.repeat(1300)}</p></body></html>`);
-  assert.equal(markerLong.shell, false);
+  assert.equal(markerLong.shellPage, false);
 
   const rich = verdict(`<html><body><article><p>${'word '.repeat(200)}</p></article></body></html>`);
-  assert.equal(rich.shell, false);
+  assert.equal(rich.shellPage, false);
   assert.match(rich.reason, /look like real content/);
 
-  assert.equal(verdict('<html><body></body></html>').shell, true);
-  assert.equal(verdict('<html><body><p>Checking your browser…</p></body></html>', 403).shell, true);
-  assert.equal(verdict('<html><body><p>Checking your browser…</p></body></html>', 429).shell, true);
-  assert.equal(verdict('<html><body><p>Not found</p></body></html>', 404).shell, false);
-  assert.equal(verdict('{"ok":true}', 200, 'text').shell, false);
+  assert.equal(verdict('<html><body></body></html>').shellPage, true);
+  assert.equal(verdict('<html><body><p>Checking your browser…</p></body></html>', 403).shellPage, true);
+  assert.equal(verdict('<html><body><p>Checking your browser…</p></body></html>', 429).shellPage, true);
+  assert.equal(verdict('<html><body><p>Not found</p></body></html>', 404).shellPage, false);
+  assert.equal(verdict('{"ok":true}', 200, 'text').shellPage, false);
 });
 
 // ---------------------------------------------------------------------------

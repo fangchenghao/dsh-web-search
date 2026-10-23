@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.13.9
+
+### Fixed
+- **`SECURITY.md` wrongly claimed the plugin spawns nothing.** It does: on macOS
+  the system-proxy probe runs `scutil --proxy`. The page now lists that single
+  process, the renderer's headless browser, and the `shell` return field that
+  the store's scanner had flagged as a shell-mode call site.
+- **The proxy probe had no deadline.** A wedged `scutil` could hold a search
+  open; it is now capped at 2 s and the child is killed on expiry.
+- **The store's fixed-source scanner read an internal field name as a
+  capability.** `RenderReport.shell` (a boolean: "this page needs rendering") is
+  now `shellPage`, so `shell: true` no longer matches the scanner's shell-mode
+  pattern. Behaviour is unchanged; the store's capability list should now
+  contain only real signals.
+
 ## 0.13.8
 
 ### Fixed

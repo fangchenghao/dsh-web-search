@@ -240,12 +240,25 @@ export async function proxyFromSystem(): Promise<string | undefined> {
   if (process.platform !== 'darwin') return undefined;
   const output = await new Promise<string>((resolve) => {
     let text = '';
-    const child = spawn('scutil', ['--proxy']);
+    let settled = false;
+    const finish = (value: string): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+    const child = spawn('scutil', ['--proxy'], { stdio: ['ignore', 'pipe', 'ignore'] });
+    // `scutil` answers in milliseconds; a wedged system call must not hold a
+    // search open, so the probe is capped and the child is killed on expiry.
+    const timer = setTimeout(() => {
+      child.kill();
+      finish('');
+    }, 2_000);
     child.stdout.on('data', (chunk: Buffer) => {
       text += chunk.toString();
     });
-    child.on('error', () => resolve(''));
-    child.on('close', () => resolve(text));
+    child.on('error', () => finish(''));
+    child.on('close', () => finish(text));
   });
   if (!/HTTPSEnable\s*:\s*1|HTTPEnable\s*:\s*1/.test(output)) return undefined;
   const host = /HTTPSProxy\s*:\s*(\S+)/.exec(output)?.[1] ?? /HTTPProxy\s*:\s*(\S+)/.exec(output)?.[1];

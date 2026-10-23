@@ -72,7 +72,7 @@ export interface ShellInput {
 /** A shell decision plus the numbers and reason behind it. */
 export interface ShellVerdict {
   /** Whether a browser render is worth attempting. */
-  readonly shell: boolean;
+  readonly shellPage: boolean;
   /** Characters of visible text, tags and script bodies removed. */
   readonly readableChars: number;
   /** Short, content-free explanation, safe to surface in a report. */
@@ -161,27 +161,27 @@ export function readableTextLength(html: string): number {
  */
 export function detectShellPage(page: ShellInput): ShellVerdict {
   if (page.body.kind !== 'html') {
-    return { shell: false, readableChars: 0, reason: 'the body is not HTML' };
+    return { shellPage: false, readableChars: 0, reason: 'the body is not HTML' };
   }
   const readable = readableTextLength(page.body.content);
   const status = page.statusCode;
   const renderableStatus = (status >= 200 && status < 300) || status === 403 || status === 429;
   if (!renderableStatus) {
-    return { shell: false, readableChars: readable, reason: `HTTP ${status} is an error response, not a page shell` };
+    return { shellPage: false, readableChars: readable, reason: `HTTP ${status} is an error response, not a page shell` };
   }
   if (readable === 0) {
-    return { shell: true, readableChars: 0, reason: 'the HTML carries no readable text' };
+    return { shellPage: true, readableChars: 0, reason: 'the HTML carries no readable text' };
   }
   if (status === 403 || status === 429) {
     return {
-      shell: true,
+      shellPage: true,
       readableChars: readable,
       reason: `HTTP ${status} still answered with ${readable} readable characters`,
     };
   }
   if (readable < SHELL_READABLE_LIMIT) {
     return {
-      shell: true,
+      shellPage: true,
       readableChars: readable,
       reason: `only ${readable} readable characters, below the ${SHELL_READABLE_LIMIT}-character shell limit`,
     };
@@ -191,13 +191,13 @@ export function detectShellPage(page: ShellInput): ShellVerdict {
     const marker = SHELL_MARKERS.find((candidate) => haystack.includes(candidate));
     if (marker !== undefined) {
       return {
-        shell: true,
+        shellPage: true,
         readableChars: readable,
         reason: `${readable} readable characters with the client-render marker ${marker}`,
       };
     }
   }
-  return { shell: false, readableChars: readable, reason: `${readable} readable characters look like real content` };
+  return { shellPage: false, readableChars: readable, reason: `${readable} readable characters look like real content` };
 }
 
 /**

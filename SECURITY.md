@@ -1,8 +1,8 @@
 # Security and permissions
 
-This page states what the plugin can reach, what it writes, and where it fails.
-It is written for a reviewer deciding whether to install it, and for anyone
-auditing the fixed commit that DSH STORE scans.
+This page states what the plugin can reach, what it runs, what it writes, and
+where it fails. It is written for a reviewer deciding whether to install it, and
+for anyone auditing the fixed commit that DSH STORE scans.
 
 ## Dependencies
 
@@ -21,7 +21,7 @@ There are no lifecycle scripts (`preinstall`, `install`, `postinstall`,
 
 ## Network
 
-Outbound HTTPS only. The default search set is:
+Outbound TCP/HTTPS only, plus one local system query described below.
 
 | host | purpose |
 |---|---|
@@ -29,15 +29,36 @@ Outbound HTTPS only. The default search set is:
 | `html.duckduckgo.com` | key-free HTML search |
 | `www.so.com` | key-free HTML search, fallback tier, usually bot-walled |
 | `api.anysearch.com` | optional: search and page extraction, **only when an AnySearch key is configured** |
+| your configured proxy | HTTP `CONNECT` tunnel for the hosts above |
 
 `web_fetch` and `read_page` reach **any** HTTP(S) URL the model asks for; that is
 their purpose. With `useProxy` enabled they speak to the configured proxy
-(default `127.0.0.1:7890`, auto-detected) using HTTP `CONNECT`. The plugin never
-contacts an analytics, telemetry, or update endpoint.
+(default `127.0.0.1:7890`, auto-detected) using HTTP `CONNECT`; a 400 ms TCP
+connect first checks that the proxy port is listening so a stale setting cannot
+stall a search. The plugin never contacts an analytics, telemetry, or update
+endpoint.
 
 What leaves the machine: the query text goes to each enabled search engine; a
 URL goes to AnySearch extraction only when a key is configured and the earlier
 rungs failed. Nothing else is transmitted.
+
+## Processes
+
+The plugin spawns exactly one helper process:
+
+- `/usr/sbin/scutil --proxy` — macOS only, when `useProxy` is on, no explicit
+  proxy is configured, and the system proxy has to be discovered. The argv is
+  fixed (no shell, no interpolation, no model- or user-controlled arguments),
+  stdout is parsed locally with fixed regexes, stderr is discarded, and the
+  probe is capped at 2 s before the child is killed. It reads nothing but the
+  system proxy settings.
+
+The optional renderer is a **library**, not a command: when the user installed
+`playwright` or `playwright-core` and enabled `renderJs`, the plugin imports it
+dynamically and calls `chromium.launch({ headless: true })`, which starts a
+headless browser process. That browser is the only third-party code the plugin
+executes, and only under those two user choices. No shell command is ever
+constructed from fetched content or model output.
 
 ## Credentials
 
@@ -57,13 +78,6 @@ credentials, and it writes no credential anywhere.
 The cache holds queries and result rows only — no page bodies, no headers, no
 cookies.
 
-## Commands
-
-The plugin executes **no** shell command and spawns **no** process. The optional
-renderer launches a headless browser through the Playwright library the user
-installed; that is the only way it runs third-party code, and only when the user
-both installed Playwright and enabled `renderJs`.
-
 ## Failure bounds
 
 | operation | bound |
@@ -74,6 +88,7 @@ both installed Playwright and enabled `renderJs`.
 | response body | 2 MiB read cap before decoding, 20 000 characters returned by default |
 | `read_page` | 2 000 000 characters per page, 8-page LRU, chunked reads |
 | cache | TTL and entry count are bounded and both configurable, `0` disables |
+| system proxy probe | 2 s, then the child is killed |
 
 Failures are reported as structured codes (`SEARCH_THROTTLED`, `SEARCH_BLOCKED`,
 `SEARCH_TIMEOUT`, `SEARCH_NETWORK`, `SEARCH_PARSE`, `SEARCH_EMPTY`,
