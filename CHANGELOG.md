@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.6
+
+### Fixed
+- **The browser half registered under the old nickname.** The Host matches a
+  client bundle by package name, so `__ModuleLoader__.load({ id:
+  'dsh-web-search-bing' })` was rejected with "loaded without registering
+  @fffangchenghao/dsh-web-search via __ModuleLoader__.load" and the Settings
+  page never appeared. The id is the package name now, and a test evaluates the
+  bundle against a stub loader and fails if the two ever diverge.
+
 ## 0.13.5
 
 ### Documentation

@@ -33,7 +33,7 @@
     if (loader === null || typeof loader !== 'object' || typeof loader.load !== 'function') return;
 
     loader.load({
-      id: 'dsh-web-search-bing',
+      id: '@fffangchenghao/dsh-web-search',
       factory: function (require) {
         try {
           var React = require('react');
