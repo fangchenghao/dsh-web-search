@@ -88,16 +88,35 @@ test('the whole ladder stops at its overall budget instead of stacking deadlines
   const slow = (ms: number) => () => new Promise<FetchOutcome>((_, reject) => {
     setTimeout(() => reject(new Error('timed out')), ms);
   });
-  const deps = { direct: slow(300), tunnel: slow(300), extract: slow(300), detectProxy: () => Promise.resolve('http://127.0.0.1:7890') };
-  const provider = createFetchProvider({ ...PASS, overallMs: 500 }, deps);
+  const deps = { direct: slow(1_200), tunnel: slow(1_200), extract: slow(1_200), detectProxy: () => Promise.resolve('http://127.0.0.1:7890') };
+  const provider = createFetchProvider({ ...PASS, useProxy: true, overallMs: 1_500 }, deps);
   const startedAt = Date.now();
   await assert.rejects(() => provider.fetch({ url: 'https://example.com' }), (error: unknown) => {
     assert.ok(error instanceof SearchError);
     assert.equal(error.code, 'SEARCH_NETWORK');
+    // The first rung ate the budget; the others must refuse to start.
+    assert.match(error.message, /no time left in the fetch budget/);
     return true;
   });
   const elapsed = Date.now() - startedAt;
-  assert.ok(elapsed < 1_500, `the ladder spent ${elapsed}ms against a 500ms budget`);
+  assert.ok(elapsed < 2_200, `the ladder spent ${elapsed}ms against a 1500ms budget`);
+});
+
+test('the ladder budget starts at the request, not when the provider was built', async () => {
+  const deps = {
+    direct: () => Promise.resolve(outcome('https://example.com', 200, '<html><body><p>hello world</p></body></html>')),
+    tunnel: () => Promise.reject(new Error('unused')),
+  };
+  const provider = createFetchProvider({ ...PASS, overallMs: 1_000 }, deps);
+  // A plugin mount outlives its budget many times over; a fetch that arrives
+  // 1.2 s after construction must still get the full 1 s it was promised.
+  await new Promise(resolve => setTimeout(resolve, 1_200));
+  const first = await provider.fetch({ url: 'https://example.com' });
+  assert.match(first.body.content, /hello world/);
+  // And the next request gets its own budget rather than a negative one.
+  await new Promise(resolve => setTimeout(resolve, 1_200));
+  const second = await provider.fetch({ url: 'https://example.com' });
+  assert.match(second.body.content, /hello world/);
 });
 
 test('a layout shell as <main> does not blank the page', () => {

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.11
+
+### Fixed
+- **`web_fetch` failed on every request more than 25 s after a restart**
+  ("no time left in the fetch budget" from the direct, tunnel and extract
+  rungs). The 25 s ladder budget was captured in the provider factory, which
+  runs once when the plugin mounts, so the deadline had already passed for any
+  later request. The budget now starts inside each `fetch()` call; a regression
+  test builds a provider, waits 1.2 s, and fetches twice.
+- The budget test that was supposed to prove the ladder cap had `useProxy:
+  false`, so it never reached the tunnel rung. It now asserts the rung after the
+  first timeout refuses to start.
+
 ## 0.13.10
 
 ### Security

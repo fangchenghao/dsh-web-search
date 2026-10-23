@@ -297,10 +297,6 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
     ...overrides,
   };
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const overallMs = options.overallMs ?? DEFAULT_OVERALL_MS;
-  const startedAt = Date.now();
-  /** What is left of the whole-ladder budget. */
-  const remaining = (): number => Math.max(0, overallMs - (Date.now() - startedAt));
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const userAgent = options.userAgent ?? USER_AGENT;
   const apiKey = (options.anysearchApiKey ?? '').trim();
@@ -414,6 +410,15 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       if (typeof target !== 'string' || !/^https?:\/\//i.test(target)) {
         throw new SearchError(`not an http(s) URL: ${String(target)}`, 'SEARCH_PARSE', false);
       }
+
+      // The ladder budget belongs to THIS request. Starting it in the factory
+      // made it start at plugin mount, so every fetch more than 25 s after a
+      // restart failed with "no time left in the fetch budget" before touching
+      // the network.
+      const overallMs = options.overallMs ?? DEFAULT_OVERALL_MS;
+      const startedAt = Date.now();
+      /** What is left of the whole-ladder budget for this request. */
+      const remaining = (): number => Math.max(0, overallMs - (Date.now() - startedAt));
 
       const failures: string[] = [];
       /** True once the caller cancelled; a cancellation must not be retried. */
