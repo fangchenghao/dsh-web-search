@@ -1,0 +1,752 @@
+{
+  "schemaVersion": 1,
+  "mode": "eval",
+  "label": null,
+  "generatedAt": "2026-10-23T13:23:39.212Z",
+  "version": "0.18.0",
+  "k": 8,
+  "config": {
+    "source": "src/config.ts defaults, current rank.ts",
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30,
+    "timeRange": "off",
+    "rankNow": "fixture.recordedAt",
+    "weightOverrides": {}
+  },
+  "corpus": {
+    "total": 5,
+    "evaluated": 5,
+    "missing": 0,
+    "byLanguage": {
+      "zh": 5
+    },
+    "byCategory": {
+      "news": 1,
+      "docs": 3,
+      "release": 1
+    }
+  },
+  "overall": {
+    "queries": 5,
+    "precision": 0.45,
+    "recall": 1,
+    "mrr": 0.7666666666666666,
+    "zeroHit": 0,
+    "anyHit": 5
+  },
+  "byLanguage": {
+    "zh": {
+      "queries": 5,
+      "precision": 0.45,
+      "recall": 1,
+      "mrr": 0.7666666666666666,
+      "zeroHit": 0,
+      "anyHit": 5
+    }
+  },
+  "byCategory": {
+    "news": {
+      "queries": 1,
+      "precision": 0.625,
+      "recall": 1,
+      "mrr": 0.3333333333333333,
+      "zeroHit": 0,
+      "anyHit": 1
+    },
+    "docs": {
+      "queries": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "mrr": 0.8333333333333334,
+      "zeroHit": 0,
+      "anyHit": 3
+    },
+    "release": {
+      "queries": 1,
+      "precision": 0.5,
+      "recall": 1,
+      "mrr": 1,
+      "zeroHit": 0,
+      "anyHit": 1
+    }
+  },
+  "engines": {
+    "anysearch": {
+      "answered": 3,
+      "returned": 30,
+      "contributed": 17,
+      "first": 17,
+      "contributedShare": 0.425
+    },
+    "cn.bing": {
+      "answered": 5,
+      "returned": 49,
+      "contributed": 25,
+      "first": 23,
+      "contributedShare": 0.625
+    },
+    "exa": {
+      "answered": 1,
+      "returned": 10,
+      "contributed": 4,
+      "first": 0,
+      "contributedShare": 0.1
+    },
+    "ddg-html": {
+      "answered": 4,
+      "returned": 40,
+      "contributed": 2,
+      "first": 0,
+      "contributedShare": 0.05
+    }
+  },
+  "consensus": {
+    "rows": 40,
+    "votes": 48,
+    "averageVotes": 1.2,
+    "histogram": {
+      "1": 33,
+      "2": 6,
+      "3": 1
+    }
+  },
+  "worst": [
+    {
+      "id": "zh-long-postgres",
+      "query": "如何配置 postgres 逻辑复制",
+      "language": "zh",
+      "category": "docs",
+      "precision": 0.25,
+      "recall": 1,
+      "rr": 1,
+      "hits": 2,
+      "firstHitRank": 1,
+      "resultUrls": [
+        "https://www.postgresql.org/",
+        "https://www.postgresql.org/download/",
+        "http://www.postgres.cn/v2/home",
+        "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+        "https://postgres.ac.cn/docs/current/index.html",
+        "https://developer.aliyun.com/article/1752221",
+        "https://baike.baidu.com/item/PostgreSQL/530240",
+        "https://postgres.ac.cn/docs/current/tutorial.html"
+      ]
+    },
+    {
+      "id": "zh-long-k8s",
+      "query": "Kubernetes Service 有哪几种类型",
+      "language": "zh",
+      "category": "docs",
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "hits": 3,
+      "firstHitRank": 1,
+      "resultUrls": [
+        "https://kubernetes.io/docs/concepts/services-networking/service/",
+        "https://kubernetes.io/zh/",
+        "https://kubernetes.io/zh-cn/docs/home/",
+        "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+        "https://www.ibm.com/docs/en/instana-observability/saas?topic=opentelemetry-related-service-mappings-infrastructure-correlation",
+        "https://cn.linkedin.com/pulse/understanding-kubernetes-service-types-pavan-belagatti?tl=zh",
+        "https://www.mirantis.com/blog/kubernetes-service-everything-you-need-to-know/",
+        "https://www.cnblogs.com/guyouyin123/p/15592539.html"
+      ]
+    },
+    {
+      "id": "zh-long-react",
+      "query": "React 19 useActionState 怎么用",
+      "language": "zh",
+      "category": "docs",
+      "precision": 0.5,
+      "recall": 1,
+      "rr": 0.5,
+      "hits": 4,
+      "firstHitRank": 2,
+      "resultUrls": [
+        "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+        "https://zh-hans.react.dev/learn",
+        "https://react.dev/",
+        "https://www.runoob.com/react/react-tutorial.html",
+        "https://react.dev/learn",
+        "https://zhuanlan.zhihu.com/p/2000591279092954105",
+        "https://www.runoob.com/react/react-intro.html",
+        "https://zh-hans.react.dev/learn/installation"
+      ]
+    }
+  ],
+  "missingFixtures": [],
+  "queries": [
+    {
+      "id": "zh-long-policy",
+      "query": "东数西算 八个国家枢纽节点 定位",
+      "language": "zh",
+      "category": "news",
+      "expectedDomains": [
+        "ndrc.gov.cn",
+        "ncsti.gov.cn",
+        "gov.cn"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 5,
+      "precision": 0.625,
+      "recall": 1,
+      "rr": 0.3333333333333333,
+      "firstHitRank": 3,
+      "matchedDomains": [
+        "ndrc.gov.cn",
+        "ncsti.gov.cn",
+        "gov.cn"
+      ],
+      "resultUrls": [
+        "https://baike.baidu.com/item/%E4%B8%9C%E6%95%B0%E8%A5%BF%E7%AE%97/57984771",
+        "https://info.support.huawei.com/info-finder/encyclopedia/zh/%E4%B8%9C%E6%95%B0%E8%A5%BF%E7%AE%97.html",
+        "https://www.ndrc.gov.cn/fzggw/jgsj/gjss/sjdt/202203/t20220321_1319862.html",
+        "https://www.ncsti.gov.cn/kjdt/ztbd/dsxs/",
+        "https://scdrc.sic.gov.cn/SmarterCity_new/yjcg/jlfx/0408/2c97b8cb-95c74996-0196-146609b2-0b94.pdf",
+        "https://www.gov.cn/zhengce/zhengceku/202401/content_6924596.htm",
+        "https://www.iii.tsinghua.edu.cn/info/1121/3154.htm",
+        "https://www.ncsti.gov.cn/kjdt/ztbd/dsxs/index.html"
+      ],
+      "votes": 15,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 15,
+          "averageVotes": 1.875
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 2
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 0
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://baike.baidu.com/item/%E4%B8%9C%E6%95%B0%E8%A5%BF%E7%AE%97/57984771",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "cn.bing",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://info.support.huawei.com/info-finder/encyclopedia/zh/%E4%B8%9C%E6%95%B0%E8%A5%BF%E7%AE%97.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.ndrc.gov.cn/fzggw/jgsj/gjss/sjdt/202203/t20220321_1319862.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.ncsti.gov.cn/kjdt/ztbd/dsxs/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://scdrc.sic.gov.cn/SmarterCity_new/yjcg/jlfx/0408/2c97b8cb-95c74996-0196-146609b2-0b94.pdf",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.gov.cn/zhengce/zhengceku/202401/content_6924596.htm",
+            "votes": 2,
+            "engines": [
+              "cn.bing",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.iii.tsinghua.edu.cn/info/1121/3154.htm",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.ncsti.gov.cn/kjdt/ztbd/dsxs/index.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-long-postgres",
+      "query": "如何配置 postgres 逻辑复制",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "postgresql.org"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "postgresql.org"
+      ],
+      "resultUrls": [
+        "https://www.postgresql.org/",
+        "https://www.postgresql.org/download/",
+        "http://www.postgres.cn/v2/home",
+        "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+        "https://postgres.ac.cn/docs/current/index.html",
+        "https://developer.aliyun.com/article/1752221",
+        "https://baike.baidu.com/item/PostgreSQL/530240",
+        "https://postgres.ac.cn/docs/current/tutorial.html"
+      ],
+      "votes": 8,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 8,
+          "averageVotes": 1
+        },
+        "engines": {
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 8,
+            "first": 8
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://www.postgresql.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.postgresql.org/download/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "http://www.postgres.cn/v2/home",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://postgres.ac.cn/docs/current/index.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://developer.aliyun.com/article/1752221",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://baike.baidu.com/item/PostgreSQL/530240",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://postgres.ac.cn/docs/current/tutorial.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-long-python",
+      "query": "Python 3.13 有哪些新特性",
+      "language": "zh",
+      "category": "release",
+      "expectedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 4,
+      "precision": 0.5,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "resultUrls": [
+        "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+        "https://www.python.org/",
+        "https://docs.python.org/zh-cn/",
+        "https://www.python.org/getit/",
+        "https://blog.csdn.net/weixin_42212872/article/details/144067816",
+        "https://pypi.org/project/sdpy-kit/0.1.11/",
+        "https://www.zhihu.com/question/2019792449",
+        "https://www.reddit.com/r/Python/comments/1fyeo1g/python_313s_best_new_features/?tl=zh-hans"
+      ],
+      "votes": 8,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 8,
+          "averageVotes": 1
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 5
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 3
+          }
+        },
+        "rows": [
+          {
+            "url": "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.python.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.python.org/getit/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_42212872/article/details/144067816",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://pypi.org/project/sdpy-kit/0.1.11/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.zhihu.com/question/2019792449",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/Python/comments/1fyeo1g/python_313s_best_new_features/?tl=zh-hans",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-long-k8s",
+      "query": "Kubernetes Service 有哪几种类型",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "kubernetes.io"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "kubernetes.io"
+      ],
+      "resultUrls": [
+        "https://kubernetes.io/docs/concepts/services-networking/service/",
+        "https://kubernetes.io/zh/",
+        "https://kubernetes.io/zh-cn/docs/home/",
+        "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+        "https://www.ibm.com/docs/en/instana-observability/saas?topic=opentelemetry-related-service-mappings-infrastructure-correlation",
+        "https://cn.linkedin.com/pulse/understanding-kubernetes-service-types-pavan-belagatti?tl=zh",
+        "https://www.mirantis.com/blog/kubernetes-service-everything-you-need-to-know/",
+        "https://www.cnblogs.com/guyouyin123/p/15592539.html"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 9,
+            "contributed": 2,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/zh/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/zh-cn/docs/home/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.ibm.com/docs/en/instana-observability/saas?topic=opentelemetry-related-service-mappings-infrastructure-correlation",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://cn.linkedin.com/pulse/understanding-kubernetes-service-types-pavan-belagatti?tl=zh",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.mirantis.com/blog/kubernetes-service-everything-you-need-to-know/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.cnblogs.com/guyouyin123/p/15592539.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-long-react",
+      "query": "React 19 useActionState 怎么用",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "react.dev"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 4,
+      "precision": 0.5,
+      "recall": 1,
+      "rr": 0.5,
+      "firstHitRank": 2,
+      "matchedDomains": [
+        "react.dev"
+      ],
+      "resultUrls": [
+        "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+        "https://zh-hans.react.dev/learn",
+        "https://react.dev/",
+        "https://www.runoob.com/react/react-tutorial.html",
+        "https://react.dev/learn",
+        "https://zhuanlan.zhihu.com/p/2000591279092954105",
+        "https://www.runoob.com/react/react-intro.html",
+        "https://zh-hans.react.dev/learn/installation"
+      ],
+      "votes": 8,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 8,
+          "averageVotes": 1
+        },
+        "engines": {
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 8,
+            "first": 8
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://react.dev/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/react/react-tutorial.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://react.dev/learn",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2000591279092954105",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/react/react-intro.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn/installation",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

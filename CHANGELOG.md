@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.19.0
+
+### Added
+- **Core-word retry for whole-phrase engines.** `cn.bing` and 360 Search match a
+  long Chinese query as one phrase and fall back to dictionary pages for its
+  first character when the phrase is unknown. `src/variants.ts` derives at most
+  one alternate query — the technical segments of a mixed query
+  (`如何配置 postgres 逻辑复制` → `postgres 逻辑复制`), or the first content
+  segment of a pure CJK query (`东数西算 八个国家枢纽节点 定位` → `东数西算`) —
+  and the transport asks it once, merging the rows after the original list.
+  Measured on the policy query, `cn.bing` went from zero usable rows to the NDRC
+  article, the gov.cn implementation opinion, and the ncsti overview; the fused
+  list is now eight relevant rows.
+- **A five-query long-Chinese diagnostic corpus.** `bench/queries-long.json`
+  covers a policy question, a mixed PostgreSQL question, and Python / Kubernetes
+  / React release-doc questions; fixtures live in `bench/fixtures-long/`.
+  `scripts/bench.mjs` grew `--queries` and `--fixtures` to record and evaluate it
+  without touching the 20-query baseline. Result: P@8 `0.4500`, R@8 `1.0000`,
+  MRR@8 `0.7667`, zero hits 0.
+
+### Changed
+- Two extra test files (`variants`, `variant-fetch`) and 5 tests; 498 cases
+  total (497 pass, one environment skip).
+
 ## 0.18.0
 
 ### Fixed

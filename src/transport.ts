@@ -170,6 +170,23 @@ async function attempt(
  *   push it into their query (currently DuckDuckGo's `df`).
  * @returns the outcome of the route that got furthest; cancellation is rethrown.
  */
+/** Ask one engine one query, with the direct-then-tunnel retry. */
+async function attemptWithRoute(
+  host: HostSpec,
+  query: string,
+  signal: AbortSignal | undefined,
+  timeoutMs: number,
+  route: string | undefined,
+  proxy: string | undefined,
+  timeRange: TimeRange | undefined,
+): Promise<AttemptOutcome> {
+  const url = host.build(query, timeRange);
+  const first = await attempt(host, url, signal, timeoutMs, route, query);
+  if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;
+  const retry = await attempt(host, url, signal, timeoutMs, proxy, query);
+  return retry.ok ? retry : first;
+}
+
 export async function searchHost(
   host: HostSpec,
   query: string,
@@ -178,7 +195,6 @@ export async function searchHost(
   proxy?: string,
   timeRange?: TimeRange,
 ): Promise<AttemptOutcome> {
-  const url = host.build(query, timeRange);
   const route = host.viaProxy === true ? proxy : undefined;
   // A gate holds the permit for the whole engine attempt, including the
   // direct-then-tunnel retry, so a burst of concurrent searches cannot stack
@@ -187,10 +203,24 @@ export async function searchHost(
     ? undefined
     : await gateFor(host.id, host.maxConcurrent).acquire(signal);
   try {
-    const first = await attempt(host, url, signal, timeoutMs, route, query);
-    if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;
-    const retry = await attempt(host, url, signal, timeoutMs, proxy, query);
-    return retry.ok ? retry : first;
+    const result = await attemptWithRoute(host, query, signal, timeoutMs, route, proxy, timeRange);
+    const variants = host.variants?.(query) ?? [];
+    if (variants.length === 0 || signal?.aborted === true) return result;
+    const merged = result.ok ? [...result.sources] : [];
+    const seen = new Set(merged.map((source) => source.url));
+    for (const variant of variants) {
+      // `signal?.aborted === true` above narrowed the false branch to
+      // `aborted: false`, so test truthiness here instead of the literal.
+      if (signal?.aborted) break;
+      const extra = await attemptWithRoute(host, variant, signal, timeoutMs, route, proxy, timeRange);
+      if (!extra.ok) continue;
+      for (const source of extra.sources) {
+        if (seen.has(source.url)) continue;
+        seen.add(source.url);
+        merged.push(source);
+      }
+    }
+    return merged.length > 0 ? { ok: true, sources: merged } : result;
   } finally {
     release?.();
   }

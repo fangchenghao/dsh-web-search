@@ -60,6 +60,15 @@ export interface HostSpec {
   skipEcho?: boolean;
   /** Confirm the payload really belongs to the query (scraped pages only). */
   echoesQuery?: (payload: string, query: string) => boolean;
+  /**
+   * Alternate spellings to ask when the engine matches whole phrases.
+   *
+   * `cn.bing` answers a long Chinese query with a dictionary page for its first
+   * character; asking once more with the core words is the only way to get the
+   * rows it has. The transport merges the variant's rows after the original's,
+   * so ranking still sees the engine's own order first.
+   */
+  variants?: (query: string) => string[];
   /** Absolute request URL for a query. `timeRange` may be pushed down when the engine supports it. */
   build: (query: string, timeRange?: TimeRange) => string;
   /** Request body for a JSON POST. */

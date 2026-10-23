@@ -1,0 +1,37 @@
+[
+  {
+    "id": "zh-long-policy",
+    "query": "东数西算 八个国家枢纽节点 定位",
+    "language": "zh",
+    "category": "news",
+    "expectedDomains": ["ndrc.gov.cn", "ncsti.gov.cn", "gov.cn"]
+  },
+  {
+    "id": "zh-long-postgres",
+    "query": "如何配置 postgres 逻辑复制",
+    "language": "zh",
+    "category": "docs",
+    "expectedDomains": ["postgresql.org"]
+  },
+  {
+    "id": "zh-long-python",
+    "query": "Python 3.13 有哪些新特性",
+    "language": "zh",
+    "category": "release",
+    "expectedDomains": ["docs.python.org", "python.org"]
+  },
+  {
+    "id": "zh-long-k8s",
+    "query": "Kubernetes Service 有哪几种类型",
+    "language": "zh",
+    "category": "docs",
+    "expectedDomains": ["kubernetes.io"]
+  },
+  {
+    "id": "zh-long-react",
+    "query": "React 19 useActionState 怎么用",
+    "language": "zh",
+    "category": "docs",
+    "expectedDomains": ["react.dev"]
+  }
+]

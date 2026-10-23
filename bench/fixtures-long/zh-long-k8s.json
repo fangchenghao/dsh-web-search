@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-long-k8s",
+  "query": "Kubernetes Service 有哪几种类型",
+  "language": "zh",
+  "category": "docs",
+  "expectedDomains": [
+    "kubernetes.io"
+  ],
+  "recordedAt": "2026-10-23T13:22:38.863Z",
+  "elapsedMs": 2574,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30,
+    "query": "Kubernetes Service 有哪几种类型"
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "anysearch",
+      "region": "both",
+      "weight": 2,
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service",
+          "snippet": "In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.",
+          "publishedAt": "2026-07-07T12:00:00.000Z"
+        },
+        {
+          "url": "https://cn.linkedin.com/pulse/understanding-kubernetes-service-types-pavan-belagatti?tl=zh",
+          "title": "理解Kubernetes服务类型",
+          "snippet": "Kubernetes 支持四种服务类型:ClusterIP、NodePort、LoadBalancer 和Ingress。每种服务都有自己的要求,所以在部署前你必须明确自己需要哪种。",
+          "publishedAt": "2022-10-24T13:22:38.862Z"
+        },
+        {
+          "url": "https://www.mirantis.com/blog/kubernetes-service-everything-you-need-to-know/",
+          "title": "Kubernetes Service: Everything You Need to Know",
+          "snippet": "Service types include ClusterIP for internal traffic, NodePort for external access on every node, LoadBalancer for cloud-managed endpoints, and ...",
+          "publishedAt": "2025-09-26T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.cnblogs.com/guyouyin123/p/15592539.html",
+          "title": "k8s-service服务,四种类型(CluserIP，NodePort",
+          "snippet": "k8s-service服务,四种类型(CluserIP,NodePort,LoadBalancer,ExternalName) service当中的四种类型-CluserIP,NodePort,LoadBalancer ・ 用来做负载均衡,同时向集群暴露服务 ..."
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/157565821",
+          "title": "详解k8s 4种类型Service",
+          "snippet": "一个Kubernetes的 Service 是一种抽象，它定义了一组 Pods 的逻辑集合和一个用于访问它们的策略- 有的时候被称之为微服务。一个 Service 的目标 Pod 集合通常是由 Label ..."
+        },
+        {
+          "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+          "title": "了解Kubernetes 服务| GKE networking",
+          "snippet": "本页面介绍了不同类型的Kubernetes Service，以及Google Kubernetes Engine (GKE) 如何使用Service 对Pod 端点进行分组。 您将通过YAML 示例来了解如何创建Service。"
+        },
+        {
+          "url": "https://medium.com/devops-mojo/kubernetes-service-types-overview-ea6db72c3f8c",
+          "title": "Kubernetes — Service Types Overview | by Ashish Patel",
+          "snippet": "There are four types of Kubernetes services — ClusterIP , NodePort , LoadBalancer and ExternalName . The type property in the Service's spec ...",
+          "publishedAt": "2021-10-24T13:22:38.862Z"
+        },
+        {
+          "url": "https://www.trae.cn/article/3133450242",
+          "title": "K8s Service服务发现：原理、类型与实战配置指南",
+          "snippet": "四种Service 类型详解与选型指南 · 1. ClusterIP：集群内部服务访问 · 2. NodePort：集群外部服务访问 · 3. LoadBalancer：云厂商负载均衡器集成 · 4.",
+          "publishedAt": "2025-10-15T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.nutanix.com/how-to/a-primer-on-the-4-types-of-kubernetes",
+          "title": "How to Use the 4 Kubernetes Service Types",
+          "snippet": "The basic Kubernetes service types are ClusterIP, NodePort, LoadBalancer, and ExternalName. · Choosing the right Kubernetes service type requires ...",
+          "publishedAt": "2026-02-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://www.ibm.com/docs/en/instana-observability/saas?topic=opentelemetry-related-service-mappings-infrastructure-correlation",
+          "title": "OpenTelemetry service mapping",
+          "snippet": "This document explains how to use specific OpenTelemetry resource attributes for optimal data linking and visibility within Instana, particularly in Kubernetes ...",
+          "publishedAt": "2026-10-22T20:22:38.862Z"
+        }
+      ]
+    },
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh/",
+          "title": "Kubernetes",
+          "snippet": "Kubernetes 也称为 K8s，是用于自动部署、扩缩和管理容器化应用程序的开源系统。 它将组成应用程序的容器组合成逻辑单元，以便于管理和 … 阅读更多"
+        },
+        {
+          "url": "https://kubernetes.io/zh-cn/docs/home/",
+          "title": "Kubernetes 文档",
+          "snippet": "尝试 Kubernetes 按照教程学习如何在 Kubernetes 上部署应用。 你好，Minikube 基础知识介绍 无状态应用示例：基于 Redis 的 PHP …"
+        },
+        {
+          "url": "https://cloud.tencent.com/developer/article/2640426",
+          "title": "Kubernetes （K8s）从入门到精通：一篇彻底搞懂云原生核心",
+          "snippet": "2026年3月17日 · Kubernetes (K8s)是云原生时代的容器编排系统，解决Docker单机部署的局限性。 本文详解K8s核心架构 …",
+          "publishedAt": "2026-03-17T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/sinat_39327967/article/details/158390297",
+          "title": "Kubernetes (K8s) 从入门到实战：超详细教程（2026版）",
+          "snippet": "2026年2月25日 · 本教程系统讲解Kubernetes集群搭建与核心运维实践，涵盖环境准备、单Master多Worker集群部署、Deployment/Service …",
+          "publishedAt": "2026-02-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_43980547/article/details/137085690",
+          "title": "Kubernetes 超详细教程，一篇文章帮助你从零开始学习k8s ...",
+          "snippet": "2024年3月27日 · 本文是 Kubernetes 超详细教程，介绍了 k8s 概念、特点、架构、使用场景等基础知识，涵盖 minikube 安装、服务器裸机 …",
+          "publishedAt": "2024-03-27T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/kubernetes/22864162",
+          "title": "kubernetes _百度百科",
+          "snippet": "2026年4月13日 · Kubernetes是 Google 开源的一个容器编排引擎，它支持 自动化部署 、大规模可伸缩、应用容器化管理。 在生产环境中部 …",
+          "publishedAt": "2026-04-13T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ltd/zh-cn/docs/",
+          "title": "文档 | Kubernetes",
+          "snippet": "2026年4月19日 · 文档 Kubernetes 文档 Kubernetes 是一个开源的容器编排引擎，用来对容器化应用进行自动部署、扩缩和管理。 此开源项 …",
+          "publishedAt": "2026-04-19T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/621593509",
+          "title": "一文让你全面了解K8s ( Kubernetes ) - 知乎",
+          "snippet": "2023年4月14日 · 随着时间的推移，Kubernetes 社区逐渐成为了一个庞大的开源生态系统，在全球范围内得到广泛的应用和推广。 目 …",
+          "publishedAt": "2023-04-14T12:00:00.000Z"
+        },
+        {
+          "url": "https://kubernetes.ac.cn/docs/home/",
+          "title": "Kubernetes 文档 | Kubernetes (K8s) 容器编排系统",
+          "snippet": "2026年9月4日 · 尝试 Kubernetes 通过教程学习如何在 Kubernetes 中部署应用程序。 你好 Minikube 基础知识演练 无状态示例：带 Redis 的 …",
+          "publishedAt": "2026-09-04T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://kubernetes.io/zh/docs/concepts/services-networking/service/",
+          "title": "服务（Service） | Kubernetes",
+          "snippet": "Kubernetes"
+        },
+        {
+          "url": "https://juejin.cn/post/7524175079073906723",
+          "title": "K8s 四类Service 类型全解：ClusterIP、NodePort等区别与使用场景",
+          "snippet": "Pod 有 IP 就能访问，为什么还需要 Service"
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+          "title": "Service - Kubernetes",
+          "snippet": "In Kubernetes"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/2045556859105448056",
+          "title": "Kubernetes模块系列-Service (服务类型)详解 - 知乎",
+          "snippet": "1. 概述 Kubernetes"
+        },
+        {
+          "url": "https://blog.csdn.net/tuohuang0303/article/details/145466349",
+          "title": "第六章 Kubernetes Service-类型及其使用 - CSDN博客",
+          "snippet": "文章浏览阅读1.1k次，点赞26次，收藏19次。本文介绍了Kubernetes Service的四种类型：ClusterIp、NodePort、LoadBalancer和ExternalName，阐述了它们的工作模式、适应场景及优缺点。同时，通过实际案例展示了如何创建和使用这些类型的Service，包括创建Deployment和Service对象、验证域名解析和服务访问等操作，帮助 ..."
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_45649763/article/details/105656386",
+          "title": "kubernetes (k8s) 学习 (五) service的三种工作模式+四种类型详解",
+          "snippet": "文章浏览阅读5.8k次，点赞6次，收藏20次。本文深入探讨Kubernetes Service的概念，解析其解决的Pod访问难题，包括内部集群通信与外部访问问题。详细介绍了Service的工作模式，包括userspace、iptables及ipvs模型，以及不同类型的Service：ClusterIP、NodePort、LoadBalancer和ExternalName，展示了各种场景下的应用实例"
+        },
+        {
+          "url": "https://developer.aliyun.com/article/1595068",
+          "title": "Kubernetes Service四种类型的机制与场景深度解析-开发者社区-阿里云",
+          "snippet": "Kubernetes支持多种类型的Service，每种类型适用于不同的访问场景。 以下是Kubernetes中Service的详细类型介绍： 1. ClusterIP 特点和用途： ClusterIP是Kubernetes中默认的Service类型。 它为Service在集群内部提供一个固定的虚拟IP（VIP），只有集群内部的客户端可以访问此服务。"
+        },
+        {
+          "url": "https://developer.aliyun.com/article/1595090",
+          "title": "在K8S中，Service的类型有哪几种，请说⼀下他们的用途？",
+          "snippet": "在 Kubernetes"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/157565821",
+          "title": "详解k8s 4种类型Service - 知乎",
+          "snippet": "一个 Kubernetes"
+        },
+        {
+          "url": "https://www.cnblogs.com/zjh997/p/19045849",
+          "title": "在K8S中，Service类型有哪些? - 天道酬勤zjh - 博客园",
+          "snippet": "在 Kubernetes"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://kubernetes.io/docs/concepts/services-networking/service/",
+    "https://kubernetes.io/zh/",
+    "https://kubernetes.io/zh-cn/docs/home/",
+    "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+    "https://www.ibm.com/docs/en/instana-observability/saas?topic=opentelemetry-related-service-mappings-infrastructure-correlation",
+    "https://cn.linkedin.com/pulse/understanding-kubernetes-service-types-pavan-belagatti?tl=zh",
+    "https://www.mirantis.com/blog/kubernetes-service-everything-you-need-to-know/",
+    "https://www.cnblogs.com/guyouyin123/p/15592539.html"
+  ],
+  "failures": [
+    "exa: aborted once enough results had arrived"
+  ]
+}

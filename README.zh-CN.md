@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-492%20passing-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/tests-497%20passing-brightgreen" alt="测试">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -21,7 +21,7 @@
 - **不要 API key，八个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索直接抓取；Exa 走它的免密钥 MCP 通道加入主引擎，Firecrawl 的搜索 API 作为实测后的兜底。装好就能用。
 - **排序是量出来的，不是写出来的。** 跨引擎 RRF 融合，叠加权威度与时效加权；20 条离线基准 + 81 组参数扫描，是这类插件里唯一同时公开指标和置信区间的。方法见 [排序是怎么做的](docs/rrf-ranking.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
-- **32 个测试文件、493 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **34 个测试文件、498 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -37,7 +37,7 @@ DSH 插件生态里的「联网搜索」这一块已经很挤，大多数竞品�
 | 免 key 引擎 | 8 | ~30 | 7 条通道（含 X） | 1 个官方 API |
 | 专门数据源 | 34（默认开 8 个）| 41 | — | — |
 | 面向模型的工具 | 6 | ~10 | 3 | 5 |
-| 测试 | 32 文件 / 493 用例 | 无 | 29 文件 | 6 文件 |
+| 测试 | 34 文件 / 498 用例 | 无 | 29 文件 | 6 文件 |
 | 排序基准 | 20 查询 + 81 组扫描 | — | — | — |
 | 商店状态 | 源码契约已满足，待复核 | unlisted | 无条目 | blocked（review-required） |
 
@@ -242,7 +242,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 5. **中英文分开处理，而且中文结果必须真的在讲这个问题。**
    英文问题先看国外来源，中文问题先看中文来源，避免「how to …」被某个中文引擎按单词 `how` 匹配成词典页。中文长查询仍可能被引擎退化成单字词典页、公司页；这些行在融合前会被丢掉，除非标题/摘要/URL 与问题至少重合两个词；`.gov.cn` / `.edu.cn` 官方页面另有权威度加权。
-   *技术补充：查询含 CJK 字符时 `lead = cn`，纯 ASCII 时 `lead = global`；非主导区只在主导区凑不够条数时才追加。`src/relevance.ts` 把中文查询切成二字 bigram（ASCII 单词权重翻倍），要求与标题、摘要或 URL 至少两个权重单位的重合；英文查询原样放行。用「东数西算 八个国家枢纽节点 定位」实测：`cn.bing` 返回十条词典/公司页，现在会报 `cn.bing: no relevant results`，融合结果保留发改委/百科/新闻页。*
+   *技术补充：查询含 CJK 字符时 `lead = cn`，纯 ASCII 时 `lead = global`；非主导区只在主导区凑不够条数时才追加。`src/relevance.ts` 把中文查询切成二字 bigram（ASCII 单词权重翻倍），要求与标题、摘要或 URL 至少两个权重单位的重合；英文查询原样放行。对整串匹配型引擎还会用核心词补问一次（`src/variants.ts`）：「东数西算 八个国家枢纽节点 定位」会补问「东数西算」，「如何配置 postgres 逻辑复制」会补问「postgres 逻辑复制」。实测第一条查询：`cn.bing` 原来返回十条词典/公司页，现在能贡献发改委和 gov.cn 文章，融合结果八条全部相关。*
 
 6. **快慢可以选。**
    默认 `auto`：英文最多等 6 秒、中文最多等 3.5 秒；`fast` 谁先回就用谁；`all` 等所有引擎，最多 10 秒。
@@ -306,7 +306,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 21. **搜索质量有了可重复的基准。**
     改排序不再靠感觉：仓库里有一组固定的 20 条查询，每次改完都能跑出同一套分数。
-    *技术补充：`bench/` 下 20 条查询（中文 10、英文 10），四类各 5 条（文档 / 版本发布 / 包与库 / 新闻），每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线读夹具重放，不联网，输出 precision@8、recall@8、MRR@8 与每个引擎的贡献；`--record` 联网重新录制（每条限速 1.5 秒），用于更新夹具；`--json` 输出机器可读结果，便于版本间对比，历史结果存在 `bench/results/`。当前基线（0.15.0，按 tier 回放）：P@8 `0.4375`、R@8 `0.7917`、MRR@8 `0.8071`；中文 `0.4000 / 0.8167 / 0.7976`，英文 `0.4750 / 0.7667 / 0.8167`。对照实验和已知短板见附录。*
+    *技术补充：`bench/` 下 20 条查询（中文 10、英文 10），四类各 5 条（文档 / 版本发布 / 包与库 / 新闻），每条标注 1–3 个期望域名。`node scripts/bench.mjs` 离线读夹具重放，不联网，输出 precision@8、recall@8、MRR@8 与每个引擎的贡献；`--record` 联网重新录制（每条限速 1.5 秒），用于更新夹具；`--json` 输出机器可读结果，便于版本间对比，历史结果存在 `bench/results/`。当前基线（0.15.0，按 tier 回放）：P@8 `0.4375`、R@8 `0.7917`、MRR@8 `0.8071`；中文 `0.4000 / 0.8167 / 0.7976`，英文 `0.4750 / 0.7667 / 0.8167`。另有五条中文长查询的独立诊断集（`bench/queries-long.json`，用 `--queries ... --fixtures ...` 录制）：`0.4500 / 1.0000 / 0.7667`，五条都命中期望域名；它与 20 条基线分开保存，避免改变基线的可比性。对照实验和已知短板见附录。*
 
 22. **一次调用完成小调研。**
     问「官方文档和另外两个来源到底怎么说」时，`research` 先跑最多三条查询，再用与 `web_fetch` 相同的抓取阶梯打开靠前的页面，最后返回一份证据包：每段摘录下面就是它的 URL。打不开的页面按 URL 和原因列出，不会让整份证据包失败。

@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "id": "zh-long-postgres",
+  "query": "如何配置 postgres 逻辑复制",
+  "language": "zh",
+  "category": "docs",
+  "expectedDomains": [
+    "postgresql.org"
+  ],
+  "recordedAt": "2026-10-23T13:22:31.226Z",
+  "elapsedMs": 3503,
+  "limit": 8,
+  "lead": "cn",
+  "wait": "auto",
+  "timeRange": "off",
+  "rank": {
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30,
+    "query": "如何配置 postgres 逻辑复制"
+  },
+  "usedProxy": true,
+  "engines": [
+    {
+      "id": "cn.bing",
+      "region": "cn",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://www.postgresql.org/",
+          "title": "PostgreSQL: The world's most advanced open source database",
+          "snippet": "13 小时之前 · SafeGrd: PostgreSQL backups that are restored and checked on a schedule 2026-10-22 by SafeGrd BackupDrill: open …",
+          "publishedAt": "2026-10-23T00:22:28.243Z"
+        },
+        {
+          "url": "https://www.postgresql.org/download/",
+          "title": "PostgreSQL: Downloads",
+          "snippet": "Downloads PostgreSQL Downloads PostgreSQL is available for download as ready-to-use packages or installers for various platforms, …"
+        },
+        {
+          "url": "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+          "title": "PostgreSQL 教程 | 菜鸟教程",
+          "snippet": "PostgreSQL 10.1 手册 在线手册： http://www.runoob.com/manual/PostgreSQL/ 离线手册 - PDF 版本： …"
+        },
+        {
+          "url": "https://postgres.ac.cn/docs/current/index.html",
+          "title": "PostgreSQL：文档：18：PostgreSQL 18.0 文档 ...",
+          "snippet": "2025年9月25日 · 目录 前言 1. 什么是 PostgreSQL？ 2. PostgreSQL 简史 3. 约定 4. 更多信息 5. 错误报告指南 I. 教程 1. 入门 2. The SQL 语 …",
+          "publishedAt": "2025-09-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://developer.aliyun.com/article/1752221",
+          "title": "【2026最新】PostgreSQL下载、安装、数据库使用一篇搞定 ...",
+          "snippet": "2026年7月31日 · 新手常见使用问题 1）忘记postgres密码怎么办？ 如果忘记了超级用户密码，可以通过修改 pg_hba.conf 文件临时把认证方 …",
+          "publishedAt": "2026-07-31T12:00:00.000Z"
+        },
+        {
+          "url": "https://baike.baidu.com/item/PostgreSQL/530240",
+          "title": "PostgreSQL - 百度百科",
+          "snippet": "PostgreSQL是一种特性非常齐全的自由软件的对象-关系型数据库管理系统（ORDBMS），是以加州大学计算机系开发的POSTGRES，4.2版 …"
+        },
+        {
+          "url": "http://www.postgres.cn/v2/home",
+          "title": "PostgreSQL 中文社区:: 世界上功能最强大的开源数据库...",
+          "snippet": "3 天之前 · PostgreSQL中文社区校园沙龙武汉站圆满落幕！ 11 月 16 日下午，由PostgreSQL中文社区联合天翼云OpenTeleDB 、武汉大学、 …",
+          "publishedAt": "2026-10-20T13:22:28.243Z"
+        },
+        {
+          "url": "https://postgres.ac.cn/docs/current/tutorial.html",
+          "title": "PostgreSQL: 文档: 18: 第一部分. 教程 - PostgreSQL 数据库",
+          "snippet": "2025年9月25日 · 欢迎阅读 PostgreSQL 教程。本教程旨在介绍 PostgreSQL 、关系数据库概念以及 SQL 语言。我们假设您具备基本的计算机 …",
+          "publishedAt": "2025-09-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://github.com/postgres/postgres",
+          "title": "GitHub - postgres / postgres : Mirror of the official PostgreSQL GIT ...",
+          "snippet": "2025年8月25日 · Mirror of the official PostgreSQL GIT repository. Note that this is just a *mirror* - we don't work with pull requests on …",
+          "publishedAt": "2025-08-25T12:00:00.000Z"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/646870620",
+          "title": "进阶数据库系列（一）：PostgreSQL 基础入门与安装",
+          "snippet": "2023年7月30日 · postgres server process通常有一个对应的监听端口，默认是5432。 如果一台机器上安装多个postgres实例有多 …",
+          "publishedAt": "2023-07-30T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "ddg-html",
+      "region": "global",
+      "tier": "primary",
+      "sources": [
+        {
+          "url": "https://postgres.ac.cn/docs/current/logical-replication.html",
+          "title": "PostgreSQL: 文档: 18: 第 29 章 逻辑复制 - PostgreSQL 数据库",
+          "snippet": "PostgreSQL 同时支持这两种机制，请参阅 第 26 章。 逻辑复制允许对数据复制和安全进行精细控制。 逻辑复制使用一个发布（publish）和订阅（subscribe）模型，其中一个或多个 订阅者 （subscribers）在 发布者 （publisher）节点上订阅一个或多个 发布 （publications）。"
+        },
+        {
+          "url": "https://blog.csdn.net/weixin_33552698/article/details/168073867",
+          "title": "PostgreSQL 12逻辑复制实战：原理、配置与运维指南-CSDN博客",
+          "snippet": "逻辑复制是PostgreSQL中基于WAL日志解码行级变更并重放到订阅端的同步机制。与物理复制整实例复制不同，逻辑复制将WAL解析为INSERT、UPDATE、DELETE等逻辑语句，天然支持只同步部分表、订阅端保持可写、跨大版本迁移等能力，非常适合报表库数据整合、数据分发和分钟级延迟要求的场景。PG12已对逻辑 ..."
+        },
+        {
+          "url": "https://blog.csdn.net/zwood/article/details/156169662",
+          "title": "PostgreSQL 18 从新手到大师：实战指南 - 3.3 逻辑复制_postgres 逻辑复制-CSDN博客",
+          "snippet": "文章浏览阅读1.2k次，点赞20次，收藏28次。本文深入讲解PostgreSQL 18的逻辑复制机制，涵盖基本概念、工作原理、配置步骤、冲突处理、拓扑结构及性能优化。对比主流数据库的逻辑复制功能，介绍其在数据迁移、读写分离、多中心复制等场景的应用，并提供监控、安全与最佳实践指导。"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1927041306691077387",
+          "title": "PostgreSQL逻辑复制部署指南 - 知乎",
+          "snippet": "通过以上步骤，您应该能够全面验证PostgreSQL逻辑复制的部署情况，并解决可能遇到的问题。 7. 总结与参考 本指南详细介绍了PostgreSQL逻辑复制的部署过程和实现细节，包括发布者（A库）和订阅者（B库）的配置、发布和订阅的创建，以及复制的验证和常见问题 ..."
+        },
+        {
+          "url": "https://cloud.tencent.com/developer/article/2623605",
+          "title": "PostgreSQL-逻辑复制（Logic）部署方案-腾讯云开发者社区-腾讯云",
+          "snippet": "PostgreSQL逻辑复制配置教程：详解主从节点设置步骤，包括wal_level参数修改、repl_user角色创建、发布订阅机制实现。提供测试表创建、发布订阅命令示例，并展示如何验证数据同步效果。适合需要选择性同步特定表数据的数据库运维场景，帮助实现高效数据复制方案。"
+        },
+        {
+          "url": "https://www.cnblogs.com/wy123/p/18294960",
+          "title": "PostgreSQL逻辑复制搭建 - MSSQL123 - 博客园",
+          "snippet": "查看订阅状态信息 查看订阅的表以及复制状态信息 查看复制状态 postgresql逻辑复制要吐槽的 逻辑复制本身的粒度很细，已经到表级别了，这一点是所有逻辑复制的共同点，包SQLServer和MySQL，但是postgresql逻辑复制中已有一个要吐槽的，就是一个\"发布\"publication的数据传递属性是不能基于表的。 怎么 ..."
+        },
+        {
+          "url": "https://growdu.github.io/blog/2026/04/14/db/logical_decode/logical_use/",
+          "title": "PostgreSQL 15 逻辑复制操作流程详解 | growdu",
+          "snippet": "执行 DDL/DML 时写入的 WAL 日志内容 复制传输过程中 LSN 的推进过程 快照创建的具体步骤 逻辑复制过程中操作的具体文件和文件内容 环境准备 1. PostgreSQL 15 安装与配置 首先确保已安装 PostgreSQL 15。 以下配置参数需在 postgresql.conf 中设置： ... 重启 PostgreSQL 服务使 ..."
+        },
+        {
+          "url": "https://raybyte.cn/post/2026/2/28/bed51a51",
+          "title": "PostgreSQL逻辑复制配置：实现数据变更捕获的完整方案 | RayByte",
+          "snippet": "本文详细讲解了PostgreSQL逻辑复制的完整配置方案，涵盖从核心概念、环境准备、发布订阅创建、验证监控到关联技术逻辑解码的全过程。通过详实的示例，深入分析了其实现数据变更捕获(CDC)的原理、典型应用场景、技术优势与重要注意事项，为构建实时数据同步与集成管道提供实用指南。"
+        },
+        {
+          "url": "https://zh-postgresql.org/articles/postgresql-logical-replication-publication-subscription.html",
+          "title": "PostgreSQL 逻辑复制怎么配置？发布订阅、冲突与故障切换",
+          "snippet": "PostgreSQL 逻辑复制应先在发布端准备兼容表结构和副本标识，再创建 publication 与 subscription，并把初始复制、DDL 变更、冲突和复制槽滞留纳入运维流程。 本文适合设计复制、高可用和迁移方案的工程师，所有参数和命令都应先在隔离环境验证。"
+        },
+        {
+          "url": "https://zhuanlan.zhihu.com/p/1899966692894957742",
+          "title": "这篇PostgreSQL逻辑复制文章够用了吧？ - 知乎",
+          "snippet": "逻辑复制是PostgreSQL 10版本重量级新特性，支持内置的逻辑复制； 在PostgreSQL 10之前的版本，虽然没有内置的逻辑复制，但是也可以通过其他方式实现（如触发器、自定义脚本等实现表级别同步，还有外部工具londsite3实现）。 逻辑复制是什么？"
+        }
+      ]
+    }
+  ],
+  "finalUrls": [
+    "https://www.postgresql.org/",
+    "https://www.postgresql.org/download/",
+    "http://www.postgres.cn/v2/home",
+    "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+    "https://postgres.ac.cn/docs/current/index.html",
+    "https://developer.aliyun.com/article/1752221",
+    "https://baike.baidu.com/item/PostgreSQL/530240",
+    "https://postgres.ac.cn/docs/current/tutorial.html"
+  ],
+  "failures": [
+    "anysearch: still running at deadline",
+    "exa: still running at deadline"
+  ]
+}

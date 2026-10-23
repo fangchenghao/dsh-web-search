@@ -149,6 +149,25 @@ reported as `no relevant results` and the fallback tier can run) and the ranker
 (so offline replay applies the same rule). On the 20-query bench it changes no
 metric: the recorded fixtures do not contain that failure mode.
 
+
+## Long-query diagnostic
+
+The 20-query corpus has two- or three-token queries and does not exercise the
+whole-phrase failure mode. `bench/queries-long.json` adds five long Chinese
+queries (policy, PostgreSQL, Python, Kubernetes, React) and is recorded into
+`bench/fixtures-long/` separately:
+
+```
+node scripts/bench.mjs --record --queries bench/queries-long.json --fixtures bench/fixtures-long
+node scripts/bench.mjs --queries bench/queries-long.json --fixtures bench/fixtures-long
+```
+
+Result on 0.19.0: P@8 `0.4500`, R@8 `1.0000`, MRR@8 `0.7667`, zero-hit 0, every
+query hitting at least one expected domain. `cn.bing` contributes 25 of the 40
+fused rows after the variant retry, against zero usable rows before it for the
+policy query. The corpus is deliberately separate so the 20-query baseline in
+`bench/queries.json` stays comparable.
+
 ## Known limits
 
 - **Relative Chinese time words.** A query like "上周发布的那版" carries its time

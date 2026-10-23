@@ -18,21 +18,4 @@ export type AttemptOutcome = {
     ok: false;
     error: SearchError;
 };
-/**
- * Ask one engine, going direct first unless it is marked `viaProxy`.
- *
- * A domestic engine goes direct first, because that is both faster and the path
- * its site expects; only if that fails is it retried through the tunnel, so a
- * network that blocks it directly still works. An engine marked `viaProxy` is
- * tunnelled from the start.
- *
- * @param host - the engine.
- * @param query - the user query.
- * @param signal - cancellation.
- * @param timeoutMs - per-attempt deadline.
- * @param proxy - tunnel URL, or `undefined` when none is available.
- * @param timeRange - active publication window, forwarded to engines that can
- *   push it into their query (currently DuckDuckGo's `df`).
- * @returns the outcome of the route that got furthest; cancellation is rethrown.
- */
 export declare function searchHost(host: HostSpec, query: string, signal: AbortSignal | undefined, timeoutMs?: number, proxy?: string, timeRange?: TimeRange): Promise<AttemptOutcome>;

@@ -38,6 +38,9 @@ import {
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const QUERIES_PATH = join(ROOT, 'bench', 'queries.json');
 const FIXTURE_DIR = join(ROOT, 'bench', 'fixtures');
+/** Selected corpus and fixture directory; `--queries`/`--fixtures` override them. */
+let queriesPath = QUERIES_PATH;
+let fixturesDir = FIXTURE_DIR;
 const PACKAGE_PATH = join(ROOT, 'package.json');
 const FIXTURE_BUDGET_BYTES = 400 * 1024;
 const LANGUAGES = ['zh', 'en'];
@@ -68,6 +71,10 @@ Evaluation options:
 Recording options:
   --max-snippet <n>      Truncate stored snippets to n characters (0 = keep raw)
 
+Corpus options:
+  --queries <path>       Read this query file instead of bench/queries.json
+  --fixtures <dir>       Read/write fixtures in this directory instead of bench/fixtures
+
 Examples:
   node scripts/bench.mjs --record
   node scripts/bench.mjs --json --out bench/results/0.12.0.json
@@ -90,6 +97,8 @@ function parseArgs(argv) {
     freshnessBoost: undefined,
     freshnessDays: undefined,
     maxSnippet: 0,
+    queries: undefined,
+    fixtures: undefined,
     help: false,
   };
   const readValue = (name, index) => {
@@ -163,6 +172,14 @@ function parseArgs(argv) {
         if (inline === undefined) index += 1;
         break;
       }
+      case '--queries':
+        options.queries = valueAt('--queries');
+        if (inline === undefined) index += 1;
+        break;
+      case '--fixtures':
+        options.fixtures = valueAt('--fixtures');
+        if (inline === undefined) index += 1;
+        break;
       case '--help':
       case '-h':
         options.help = true;
@@ -184,9 +201,11 @@ function errorText(error) {
 
 /** Read and validate the fixed corpus. */
 async function loadQueries() {
-  const raw = JSON.parse(await readFile(QUERIES_PATH, 'utf8'));
-  if (!Array.isArray(raw)) throw new Error('bench/queries.json must be an array');
-  if (raw.length !== 20) throw new Error(`bench/queries.json must hold 20 queries, found ${raw.length}`);
+  const custom = queriesPath !== QUERIES_PATH;
+  const raw = JSON.parse(await readFile(queriesPath, 'utf8'));
+  if (!Array.isArray(raw)) throw new Error(`${queriesPath} must be an array`);
+  if (!custom && raw.length !== 20) throw new Error(`bench/queries.json must hold 20 queries, found ${raw.length}`);
+  if (custom && raw.length === 0) throw new Error(`${queriesPath} must hold at least one query`);
   const ids = new Set();
   const languageCounts = {};
   const categoryCounts = {};
@@ -209,11 +228,13 @@ async function loadQueries() {
     categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
     return { id, query, language, category, expectedDomains: domains };
   });
-  for (const language of LANGUAGES) {
-    if (languageCounts[language] !== 10) throw new Error(`expected 10 ${language} queries, found ${languageCounts[language] ?? 0}`);
-  }
-  for (const category of CATEGORIES) {
-    if ((categoryCounts[category] ?? 0) < 1) throw new Error(`category ${category} has no query`);
+  if (!custom) {
+    for (const language of LANGUAGES) {
+      if (languageCounts[language] !== 10) throw new Error(`expected 10 ${language} queries, found ${languageCounts[language] ?? 0}`);
+    }
+    for (const category of CATEGORIES) {
+      if ((categoryCounts[category] ?? 0) < 1) throw new Error(`category ${category} has no query`);
+    }
   }
   return { queries, languageCounts, categoryCounts };
 }
@@ -306,7 +327,7 @@ async function recordOne(query, config, maxSnippet) {
 async function record(options) {
   const { queries } = await loadQueries();
   const config = resolveConfig({}, undefined);
-  await mkdir(FIXTURE_DIR, { recursive: true });
+  await mkdir(fixturesDir, { recursive: true });
   const fixtures = [];
   let totalBytes = 0;
   console.log(`recording ${queries.length} queries with limit=${DEFAULT_K}, wait=${config.wait}, timeoutMs=${config.timeoutMs}${options.maxSnippet > 0 ? `, snippet<${options.maxSnippet}` : ''}`);
@@ -346,7 +367,7 @@ async function record(options) {
       };
       console.error(`  ${query.id}: NO FIXTURE (recorded as ok=false)`);
     }
-    const path = join(FIXTURE_DIR, `${query.id}.json`);
+    const path = join(fixturesDir, `${query.id}.json`);
     const text = `${JSON.stringify(fixture, null, 2)}\n`;
     await writeJsonAtomic(path, fixture);
     totalBytes += Buffer.byteLength(text);
@@ -393,7 +414,7 @@ function hostFor(recorded) {
 
 /** Load one fixture, distinguishing "no fixture" from a valid empty result. */
 async function loadFixture(query) {
-  const path = join(FIXTURE_DIR, `${query.id}.json`);
+  const path = join(fixturesDir, `${query.id}.json`);
   if (!existsSync(path)) return { ok: false, reason: 'no fixture file' };
   let fixture;
   try {
@@ -700,6 +721,8 @@ async function main() {
     usage();
     return;
   }
+  if (options.queries !== undefined) queriesPath = resolve(options.queries);
+  if (options.fixtures !== undefined) fixturesDir = resolve(options.fixtures);
   if (options.record) {
     await record(options);
   } else {

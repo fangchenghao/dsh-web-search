@@ -18,6 +18,7 @@ import { resolveProxy } from './proxy.ts';
 import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseExaMcp, parseFirecrawl, parseSo } from './parsers.ts';
 import { mergeRegions } from './rank.ts';
 import { filterRelevant } from './relevance.ts';
+import { cjkQueryVariants } from './variants.ts';
 import { cacheKey } from './cache.ts';
 import type { SearchCache } from './cache.ts';
 import type { EngineHealth } from './health.ts';
@@ -134,6 +135,7 @@ export const HOSTS: readonly HostSpec[] = [
     // No `filters` parameter: see the measurement note before `HOSTS`.
     build: (query) => `https://cn.bing.com/search?q=${encodeURIComponent(query)}`,
     parse: parseBing,
+    variants: cjkQueryVariants,
   },
   {
     id: 'so',
@@ -143,6 +145,7 @@ export const HOSTS: readonly HostSpec[] = [
     region: 'cn',
     build: (query) => `https://www.so.com/s?q=${encodeURIComponent(query)}`,
     parse: parseSo,
+    variants: cjkQueryVariants,
   },
   {
     id: 'ddg-lite',
