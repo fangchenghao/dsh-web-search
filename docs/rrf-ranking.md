@@ -168,6 +168,16 @@ fused rows after the variant retry, against zero usable rows before it for the
 policy query. The corpus is deliberately separate so the 20-query baseline in
 `bench/queries.json` stays comparable.
 
+## Retry cost guard
+
+The core-word retry is not free: it is one more request to the same engine.
+`src/transport.ts` therefore checks the first answer with the same relevance
+gate before retrying. Only an answer with zero surviving rows triggers the
+variant; `pip 安装 requests 库` and `React useEffect 用法` keep their original
+latency (measured live: 2.7 s → 3.5 s and 1.5 s → 2.8 s without the guard,
+1.5 s and 0.6 s with it), while the dictionary-page failures still retry and
+recover. The 20-query replay compare is delta 0 on P@8, R@8 and MRR@8.
+
 ## Known limits
 
 - **Relative Chinese time words.** A query like "上周发布的那版" carries its time

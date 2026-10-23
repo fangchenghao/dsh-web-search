@@ -13,6 +13,7 @@ import { SearchError, parseRetryAfter } from './errors.ts';
 import { proxyGet } from './proxy.ts';
 import { echoesQuery } from './parsers.ts';
 import { gateFor } from './semaphore.ts';
+import { isRelevant, queryProfile } from './relevance.ts';
 
 /** Markers of an interstitial anti-bot page, narrow enough not to hit prose. */
 const BOT_WALL_MARKERS = ['qcaptcha', '访问异常', 'unusual traffic', 'verify you are human', '安全验证'];
@@ -206,6 +207,11 @@ export async function searchHost(
     const result = await attemptWithRoute(host, query, signal, timeoutMs, route, proxy, timeRange);
     const variants = host.variants?.(query) ?? [];
     if (variants.length === 0 || signal?.aborted === true) return result;
+    // Only pay for the extra request when the engine's first answer is unusable.
+    // A working short query (`pip 安装 requests 库`, `React useEffect 用法`) has
+    // relevant rows already, and asking again doubled its latency for nothing.
+    const profile = queryProfile(query);
+    if (result.ok && result.sources.some((source) => isRelevant(source, profile))) return result;
     const merged = result.ok ? [...result.sources] : [];
     const seen = new Set(merged.map((source) => source.url));
     for (const variant of variants) {

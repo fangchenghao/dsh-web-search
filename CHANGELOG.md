@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.19.1
+
+### Changed
+- **The core-word retry now runs only when the first answer is unusable.**
+  `transport` checks the original rows against the relevance gate before
+  spending a second request. Queries whose `cn.bing` answer already has a
+  relevant row (`pip 安装 requests 库`, `React useEffect 用法`,
+  `PostgreSQL 逻辑复制 配置`) keep their original latency; the dictionary-page
+  failures (`东数西算 八个国家枢纽节点 定位`, `如何配置 postgres 逻辑复制`) still
+  retry and recover. Live comparison for the three working queries: rows and
+  expected-domain hits unchanged, p50 latency back to the pre-variant value
+  (React 2.8 s → 0.6 s in the sample).
+- **Regression evidence for 0.19.0/0.19.1.** Replaying the 20-query corpus
+  against the 0.15.0 result shows delta 0 on P@8, R@8, MRR@8, zero-hit and every
+  category/language slice; the five-query long corpus is unchanged at
+  `0.4500 / 1.0000 / 0.7667`. Only 3 of the 20 baseline queries trigger a
+  variant at all (`zh-postgres-logical`, `zh-pip-requests`,
+  `zh-react-useeffect`), and after the guard none of them does.
+
 ## 0.19.0
 
 ### Added

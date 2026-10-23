@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-497%20passing-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-498%20passing-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -21,7 +21,7 @@
 - **No API key, eight engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are scraped directly; Exa joins the primary tier through its keyless MCP endpoint, and Firecrawl's search API is the measured fallback. The plugin works out of the box.
 - **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — the only search plugin here that publishes both its metric and its confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
 - **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **498 tests across 34 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **499 tests across 34 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -37,7 +37,7 @@ The web-search corner of the DSH plugin ecosystem is crowded, and most rivals ar
 | Key-free engines | 8 | ~30 | 7 channels (+X) | 1 official API |
 | Dedicated vertical sources | 34 (8 on by default) | 41 | — | — |
 | Model-facing tools | 6 | ~10 | 3 | 5 |
-| Test suite | 34 files / 498 cases | none | 29 files | 6 files |
+| Test suite | 34 files / 499 cases | none | 29 files | 6 files |
 | Ranking benchmark | 20 queries + 81-config sweep | — | — | — |
 | Store status | source contract satisfied, awaiting review | unlisted | no entry | blocked (review-required) |
 
@@ -242,7 +242,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 5. **Chinese and English are handled separately, and Chinese rows must talk about the question.**
    English queries lead with global sources, Chinese queries with Chinese sources, so "how to …" is not answered with a dictionary page for the word `how`. A scraped Chinese engine can still fall back to single-character dictionary and company pages for a long query; those rows are dropped before fusion unless they share at least two words with the question, and `.gov.cn` / `.edu.cn` official pages get the authority boost.
-   *Technical: `lead = cn` when the query contains CJK characters, `lead = global` for plain ASCII; the other region only appends when the leading one comes up short. `src/relevance.ts` splits a CJK query into character bigrams (an ASCII word counts double), requires two weight units of overlap with title, snippet or URL, and returns English queries untouched. A whole-phrase engine that misses a long query is asked once more with its core words (`src/variants.ts`): `东数西算 八个国家枢纽节点 定位` also asks `东数西算`, `如何配置 postgres 逻辑复制` also asks `postgres 逻辑复制`. Measured on the first query, `cn.bing` answered with ten dictionary/company rows before this; it now contributes the NDRC and gov.cn articles, and the fused list has eight relevant rows.*
+   *Technical: `lead = cn` when the query contains CJK characters, `lead = global` for plain ASCII; the other region only appends when the leading one comes up short. `src/relevance.ts` splits a CJK query into character bigrams (an ASCII word counts double), requires two weight units of overlap with title, snippet or URL, and returns English queries untouched. A whole-phrase engine that misses a long query is asked once more with its core words (`src/variants.ts`) — but only when its first answer contains no row that survives the relevance gate, so a working short query pays neither the request nor the latency: `东数西算 八个国家枢纽节点 定位` also asks `东数西算`, `如何配置 postgres 逻辑复制` also asks `postgres 逻辑复制`. Measured on the first query, `cn.bing` answered with ten dictionary/company rows before this; it now contributes the NDRC and gov.cn articles, and the fused list has eight relevant rows.*
 
 6. **You choose speed or completeness.**
    `auto` waits up to 6 s for English and 3.5 s for Chinese; `fast` takes whoever answers first; `all` waits for everyone, up to 10 s.

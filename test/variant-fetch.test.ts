@@ -14,6 +14,25 @@ import { search } from '../src/engines.ts';
 const row = (url: string, title: string, snippet: string) =>
   `<li class="b_algo"><h2><a href="${url}">${title}</a></h2><p>${snippet}</p></li>`;
 
+test('a working original answer skips the extra request', async () => {
+  const query = 'pip 安装 requests 库';
+  const seen: string[] = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    seen.push(url);
+    const body = row('https://pypi.org/project/pip/', 'pip · PyPI', 'pip 安装 requests 库');
+    return new Response(`<html><body><ol>${body}</ol></body></html>`, { status: 200, headers: { 'content-type': 'text/html' } });
+  }) as typeof fetch;
+  try {
+    const outcome = await search(query, undefined, { hostIds: ['cn.bing'], useProxy: false, limit: 8 });
+    assert.equal(outcome.sources.length, 1);
+    assert.equal(seen.length, 1, 'a relevant original answer must not trigger a variant request');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('a long Chinese query gets a core-word retry on cn.bing', async () => {
   const query = '东数西算 八个国家枢纽节点 定位';
   const original = [
