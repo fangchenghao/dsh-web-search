@@ -297,7 +297,7 @@ npm run build
 ```yaml
 - insert:
     - id: web-search-bing
-      name: @fffangchenghao/dsh-web-search
+      name: '@fffangchenghao/dsh-web-search'
 ```
 
 如果你是通过 `pnpm install` / `link:` 装进 profile 的，这一行会自动生效，不用手抄。仓库里这份 patch 还带了一个空的 `config: {}`，作用是让设置页能发现这一行、显示卡片而不是「当前部署尚未提供此插件的设置」。
@@ -341,7 +341,7 @@ pnpm install
 
 ```yaml
 - id: web-search-bing
-  name: @fffangchenghao/dsh-web-search
+  name: '@fffangchenghao/dsh-web-search'
   config:
     limit: 8
     wait: auto

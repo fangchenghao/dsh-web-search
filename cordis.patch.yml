@@ -3,5 +3,5 @@
 # Every key is optional and falls back to the documented default.
 - insert:
     - id: web-search-bing
-      name: @fffangchenghao/dsh-web-search
+      name: '@fffangchenghao/dsh-web-search'
       config: {}

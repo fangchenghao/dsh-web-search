@@ -297,7 +297,7 @@ The package ships its own `cordis.patch.yml`, and it is one insert:
 ```yaml
 - insert:
     - id: web-search-bing
-      name: @fffangchenghao/dsh-web-search
+      name: '@fffangchenghao/dsh-web-search'
 ```
 
 If you installed the package into a profile with `pnpm install` or a `link:`, that row arrives automatically. The copy in this repository also carries an empty `config: {}`; its job is to keep the row discoverable so Settings renders a card instead of "this deployment does not provide settings for this plugin".
@@ -341,7 +341,7 @@ Optionally, add a config row:
 
 ```yaml
 - id: web-search-bing
-  name: @fffangchenghao/dsh-web-search
+  name: '@fffangchenghao/dsh-web-search'
   config:
     limit: 8
     wait: auto

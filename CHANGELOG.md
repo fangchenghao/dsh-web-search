@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.13.4
+
+### Fixed
+- **The bundle overlay could not be parsed, so the plugin never loaded.** YAML
+  reserves a leading `@`, and the overlay named the package as
+  `name: @fffangchenghao/dsh-web-search` without quotes; the Host reported
+  "bad indentation of a mapping entry" and dropped the entry. Every release from
+  0.11.0 through 0.13.3 carried it. The name is quoted now, the README snippets
+  are corrected, and a test fails if a bare scoped name returns — a copy-pasted
+  snippet would break in exactly the same way.
+
 ## 0.13.3
 
 ### Documentation
