@@ -190,6 +190,52 @@ async function mapLimit<T, R>(
   return results;
 }
 
+/** Words that carry no retrieval signal in a research query. */
+const QUERY_STOPWORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'with', 'from',
+  'what', 'which', 'who', 'whom', 'how', 'why', 'when', 'where', 'is', 'are',
+  'was', 'were', 'be', 'been', 'do', 'does', 'did', 'vs', 'versus', 'about',
+  'please', 'tell', 'give', 'show', 'find', 'compare', 'difference', 'between',
+]);
+
+/** CJK stopword bigrams that would match almost any Chinese page. */
+const CJK_STOPWORDS = new Set(['的是', '了吗', '什么', '怎么', '如何', '哪些', '多少', '一下', '请问', '最近', '以及']);
+
+/**
+ * Tokens a candidate should contain to count as relevant.
+ *
+ * ASCII words shorter than three characters are dropped, and Chinese runs are
+ * cut into bigrams; that is enough to tell an article about `东数西算` from a
+ * dictionary entry for the single character `东`.
+ * @param queries - the queries this call ran.
+ * @returns distinct lowercase tokens.
+ */
+function queryTokens(queries: readonly string[]): string[] {
+  const text = queries.join(' ').toLowerCase();
+  const tokens = new Set<string>();
+  for (const word of text.match(/[a-z][a-z0-9.+#-]{2,}/gu) ?? []) {
+    if (!QUERY_STOPWORDS.has(word)) tokens.add(word);
+  }
+  for (const run of text.match(/[\u4e00-\u9fff]{2,}/gu) ?? []) {
+    if (run.length === 2) {
+      if (!CJK_STOPWORDS.has(run)) tokens.add(run);
+      continue;
+    }
+    for (let index = 0; index < run.length - 1; index += 1) {
+      const bigram = run.slice(index, index + 2);
+      if (!CJK_STOPWORDS.has(bigram)) tokens.add(bigram);
+    }
+  }
+  return [...tokens];
+}
+
+/** Count how many query tokens appear in a row's title and snippet. */
+function relevanceScore(source: Source, tokens: readonly string[]): number {
+  if (tokens.length === 0) return 0;
+  const haystack = `${source.title ?? ''} ${source.snippet ?? ''}`.toLowerCase();
+  return tokens.reduce((score, token) => (haystack.includes(token) ? score + 1 : score), 0);
+}
+
 /** Interleave per-query result lists by rank, so one query cannot fill the pack. */
 function interleave(sourcesByQuery: readonly Source[][]): Source[] {
   const merged: Source[] = [];
@@ -396,49 +442,81 @@ export function createResearchDefinition(
       });
       if (cancelled()) throw new Error('research was cancelled');
       const candidates = interleave(outcomes.map((outcome) => outcome.sources));
+      // Prefer rows whose title or snippet actually contains a query token.
+      // Search engines return a few singletons for a long Chinese query (the
+      // character `东`, a company named 东…); fetching those spends the budget
+      // on prose that cannot answer the question. The filter is only a
+      // preference: when too few rows match, every candidate is still eligible.
+      const tokens = queryTokens(parsed.queries);
+      const scored = candidates.map((source, index) => ({ source, index, score: relevanceScore(source, tokens) }));
+      const matched = scored.filter((entry) => entry.score > 0);
+      const pool = matched.length >= parsed.maxSources ? matched : scored;
+      pool.sort((left, right) => right.score - left.score || left.index - right.index);
+      const ranked = pool.map((entry) => entry.source);
       const failures: ResearchFetchFailure[] = [];
-      const wanted = candidates.slice(0, parsed.maxSources);
-      const pages = await mapLimit(wanted, RESEARCH_PAGE_CONCURRENCY, async (source) => {
-        if (cancelled()) return undefined;
-        const budget = Math.min(20_000, remaining());
-        if (budget < RESEARCH_MIN_PAGE_MS) {
-          failures.push({ url: source.url, reason: 'no time left in the research budget' });
-          return undefined;
-        }
-        const bound = signal === undefined
-          ? AbortSignal.timeout(budget)
-          : AbortSignal.any([signal, AbortSignal.timeout(budget)]);
-        try {
-          const fetched = await fetchPage(source.url, bound);
-          const excerpt = excerptOf(fetched.text, RESEARCH_EXCERPT_CHARS);
-          if (excerpt.length === 0) {
-            failures.push({ url: source.url, reason: 'the page carried no readable text' });
-            return undefined;
+      // Fill the quota even when a page fails: with `wanted = candidates.slice(0,
+      // maxSources)`, one dead candidate produced a pack with two pages out of
+      // three and a successful candidate never tried. Workers share a cursor and
+      // stop pulling new candidates once enough pages have succeeded, so the
+      // extra attempts stay bounded by the concurrency (three) plus the failures.
+      const attempts: Array<{ index: number; page?: ResearchPage }> = [];
+      let cursor = 0;
+      let succeeded = 0;
+      const workers = Array.from({ length: Math.min(RESEARCH_PAGE_CONCURRENCY, candidates.length) }, async () => {
+        for (;;) {
+          if (succeeded >= parsed.maxSources || cancelled()) return;
+          const index = cursor;
+          cursor += 1;
+          const source = ranked[index];
+          if (source === undefined) return;
+          const budget = Math.min(20_000, remaining());
+          if (budget < RESEARCH_MIN_PAGE_MS) {
+            failures.push({ url: source.url, reason: 'no time left in the research budget' });
+            return;
           }
-          const page: ResearchPage = {
-            url: fetched.url.length > 0 ? fetched.url : source.url,
-            ...(source.title === undefined || source.title.length === 0 ? {} : { title: source.title }),
-            status: fetched.status,
-            chars: fetched.text.length,
-            excerpt,
-            truncated: fetched.truncated || fetched.text.length > RESEARCH_EXCERPT_CHARS,
-          };
-          return page;
-        } catch (error) {
-          if (cancelled()) throw error;
-          failures.push({ url: source.url, reason: error instanceof Error ? error.message : String(error) });
-          return undefined;
+          const bound = signal === undefined
+            ? AbortSignal.timeout(budget)
+            : AbortSignal.any([signal, AbortSignal.timeout(budget)]);
+          try {
+            const fetched = await fetchPage(source.url, bound);
+            const excerpt = excerptOf(fetched.text, RESEARCH_EXCERPT_CHARS);
+            if (excerpt.length === 0) {
+              failures.push({ url: source.url, reason: 'the page carried no readable text' });
+              continue;
+            }
+            succeeded += 1;
+            attempts.push({
+              index,
+              page: {
+                url: fetched.url.length > 0 ? fetched.url : source.url,
+                ...(source.title === undefined || source.title.length === 0 ? {} : { title: source.title }),
+                status: fetched.status,
+                chars: fetched.text.length,
+                excerpt,
+                truncated: fetched.truncated || fetched.text.length > RESEARCH_EXCERPT_CHARS,
+              },
+            });
+          } catch (error) {
+            if (cancelled()) throw error;
+            failures.push({ url: source.url, reason: error instanceof Error ? error.message : String(error) });
+          }
         }
       });
+      await Promise.all(workers);
       if (cancelled()) throw new Error('research was cancelled');
-      const fetchedPages = pages.filter((page): page is ResearchPage => page !== undefined);
+      const fetchedPages = attempts
+        .sort((left, right) => left.index - right.index)
+        .map((attempt) => attempt.page)
+        .filter((page): page is ResearchPage => page !== undefined)
+        .slice(0, parsed.maxSources);
       const fetchedUrls = new Set(fetchedPages.map((page) => page.url));
+      const failedUrls = new Set(failures.map((failure) => failure.url));
       return {
         query: parsed.queries[0] as string,
         queries: parsed.queries,
         pages: fetchedPages,
         sources: candidates
-          .filter((source) => !fetchedUrls.has(source.url))
+          .filter((source) => !fetchedUrls.has(source.url) && !failedUrls.has(source.url))
           .slice(0, 20)
           .map((source) => ({
             url: source.url,

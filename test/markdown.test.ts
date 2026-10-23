@@ -90,8 +90,7 @@ test('the Python docs excerpt drops the mobile nav and keeps prose, links and a 
   }
   assert.equal(
     markdown,
-    '# `urllib.parse` — Parse URLs into components'
-      + '[¶](https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse)\n'
+    '# `urllib.parse` — Parse URLs into components\n'
       + '\n'
       + '**Source code:** [Lib/urllib/parse.py](https://github.com/python/cpython/tree/3.15/Lib/urllib/parse.py)\n'
       + '\n'

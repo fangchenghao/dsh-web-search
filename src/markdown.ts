@@ -612,7 +612,14 @@ function inlineElement(node: ElementNode, ctx: RenderContext): string {
       const inner = inlineChildren(node, ctx);
       if (ctx.format === 'text') return href.length === 0 ? inner : `${inner} (${href})`;
       if (href.length === 0) return inner;
-      return `[${inner.trim().length === 0 ? href : inner}](${href})`;
+      const label = inner.trim();
+      // Documentation sites (Python's Sphinx, many others) attach a "¶" permalink
+      // to every heading. Keeping it turns every heading into a broken-looking
+      // `[¶](...#id)` fragment in the Markdown a model has to read.
+      if (label === '¶' || label === '#' || label === '§' || label === '🔗' || label === '↩') return '';
+      // A link whose text is its own URL adds nothing over an autolink.
+      if (label === href) return `<${href}>`;
+      return `[${label.length === 0 ? href : inner}](${href})`;
     }
     case 'code': {
       const text = textOf(node).replace(/\s+/g, ' ').trim();

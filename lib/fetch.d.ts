@@ -82,6 +82,32 @@ export interface FetchDependencies {
     render: (renderer: RendererModule, url: string, timeoutMs: number, signal: AbortSignal | undefined) => Promise<RenderedPage>;
 }
 /**
+ * Find the target of an HTML-level redirect.
+ *
+ * Some documentation sites keep old URLs alive with a page whose only content
+ * is `<meta http-equiv="refresh">` plus a JavaScript `location.replace`. The
+ * HTTP status is 200, so `fetch` reports success and the model receives a page
+ * that says "Redirecting…" and nothing else. PyTorch's `stable` docs do this
+ * for every moved page. Following the declaration once turns that into the page
+ * the browser would have shown.
+ *
+ * Only an explicit `<meta refresh>` or a page whose `<title>` says it is a
+ * redirect is followed. A normal page that happens to mention `location.href`
+ * in a script is left alone.
+ * @param html - raw HTML body.
+ * @param baseUrl - URL the body came from, for resolving relative targets.
+ * @returns absolute target URL, or `undefined` when this is a normal page.
+ */
+export declare function documentRedirect(html: string, baseUrl: string): string | undefined;
+/**
+ * Direct request used by the first rung.
+ *
+ * Follows up to {@link REDIRECT_HOPS} HTML-level redirects inside the same
+ * deadline, which is what makes a moved docs URL readable instead of a page
+ * that only says "Redirecting…".
+ */
+export declare function directFetch(url: string, timeoutMs: number, signal: AbortSignal | undefined, userAgent: string, maxBytes: number): Promise<FetchOutcome>;
+/**
  * Build the fetch provider.
  * @param options - timeouts, tunnel and extraction settings.
  * @param overrides - transport overrides, for tests.

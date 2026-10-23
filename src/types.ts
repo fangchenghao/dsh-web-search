@@ -46,6 +46,14 @@ export interface HostSpec {
   weight?: number;
   /** Tunnel from the start instead of trying a direct request first. */
   viaProxy?: boolean;
+  /**
+   * Requests this engine accepts at once, process-wide.
+   *
+   * Exa and Firecrawl reject bursts with 429, and `search_many` legitimately
+   * starts several searches together; a gate per engine id keeps those calls
+   * from fighting each other.
+   */
+  maxConcurrent?: number;
   /** Send `body(query)` as a JSON POST rather than a GET. */
   method?: 'POST';
   /** Skip the echoed-query check: a JSON API validates itself. */

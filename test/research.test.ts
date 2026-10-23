@@ -153,3 +153,46 @@ test('the pack lists rows that were found but not fetched', async () => {
   const failures: ResearchFetchFailure[] = value.failures;
   assert.ok(Array.isArray(failures));
 });
+
+test('a failed page is replaced by the next candidate instead of shrinking the pack', async () => {
+  const urls = [
+    'https://broken.example/one',
+    'https://ok.example/two',
+    'https://ok.example/three',
+    'https://ok.example/four',
+  ];
+  const value = await createResearchDefinition(
+    RESEARCH_TOOL_NAME,
+    async () => ({ sources: urls.map((url) => source(url)), failures: [] }),
+    async (url) => {
+      if (url.includes('broken')) throw new Error('timed out');
+      return { url, status: 200, text: `content of ${url}`, truncated: false };
+    },
+  ).execute({ query: 'x', maxSources: 2 }, {});
+  assert.equal(value.pages.length, 2);
+  assert.deepEqual(value.pages.map((page) => page.url), ['https://ok.example/two', 'https://ok.example/three']);
+  assert.equal(value.failures.length, 1);
+  assert.equal(value.failures[0]?.url, urls[0]);
+  assert.ok(!value.sources.some((row) => row.url === urls[0]), 'a failed URL is not advertised as unfetched');
+});
+
+test('rows that share no query token are skipped when enough relevant rows exist', async () => {
+  const rows = [
+    source('https://recipe.example/pasta', 'Cooking recipes', 'pasta and tomato sauce'),
+    source('https://k8s.example/networking', 'Kubernetes networking guide', 'services and pods'),
+    source('https://k8s.example/service', 'Kubernetes service networking', 'cluster DNS'),
+  ];
+  const fetched: string[] = [];
+  const value = await createResearchDefinition(
+    RESEARCH_TOOL_NAME,
+    async () => ({ sources: rows, failures: [] }),
+    async (url) => {
+      fetched.push(url);
+      return { url, status: 200, text: `readable prose about ${url}`, truncated: false };
+    },
+  ).execute({ query: 'kubernetes service networking', maxSources: 2 }, {});
+  assert.deepEqual(fetched, ['https://k8s.example/service', 'https://k8s.example/networking']);
+  assert.equal(value.pages.length, 2);
+  assert.ok(!value.pages.some((page) => page.url.includes('recipe')));
+  assert.deepEqual(value.sources.map((row) => row.url), ['https://recipe.example/pasta']);
+});

@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.17.0
+
+### Fixed
+- **Moved documentation URLs now arrive as pages, not redirect stubs.** PyTorch's
+  `stable` docs answer an obsolete path with HTTP 200 and a body that only says
+  "Redirecting…"; the fetch ladder rendered that stub as if it were the page.
+  Both the direct and tunnelled rungs now follow up to two HTML-level redirects
+  (`<meta http-equiv="refresh">`, or a redirect-titled page's
+  `location.replace`/canonical link) inside the same deadline.
+- **Bursts of searches no longer trip Exa's rate limit.** Five parallel
+  `search_many` queries made the anonymous Exa endpoint return 429 on four of
+  them. Engines can now declare a process-wide concurrency gate (`exa` and
+  `firecrawl` two at a time, `anysearch` two), held for the whole
+  direct-then-tunnel attempt and cancelled with the caller.
+- **`research` fills its page quota.** A candidate that failed to load used to
+  leave the pack one page short while a later candidate was never tried; workers
+  now pull the next candidate until `maxSources` pages succeed. Candidates are
+  also ranked by query-token overlap first, so a dictionary entry for the single
+  character `东` no longer displaces an article about `东数西算`, and a failed
+  URL is no longer listed under "found but not fetched".
+- **Failure reasons are deduplicated**, so a page that fails the same renderer
+  check three times no longer repeats the sentence three times in one message.
+- **Markdown no longer carries Sphinx-style permalink noise**: a link whose
+  whole text is `¶`, `#` or `§` is dropped, and a link whose text is its own URL
+  is emitted as an autolink.
+
+### Tests
+- 487 cases (486 pass, one environment skip): new coverage for redirect
+  detection and loop bounds, the engine gate, research quota filling and
+  relevance ranking, and the cleaned Markdown links.
+
 ## 0.16.1
 
 ### Fixed

@@ -40,6 +40,7 @@ const ANYSEARCH_MAX_RESULTS = 10;
 export const HOSTS: readonly HostSpec[] = [
   {
     id: 'anysearch',
+    maxConcurrent: 3,
     tier: 'primary',
     // Serves both languages: it answers Chinese queries with the original
     // documentation and book translations rather than SEO farms, so it leads a
@@ -58,6 +59,9 @@ export const HOSTS: readonly HostSpec[] = [
   },
   {
     id: 'exa',
+    // Anonymous MCP rejects bursts (five parallel `search_many` queries came
+    // back 429 on four); two at a time kept every answer inside the deadline.
+    maxConcurrent: 2,
     // A semantic (embedding) index rather than a keyword page: it answers with
     // the page itself plus highlights. The MCP endpoint accepts anonymous
     // calls, so it costs no key. Measured on the same recorded fixtures with the
@@ -82,6 +86,7 @@ export const HOSTS: readonly HostSpec[] = [
   },
   {
     id: 'firecrawl',
+    maxConcurrent: 1,
     // The keyless tier of the Firecrawl search API. It returns extracted page
     // Markdown rather than snippets, so only the opening prose is kept as the
     // row's snippet; it handled a Chinese query with the same shape. It ships as

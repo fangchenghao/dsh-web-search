@@ -12,6 +12,7 @@ import type { HostSpec, Source, TimeRange } from './types.ts';
 import { SearchError, parseRetryAfter } from './errors.ts';
 import { proxyGet } from './proxy.ts';
 import { echoesQuery } from './parsers.ts';
+import { gateFor } from './semaphore.ts';
 
 /** Markers of an interstitial anti-bot page, narrow enough not to hit prose. */
 const BOT_WALL_MARKERS = ['qcaptcha', '访问异常', 'unusual traffic', 'verify you are human', '安全验证'];
@@ -179,8 +180,18 @@ export async function searchHost(
 ): Promise<AttemptOutcome> {
   const url = host.build(query, timeRange);
   const route = host.viaProxy === true ? proxy : undefined;
-  const first = await attempt(host, url, signal, timeoutMs, route, query);
-  if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;
-  const retry = await attempt(host, url, signal, timeoutMs, proxy, query);
-  return retry.ok ? retry : first;
+  // A gate holds the permit for the whole engine attempt, including the
+  // direct-then-tunnel retry, so a burst of concurrent searches cannot stack
+  // two requests on an engine that only tolerates a couple.
+  const release = host.maxConcurrent === undefined
+    ? undefined
+    : await gateFor(host.id, host.maxConcurrent).acquire(signal);
+  try {
+    const first = await attempt(host, url, signal, timeoutMs, route, query);
+    if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;
+    const retry = await attempt(host, url, signal, timeoutMs, proxy, query);
+    return retry.ok ? retry : first;
+  } finally {
+    release?.();
+  }
 }
