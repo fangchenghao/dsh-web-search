@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.5
+
+### Documentation
+- The READMEs no longer repeat an exact test count, for the same reason they no
+  longer repeat a version number: every added test made the sentence false.
+
 ## 0.13.4
 
 ### Fixed

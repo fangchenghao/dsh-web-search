@@ -853,14 +853,14 @@ Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`—
 ### 开发与测试
 
 ```sh
-node --test test/*.test.ts     # 离线测试（349 条，1 条联网用例默认跳过）
+node --test test/*.test.ts     # 全部离线测试（联网用例默认跳过）
 node --test test/proxy.test.ts # 单个文件
 npm run typecheck              # tsc --noEmit
 npm run build                  # 编译 src/ 到 lib/
 npm run check                  # typecheck + 测试
 ```
 
-测试默认全程离线，349 条中 348 条通过，第 349 条是联网分段验证，默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含八个专用源的正常/空响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过，联网验证时用 `READ_PAGE_LIVE=1 node --test test/read-page.test.ts` 运行。
+测试默认全程离线、全部通过；唯一需要联网的分段验证默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含八个专用源的正常/空响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过，联网验证时用 `READ_PAGE_LIVE=1 node --test test/read-page.test.ts` 运行。
 
 CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu 与 macOS 上跑 `npm ci`、`npm run typecheck`、`npm test`、`npm run build`，并检查构建确实产出了 `lib/index.js` 和 `lib/index.d.ts`，且 `apply` 与 `Config` 都可导入。
 

@@ -853,14 +853,14 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 ### Development and tests
 
 ```sh
-node --test test/*.test.ts     # the offline suite (349 tests, one live case skipped by default)
+node --test test/*.test.ts     # the whole offline suite (one live case is skipped by default)
 node --test test/proxy.test.ts # one file
 npm run typecheck              # tsc --noEmit
 npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline by default, 349 tests, 348 passing — the 349th is the live paging check, skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
+The suite runs offline by default and passes in full; the one live paging check is skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for all eight dedicated sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
 
 CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 
