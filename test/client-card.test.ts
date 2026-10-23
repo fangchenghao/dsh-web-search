@@ -73,7 +73,10 @@ async function loadFactory(): Promise<Record<string, unknown>> {
   };
   vm.runInNewContext(source, sandbox);
   assert.ok(definition !== undefined, 'client.js registered nothing with the module loader');
-  assert.equal(definition.id, 'dsh-web-search-bing');
+  // The Host keys client bundles by package name; read it instead of repeating
+  // a nickname that a rename would silently invalidate.
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')) as { name: string };
+  assert.equal(definition.id, pkg.name);
   const React = reactShim();
   const factory = definition.factory;
   assert.equal(typeof factory, 'function');
