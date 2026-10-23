@@ -276,14 +276,14 @@ Each line is the plain version first, the technical note second. The technical n
 
 ### What you need
 
-- A DeepSeek Harness profile with the `web` service;
-- Node 22.18 or newer (the source uses Node's native TypeScript type stripping; CI runs Node 24);
+- A DeepSeek Harness profile with the `web` service (tested on 0.2.1-rc.2; the declared range is `>=0.2.1-rc.2 <0.3.0`, evidence in [docs/store-evidence.md](docs/store-evidence.md));
+- Node 22.18 or newer (declared as `>=22.18.0`; the source uses Node's native TypeScript type stripping and CI runs Node 24);
 - Ordinary outbound network access. A tunnel is not required — you just get fewer engines without one.
 - Optional: to read pages whose body is built by JavaScript, install Playwright yourself (item 12 above); not installing it changes nothing else.
 
 ### Step 1: build
 
-`main` points at `lib/index.js`, and `lib/` is gitignored — a fresh checkout does not have it, so build once first:
+`main` points at `lib/index.js`, and `lib/` is **committed** — DSH STORE scans the fixed Git tree, so the runtime artifacts have to live in the repository — which means a fresh checkout runs as-is. Rebuild only after changing `src/`:
 
 ```sh
 cd ~/.dsh/plugins/dsh-web-search-bing

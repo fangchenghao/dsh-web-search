@@ -1,6 +1,6 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.13.7",
+  "version": "0.13.8",
   "description": "DSH bundle: a key-free web search provider. Leads with the anonymous AnySearch API and falls back to public result pages (DuckDuckGo, Bing, 360), merged by reciprocal-rank fusion with a bilingual region policy, an engine cooldown and a TTL cache.",
   "type": "module",
   "main": "lib/index.js",
@@ -22,7 +22,9 @@
     "README.md",
     "README.zh-CN.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "docs/store-evidence.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -53,6 +55,19 @@
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-settings"
       ]
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.1-rc.2": "compatible"
+      },
+      "dshOperations": {
+        "0.2.1-rc.2": {
+          "install": "passed",
+          "start": "passed",
+          "uninstall": "passed",
+          "rollback": "passed"
+        }
+      }
     }
   },
   "dependencies": {
@@ -73,5 +88,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22.18.0",
+    "dsh": ">=0.2.1-rc.2 <0.3.0"
   }
 }

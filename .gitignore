@@ -1,5 +1,6 @@
 node_modules/
-lib/
+# `lib/` is committed: DSH STORE scans the fixed GIT tree, so the compiled
+# runtime artifacts must live in the repository, not only in the npm tarball.
 # The benchmark's scoring module is source, not build output.
 !scripts/lib/
 !scripts/lib/**

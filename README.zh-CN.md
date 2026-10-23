@@ -276,14 +276,14 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 ### 你需要什么
 
-- 一个带 `web` 服务的 DeepSeek Harness profile；
-- Node 22.18 以上（源码用了 Node 原生的 TypeScript 类型擦除；本仓库的 CI 跑的是 Node 24）；
+- 一个带 `web` 服务的 DeepSeek Harness profile（0.2.1-rc.2 实测；兼容范围声明为 `>=0.2.1-rc.2 <0.3.0`，证据见 [docs/store-evidence.md](docs/store-evidence.md)）；
+- Node 22.18 以上（`engines` 声明为 `>=22.18.0`；源码用了 Node 原生的 TypeScript 类型擦除，CI 跑 Node 24）；
 - 能正常出网。没有梯子也能用，只是可用的引擎少一两个。
 - 可选：想读靠 JavaScript 渲染的页面，自己装 Playwright（见能力清单第 12 条）；不装不影响任何现有功能。
 
 ### 第一步：构建
 
-仓库里的 `main` 指向 `lib/index.js`，而 `lib/` 被 `.gitignore` 忽略——刚拿到代码时它并不存在，得先构建一次：
+仓库里的 `main` 指向 `lib/index.js`，而 `lib/` **已经随仓库提交**（DSH STORE 只扫描固定 Commit 的 Git 树，运行产物必须入库），所以拿到代码就能直接跑；只有改了 `src/` 才需要重新构建：
 
 ```sh
 cd ~/.dsh/plugins/dsh-web-search-bing

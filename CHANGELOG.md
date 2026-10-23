@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.13.8
+
+### Fixed
+- **DSH STORE could not scan the runtime artifacts.** `lib/` was gitignored, so
+  the fixed commit's tree contained no `lib/index.js` and no `lib/index.d.ts`;
+  the store blocked the catalog entry with "runtime artifact is missing from the
+  distributable surface" and "fixed-source scan is incomplete". The compiled
+  output is now committed (40 files, 468 KiB) and stays inside the `files`
+  surface, so the tree the store scans is the tree that runs.
+- **Compatibility was not declared.** `package.json` now states the ranges it
+  was actually exercised on — `engines.node: ">=22.18.0"` and
+  `engines.dsh: ">=0.2.1-rc.2 <0.3.0"` — plus an exact
+  `dsh.compatibility.dshReleases` record for `0.2.1-rc.2`. Only that version is
+  declared, because only that version was run: the other two releases in the
+  current latest-three window stay `unknown` instead of being claimed.
+
+### Added
+- `SECURITY.md`: dependencies, every network destination, credentials, the one
+  file the plugin writes and its bounds, the time and size limits, and what the
+  plugin deliberately never does.
+- `docs/store-evidence.md`: the disposable-profile install / uninstall /
+  rollback transcript and the live-host mount evidence behind the declared
+  `dshOperations`.
+
 ## 0.13.7
 
 ### Fixed
