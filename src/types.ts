@@ -163,4 +163,12 @@ export type SearchErrorCode =
   | 'SEARCH_NETWORK'
   | 'SEARCH_PARSE'
   | 'SEARCH_NETWORK_BLOCKED_BY_POLICY'
-  | 'SEARCH_ABORTED';
+  | 'SEARCH_ABORTED'
+  /** The caller sent nonsense (an empty query, a non-HTTP URL). */
+  | 'SEARCH_INVALID'
+  /** The page answered, but nothing readable came back. */
+  | 'SEARCH_EMPTY'
+  /** The page answered with a 4xx/5xx status. */
+  | 'SEARCH_HTTP_STATUS'
+  /** The page is a binary document this plugin cannot convert to text. */
+  | 'SEARCH_UNSUPPORTED';

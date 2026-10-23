@@ -38,3 +38,64 @@ node scripts/bench.mjs --compare bench/results/0.12.0.json
 Pin a single knob for a controlled experiment without editing source: `--rrf 40`, `--weight anysearch=1` (repeatable), `--authority-boost 0`. Scores are macro averages over evaluated queries.
 
 Tests for the scoring functions: `node --test test/bench-metrics.test.ts`.
+
+## Sweep the knobs
+
+```sh
+node scripts/sweep.mjs           # 81 configurations: rrf × authority × freshness × anysearch weight
+node scripts/sweep.mjs --quick   # 27 configurations, rrf and freshness only
+```
+
+Each configuration runs the offline replay, so a full sweep takes about a minute and never touches the
+network. The script prints the top five by MRR, the delta against the shipped defaults with a paired
+bootstrap interval, and the marginal mean of every knob value.
+
+### What the sweep actually says (0.13.7, 20 queries)
+
+Marginal means across the grid:
+
+| knob | value | MRR | P@8 | R@8 |
+|---|---|---|---|---|
+| `rrfConstant` | 40 | 0.7712 | 0.3500 | 0.7472 |
+| | **60** (default) | 0.7604 | 0.3563 | 0.7417 |
+| | 80 | 0.7456 | 0.3590 | 0.7417 |
+| `authorityBoost` | 0.10 | 0.7733 | 0.3243 | 0.7472 |
+| | **0.25** (default) | 0.7645 | 0.3611 | 0.7417 |
+| | 0.40 | 0.7395 | 0.3799 | 0.7417 |
+| `freshnessBoost` | 0.10 | 0.7681 | 0.3597 | 0.7444 |
+| | **0.20** (default) | 0.7598 | 0.3597 | 0.7444 |
+| | 0.35 | 0.7494 | 0.3458 | 0.7417 |
+
+The best single configuration, `rrf=40 authority=0.1 freshness=0.1`, scores MRR 0.8042 against the
+default 0.7600 — a delta of **+0.0442 with a 95% interval of [−0.0038, +0.1229]**. The interval spans
+zero, and the gain comes from two queries. **The corpus cannot tell these configurations apart, so the
+defaults stay put**; a knob is only worth changing once a larger corpus moves the interval clear of zero.
+
+Two trade-offs are visible and stable enough to document:
+
+- Lower `authorityBoost` raises MRR but lowers P@8: it stops promoting `docs.python.org` and
+  `kubernetes.io` over equally relevant community pages.
+- Lower `rrfConstant` rewards one engine's top hit; higher values flatten the blend and raise P@8 at the
+  cost of MRR.
+
+### Engine weights
+
+`cn.bing` is the only sub-300 ms engine, and the live checks show why that speed is not free: for
+`2026年10月 英伟达 人工智能 发布会` it returns 万年历/百科 entries, and for `PostgreSQL 逻辑复制 延迟 排查` it
+returns the PostgreSQL home page and a tutorial index, while AnySearch and DuckDuckGo return the
+logical-replication articles. Down-weighting it (`--weight cn.bing=0.25 --weight ddg-html=2`) raises MRR
+from 0.7600 to 0.7708, but again inside the noise band, so the default weight of 1 is unchanged.
+
+### Live timing
+
+`search()` against the real engines, six queries, two rounds each, `limit: 8`, hot network:
+
+| `wait` | median | p90 | results | distinct domains | engine failures |
+|---|---|---|---|---|---|
+| `fast` | 649 ms | 2 319 ms | 96 | 34 | 18 |
+| **`auto`** (default) | 2 847 ms | 3 502 ms | 96 | 50 | 6 |
+| `all` | 2 618 ms | 2 941 ms | 96 | 39 | 0 |
+
+`fast` is three times quicker but loses a third of the domains and reports eighteen engine failures;
+`all` has the tightest tail and no failures but returns fewer distinct domains than `auto`. The defaults
+keep `auto`: diversity is what the ranking is for, and the tail is already under four seconds.

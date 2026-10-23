@@ -374,6 +374,11 @@ export function resolveHost(host: HostSpec, options: Pick<EngineRunOptions, 'any
 }
 
 export async function search(query: string, signal: AbortSignal | undefined, options: EngineRunOptions): Promise<SearchOutcome> {
+  // A blank query used to reach every engine, burn seven seconds and come back
+  // with six identical "empty query" failures; refuse it before any request.
+  if (typeof query !== 'string' || query.trim().length === 0) {
+    throw new SearchError('the search query is empty', 'SEARCH_INVALID', false);
+  }
   const limit = Math.max(1, Math.min(options.limit, 20));
   const timeoutMs = options.timeoutMs ?? 15000;
   const wait: WaitPolicy = options.wait ?? 'auto';

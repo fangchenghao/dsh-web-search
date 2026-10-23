@@ -66,7 +66,7 @@ const SHELL_MARKERS = [
 /** The parts of a page the shell heuristic looks at. */
 export interface ShellInput {
   readonly statusCode: number;
-  readonly body: { readonly kind: 'html' | 'text'; readonly content: string };
+  readonly body: { readonly kind: 'html' | 'text' | 'binary'; readonly content: string };
 }
 
 /** A shell decision plus the numbers and reason behind it. */

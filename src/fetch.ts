@@ -57,8 +57,10 @@ import type {
 export interface FetchOutcome {
   readonly url: string;
   readonly statusCode: number;
-  readonly body: { readonly kind: 'html' | 'text'; readonly content: string };
+  readonly body: { readonly kind: 'html' | 'text' | 'binary'; readonly content: string };
   readonly truncated: boolean;
+  /** The response's mime type, kept so a rejection can name what it refused. */
+  readonly contentType?: string;
   /**
    * How the optional render rung decided, when this provider produced the
    * result. The Host ignores the extra field; it is here so a caller (and a
@@ -81,6 +83,8 @@ export interface FetchProviderOptions {
   id?: string;
   /** Per-attempt deadline in milliseconds. */
   timeoutMs?: number;
+  /** Budget for the whole ladder; later rungs get only what is left. */
+  overallMs?: number;
   /** Explicit tunnel URL, overriding detection. Empty means detect. */
   proxy?: string;
   /** `false` disables the tunnel rung entirely. */
@@ -142,12 +146,33 @@ const DIRECT_DEADLINE_MS = 5_000;
 /** Default per-attempt deadline. */
 const DEFAULT_TIMEOUT_MS = 15_000;
 
+/**
+ * Budget for the whole ladder, however many rungs it tries.
+ *
+ * Each rung has its own deadline, so without a ceiling a blocked host can spend
+ * five seconds on a direct attempt and fifteen on each later rung — long enough
+ * that a caller waits half a minute for a page that will never arrive.
+ */
+const DEFAULT_OVERALL_MS = 25_000;
+
+/** Below this much remaining budget a rung is not worth starting. */
+const MIN_RUNG_MS = 750;
+
+/** Content types whose bytes are documents, not text this plugin can read. */
+const BINARY_TYPE = /^\s*(application\/(pdf|zip|gzip|x-tar|vnd\.|msword|octet-stream|protobuf|x-protobuf)|image\/|audio\/|video\/|font\/)/i;
+
 /** Pick the body kind from the content type, defaulting to text. */
-function kindOf(contentType: string | null): 'html' | 'text' {
+function kindOf(contentType: string | null): 'html' | 'text' | 'binary' {
   if (contentType === null) return 'text';
   const value = contentType.toLowerCase();
+  if (BINARY_TYPE.test(value)) return 'binary';
   if (value.includes('html') || value.includes('xml')) return 'html';
   return 'text';
+}
+
+/** The mime type without parameters, for a message a reader can act on. */
+function mimeOf(contentType: string | null): string {
+  return (contentType ?? '').split(';')[0]?.trim() ?? '';
 }
 
 /**
@@ -198,7 +223,13 @@ async function directFetch(
   const contentType = response.headers.get('content-type');
   const text = await response.text();
   const { content, truncated } = clamp(text, maxBytes);
-  return { url: response.url === '' ? url : response.url, statusCode: response.status, body: { kind: kindOf(contentType), content }, truncated };
+  return {
+    url: response.url === '' ? url : response.url,
+    statusCode: response.status,
+    body: { kind: kindOf(contentType), content },
+    contentType: mimeOf(contentType),
+    truncated,
+  };
 }
 
 /** Tunnelled request used by the second rung. */
@@ -217,10 +248,12 @@ async function tunnelFetch(
     ...(signal === undefined ? {} : { signal }),
   });
   const { content, truncated } = clamp(response.text, maxBytes);
+  const contentType = response.headers?.['content-type'] ?? null;
   return {
     url,
     statusCode: response.status,
-    body: { kind: kindOf(response.headers?.['content-type'] ?? null), content },
+    body: { kind: kindOf(contentType), content },
+    contentType: mimeOf(contentType),
     truncated,
   };
 }
@@ -264,6 +297,10 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
     ...overrides,
   };
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const overallMs = options.overallMs ?? DEFAULT_OVERALL_MS;
+  const startedAt = Date.now();
+  /** What is left of the whole-ladder budget. */
+  const remaining = (): number => Math.max(0, overallMs - (Date.now() - startedAt));
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const userAgent = options.userAgent ?? USER_AGENT;
   const apiKey = (options.anysearchApiKey ?? '').trim();
@@ -318,6 +355,14 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
   const finalize = (outcome: FetchOutcome, render: RenderReport): FetchOutcome => {
     const format = liveFormat();
     const maxLength = liveMaxLength();
+    if (outcome.body.kind === 'binary') {
+      const mime = outcome.contentType === undefined || outcome.contentType === '' ? 'binary content' : outcome.contentType;
+      throw new SearchError(
+        `cannot read ${mime} from ${outcome.url}: this plugin converts HTML and text to Markdown, and a binary document would arrive as noise`,
+        'SEARCH_UNSUPPORTED',
+        false,
+      );
+    }
     if (outcome.body.kind === 'html') {
       const rendered = renderFetchText(outcome.body.content, { format, maxLength, baseUrl: outcome.url });
       return {
@@ -334,6 +379,31 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       truncated: outcome.truncated || limited.truncated,
       render,
     };
+  };
+
+  /**
+   * Reject an outcome a caller would otherwise read as a successful page.
+   *
+   * A 4xx/5xx stays a normal result on purpose: the Host renders the status line
+   * with the body, and a 403 page often carries the only useful explanation. An
+   * empty 200 is different — it reads as success while saying nothing.
+   */
+  const assertUsable = (outcome: FetchOutcome, failures: readonly string[]): FetchOutcome => {
+    if (outcome.statusCode < 400 && outcome.body.content.trim() === '') {
+      // The render rung's reason describes the raw bytes, not the extraction
+      // result, so never lead with it: "7387 readable characters" next to "empty
+      // page" reads like a contradiction.
+      const detail = failures.length === 0 ? '' : `; ${failures.join('; ')}`;
+      const render = outcome.render?.reason === undefined || outcome.render.reason === ''
+        ? ''
+        : `; renderer: ${outcome.render.reason}`;
+      throw new SearchError(
+        `no readable text from ${outcome.url} (HTTP ${outcome.statusCode}): the bytes carried no prose once scripts and markup were removed${render}${detail}`,
+        'SEARCH_EMPTY',
+        true,
+      );
+    }
+    return outcome;
   };
 
   return {
@@ -459,14 +529,16 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       // that cannot work would leave the rung that can work with nothing.
       let direct: FetchOutcome | undefined;
       try {
-        direct = await deps.direct(target, Math.min(timeoutMs, DIRECT_DEADLINE_MS), signal, userAgent, maxBytes);
+        const directBudget = Math.min(timeoutMs, DIRECT_DEADLINE_MS, remaining());
+        if (directBudget < MIN_RUNG_MS) throw new Error('no time left in the fetch budget');
+        direct = await deps.direct(target, directBudget, signal, userAgent, maxBytes);
       } catch (error) {
         if (cancelled()) throw error;
         failures.push(`direct: ${error instanceof Error ? error.message : String(error)}`);
       }
       if (direct !== undefined) {
         const rendered = await settle(direct);
-        if (rendered !== undefined) return finalize(rendered, reportFor());
+        if (rendered !== undefined) return assertUsable(finalize(rendered, reportFor()), failures);
       }
 
       let proxy: string | undefined;
@@ -481,14 +553,16 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       if (proxy !== undefined && proxy.length > 0) {
         let tunneled: FetchOutcome | undefined;
         try {
-          tunneled = await deps.tunnel(target, proxy, timeoutMs, signal, userAgent, maxBytes);
+          const tunnelBudget = Math.min(timeoutMs, remaining());
+          if (tunnelBudget < MIN_RUNG_MS) throw new Error('no time left in the fetch budget');
+          tunneled = await deps.tunnel(target, proxy, tunnelBudget, signal, userAgent, maxBytes);
         } catch (error) {
           if (cancelled()) throw error;
           failures.push(`tunnel: ${error instanceof Error ? error.message : String(error)}`);
         }
         if (tunneled !== undefined) {
           const rendered = await settle(tunneled);
-          if (rendered !== undefined) return finalize(rendered, reportFor());
+          if (rendered !== undefined) return assertUsable(finalize(rendered, reportFor()), failures);
         }
       }
 
@@ -498,13 +572,15 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
       if (fallback === undefined && liveRenderMode() === 'always') {
         const step = await renderStep(undefined);
         lastReport = step.report;
-        if (step.done && step.outcome !== undefined) return finalize(step.outcome, step.report);
+        if (step.done && step.outcome !== undefined) return assertUsable(finalize(step.outcome, step.report), failures);
         if (!step.done) failures.push(`render: ${step.report.reason}`);
       }
 
       if (apiKey.length > 0) {
         try {
-          const extracted = await deps.extract(target, apiKey, timeoutMs, signal);
+          const extractBudget = Math.min(timeoutMs, remaining());
+          if (extractBudget < MIN_RUNG_MS) throw new Error('no time left in the fetch budget');
+          const extracted = await deps.extract(target, apiKey, extractBudget, signal);
           // Say where the body came from when the browser was tried first.
           const report = lastReport !== undefined && lastReport.attempted && !lastReport.applied
             ? makeReport(
@@ -514,7 +590,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
               `${lastReport.reason}; the result came from AnySearch extraction`,
             )
             : reportFor();
-          return finalize(extracted, report);
+          return assertUsable(finalize(extracted, report), failures);
         } catch (error) {
           if (cancelled()) throw error;
           failures.push(`extract: ${error instanceof Error ? error.message : String(error)}`);
@@ -532,7 +608,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
             `${lastReport.reason}; the earlier rung's result was kept`,
           )
           : reportFor();
-        return finalize(fallback, report);
+        return assertUsable(finalize(fallback, report), failures);
       }
 
       throw new SearchError(`cannot fetch ${target} (${failures.join('; ')})`, 'SEARCH_NETWORK', true);

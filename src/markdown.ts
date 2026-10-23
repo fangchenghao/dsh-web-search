@@ -476,15 +476,27 @@ function pickMain(root: ElementNode): ElementNode {
       articleCharacters = characters;
     }
   });
-  if (article !== undefined && articleCharacters > 0) return article;
-
   const main = findElement(
     body,
     (node) => node.tag === 'main' || (node.attrs['role'] ?? '').toLowerCase() === 'main',
   );
-  if (main !== undefined && characterCount(main) > 0) return main;
+  const densest = densestContainer(body);
 
-  return densestContainer(body);
+  // A `<main>` or `<article>` that holds almost nothing is a layout shell, not
+  // the reading root: github.com returns half a megabyte of HTML whose `main`
+  // is a sidebar, which used to convert to zero characters and look like a
+  // network failure. Only trust a landmark that keeps a real share of the text.
+  const bodyCharacters = characterCount(body);
+  const floor = Math.min(2_000, Math.max(120, Math.round(bodyCharacters * 0.25)));
+  const landmarks: ReadonlyArray<ElementNode | undefined> = [article, main];
+  for (const landmark of landmarks) {
+    if (landmark !== undefined && characterCount(landmark) >= floor) return landmark;
+  }
+  if (characterCount(densest) >= floor) return densest;
+  // Nothing reaches the floor: return whichever of the three holds the most.
+  const ranked = [article, main, densest].filter((node): node is ElementNode => node !== undefined);
+  ranked.sort((left, right) => characterCount(right) - characterCount(left));
+  return ranked[0] ?? body;
 }
 
 /** Rendering context: output style, base URL and protected code fragments. */
@@ -824,13 +836,24 @@ export function htmlToMarkdown(html: string, options: RenderOptions = {}): strin
   prune(root);
   const body = findElement(root, (node) => node.tag === 'body') ?? root;
   if (characterCount(body) === 0) return '';
-  const main = pickMain(root);
-  const ctx: RenderContext = {
-    format: options.format ?? 'markdown',
-    baseUrl: options.baseUrl,
-    stash: [],
+  const renderFrom = (node: ElementNode): string => {
+    const ctx: RenderContext = {
+      format: options.format ?? 'markdown',
+      baseUrl: options.baseUrl,
+      stash: [],
+    };
+    return restoreCode(cleanup(renderElement(node, ctx)), ctx).trim();
   };
-  return restoreCode(cleanup(renderElement(main, ctx)), ctx).trim();
+
+  const main = pickMain(root);
+  const chosen = renderFrom(main);
+  // Last guard: if the landmark produced (almost) nothing while the page holds
+  // real prose, read the body instead of returning an empty document.
+  if (chosen.length < 120 && characterCount(body) >= 400) {
+    const whole = renderFrom(body);
+    if (whole.length > chosen.length) return whole;
+  }
+  return chosen;
 }
 
 /**

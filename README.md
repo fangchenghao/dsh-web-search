@@ -478,9 +478,10 @@ Yes — to the engines taking part in that search, which is what searching means
 Four usual causes:
 
 1. **The site refuses automated access**: a 403 or a verification page. With Playwright installed and content still on the page, `renderJs: auto` tries the local browser first; otherwise, if direct and tunnel both fail, only an AnySearch key enables server-side extraction.
-2. **The content is rendered by JavaScript**: what comes back is an empty shell. With Playwright installed it is rendered automatically; without it, you see the shell.
+2. **The content is rendered by JavaScript**: what comes back is an empty shell. With Playwright installed it is rendered automatically; without it, you see the shell. **If stripping the shell leaves no readable text at all, the fetch fails with `SEARCH_EMPTY` and says why — including "no renderer installed" — instead of returning an empty page as a success.**
 3. **It needs a login or a subscription**: fetching carries no session of yours.
-4. **Direct requests time out**: 5 seconds direct, then the tunnel; if neither works and no key is configured you get an error, and with a key there is one more rung, server-side extraction. The message names each rung's failure.
+4. **Direct requests time out**: 5 seconds direct, then the tunnel; if neither works and no key is configured you get an error, and with a key there is one more rung, server-side extraction. The whole ladder shares a 25-second budget, so later rungs get only what is left. The message names each rung's failure.
+5. **Binary documents**: PDFs, images and archives are refused explicitly (`SEARCH_UNSUPPORTED`) with the content type, rather than handing you a byte stream as prose. To read a PDF, extract its text with another tool first.
 
 360's captcha belongs to the first cause, but it used to be especially quiet: from some networks the request 302s to the qcaptcha "unexpected access" page while the HTTP status is still 200. The plugin now records that as `SEARCH_BLOCKED`; querying that engine alone shows `so: bot verification page` instead of zero results, and 360 has been demoted to the fallback tier.
 
@@ -511,7 +512,7 @@ If the page is short enough for `web_fetch` in one pass, you do not need `read_p
 First decide whether it is a shell page — HTML with a title and a loading script, whose body appears only after JavaScript runs. Then, in order:
 
 1. **If you installed Playwright yourself** (`npm i -g playwright && npx playwright install chromium`): leave `renderJs` on `auto` and reload the plugin, then retry. The plugin recognises the shell and renders it in headless Chromium; `always` forces a render on every fetch, and `off` disables rendering.
-2. **Without Playwright**: nothing is installed automatically and nothing errors; the result says why rendering was skipped and returns the shell. Try another source (a print view, a static mirror, the site's API), or raise `fetchMaxLength` — but that only helps when the text was actually fetched and cut at the tail; it cannot create a body.
+2. **Without Playwright**: nothing is installed automatically; if the fetch ends up with **no readable text at all**, it fails with `SEARCH_EMPTY` and names the reason — including that no renderer is installed — rather than returning an empty shell as a success. Try another source (a print view, a static mirror, the site's API), or raise `fetchMaxLength` — but that only helps when the text was actually fetched and cut at the tail; it cannot create a body.
 3. **If the page needs a login or a subscription**: rendering cannot rescue it either; fetching carries no session of yours.
 
 ### Does the plugin secretly install a browser?

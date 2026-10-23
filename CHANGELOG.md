@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.13.7
+
+### Fixed
+- **A blank query burned seven seconds and six requests.** `search('')` and
+  `search('   ')` reached every engine, each failed on its own, and the caller
+  got an empty list. Validation now rejects it in under a millisecond with
+  `SEARCH_INVALID`.
+- **A PDF arrived as binary noise.** `kindOf()` treated every non-HTML response
+  as text, so `application/pdf` came back as 20 000 characters of PDF stream and
+  looked like a successful fetch. Binary content types now fail with
+  `SEARCH_UNSUPPORTED` and name the type.
+- **A JavaScript shell was a silent success.** `https://github.com/` and
+  `https://excalidraw.com/` returned HTTP 200 with zero readable characters, so
+  the caller saw an empty page with no explanation. A 200 with no text now
+  fails with `SEARCH_EMPTY` and states why, including "no renderer installed".
+  Non-2xx responses keep their old behaviour: the status line plus the body.
+- **A layout `<main>` could throw away the article.** Extraction trusted any
+  non-empty landmark, so a page whose `<main>` held a breadcrumb produced four
+  characters while the prose sat in a sibling container. A landmark now has to
+  keep a real share of the page's text, and the body is the last resort.
+- **The fetch ladder stacked deadlines.** Direct (5 s) + tunnel (15 s) + render
+  + extraction meant a dead host could hold a caller for half a minute. The
+  whole ladder now shares a 25-second budget and later rungs get only the
+  remainder.
+
+### Added
+- `scripts/sweep.mjs` sweeps the ranking knobs over the recorded corpus and
+  prints a paired-bootstrap interval against the defaults. `bench/README.md`
+  records the result: the best configuration beats the defaults by +0.044 MRR
+  with an interval of [−0.004, +0.123], so **the defaults are unchanged**. The
+  same page documents live `wait`-policy timings (`auto` keeps the most distinct
+  domains).
+
 ## 0.13.6
 
 ### Fixed
