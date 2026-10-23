@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.16.0
+
+### Added
+- **Key rotation.** `anysearchApiKey` now accepts several keys separated by
+  commas, spaces or newlines. They are used round-robin; a 401 retires the key
+  for a day, a 429 rests it for 60 s doubling to 30 min, a 403 for ten minutes,
+  and a success clears its strikes. A throttled or rejected key retries the same
+  request on the next key once, in both search and page extraction. Pools are
+  cached per Settings value, so editing the field starts clean.
+- **Settings page polish.** A sticky jump bar scrolls to any of the five groups,
+  and a line under the title compares the installed version with npm's latest
+  (hidden when the registry is unreachable rather than guessed).
+- **Portable skill.** `skills/dsh-web-search/SKILL.md` states when to search,
+  fetch, or use `research`, and how to cite; it can be copied into any harness
+  that reads `SKILL.md` from disk.
+
+### Changed
+- The AnySearch user agent reports `dsh-web-search/0.15`.
+- Both READMEs document the rotation, the jump bar and the skill file.
+
 ## 0.15.0
 
 ### Added

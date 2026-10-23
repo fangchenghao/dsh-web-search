@@ -46,6 +46,8 @@
           /** Loader entry id the Host projects this plugin's Config under. */
           var ENTRY = 'web-search-bing';
           var PACKAGE_NAME = 'dsh-web-search-bing';
+          /** Keep in step with package.json; compared with the npm registry. */
+          var VERSION = '0.16.0';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 
@@ -53,6 +55,10 @@
           var en = {
             title: 'Web search (Bing)',
             description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources.',
+            jumpTo: 'Jump to',
+            latest: 'Latest on npm',
+            upToDate: 'up to date',
+            updateAvailable: 'update available',
             'group.engines': 'Engines and transport',
             'group.ranking': 'Results and ranking',
             'group.cache': 'Cache and cooldowns',
@@ -118,7 +124,7 @@
             'field.cacheFile': 'Cache file',
             'hint.cacheFile': 'Empty uses ~/.dsh/cache/dsh-web-search/cache.json',
             'field.anysearchApiKey': 'AnySearch key',
-            'hint.anysearchApiKey': 'Leave empty to stay anonymous at a lower rate limit; only sent to api.anysearch.com',
+            'hint.anysearchApiKey': 'Leave empty to stay anonymous at a lower rate limit; only sent to api.anysearch.com. Separate several keys with commas and the plugin rotates them.',
             'field.anysearchDomain': 'Vertical domain',
             'hint.anysearchDomain': 'Restrict to one vertical (finance, academic, code…); leave empty normally',
             'field.baseCooldownMs': 'Cooldown (ms)',
@@ -137,6 +143,10 @@
           // Simplified Chinese copy.
           var zh = {
             title: '网页搜索（Bing）',
+            jumpTo: '跳到',
+            latest: 'npm 最新版',
+            upToDate: '已是最新',
+            updateAvailable: '有新版本',
             description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。',
             'group.engines': '引擎与传输',
             'group.ranking': '结果与排序',
@@ -203,7 +213,7 @@
             'field.cacheFile': '缓存文件路径',
             'hint.cacheFile': '留空使用 ~/.dsh/cache/dsh-web-search/cache.json',
             'field.anysearchApiKey': 'AnySearch 通行证',
-            'hint.anysearchApiKey': '没有就留空，仍可用但速率较低；只发给 api.anysearch.com',
+            'hint.anysearchApiKey': '没有就留空，仍可用但速率较低；只发给 api.anysearch.com。有多个 key 用逗号分隔，插件会自动轮换。',
             'field.anysearchDomain': '专业领域',
             'hint.anysearchDomain': '只搜某类专业内容（finance/academic/code 等）；日常留空',
             'field.baseCooldownMs': '被拒后歇多久',
@@ -466,6 +476,27 @@
             var errorPair = React.useState({});
             var errors = errorPair[0];
             var setErrors = errorPair[1];
+            var latestPair = React.useState(null);
+            var latest = latestPair[0];
+            var setLatest = latestPair[1];
+
+            // Ask the npm registry once per mount. A failure (offline, proxy
+            // down, registry error) hides the line instead of showing an
+            // invented version; the page must never lie about an update.
+            React.useEffect(function () {
+              var alive = true;
+              try {
+                fetch('https://registry.npmjs.org/@fffangchenghao%2Fdsh-web-search/latest', { headers: { accept: 'application/json' } })
+                  .then(function (response) { return response.ok ? response.json() : null; })
+                  .then(function (body) {
+                    if (alive && body !== null && typeof body.version === 'string') setLatest(body.version);
+                  })
+                  .catch(function () {});
+              } catch (ignored) {
+                /* fetch unavailable: the page simply omits the line */
+              }
+              return function () { alive = false; };
+            }, []);
 
             React.useEffect(function () {
               setDraft(null);
@@ -526,6 +557,14 @@
               h('h3', { key: 'title', style: { margin: 0, fontSize: '16px', lineHeight: 1.4, color: 'var(--dsw-alias-label-primary)' } }, t('title')),
               h('p', { key: 'description', style: { margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--dsw-alias-label-tertiary)' } }, t('description'))
             ];
+            if (latest !== null) {
+              var newer = latest !== VERSION;
+              children.push(h('p', {
+                key: 'latest',
+                style: { margin: 0, fontSize: '12px', color: newer ? 'var(--dsw-alias-state-warn-primary)' : 'var(--dsw-alias-label-tertiary)' },
+                role: 'status'
+              }, t('latest') + ': ' + latest + (newer ? ' — ' + t('updateAvailable') : ' — ' + t('upToDate'))));
+            }
 
             if (!ready) {
               if (!surface.hasService()) {
@@ -545,8 +584,36 @@
               children.push(h('p', { key: 'readonly', style: { margin: 0, fontSize: '12px', color: 'var(--dsw-alias-label-tertiary)' } }, t('readOnly')));
             }
 
+            var jump = GROUPS.map(function (group) {
+              return h('a', {
+                key: group.key,
+                href: '#dsh-ws-group-' + group.key,
+                onClick: function (event) {
+                  event.preventDefault();
+                  try {
+                    var target = document.getElementById('dsh-ws-group-' + group.key);
+                    if (target !== null) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } catch (ignored) {
+                    /* older engines still jump through the href */
+                  }
+                },
+                style: { fontSize: '12px', color: 'var(--dsw-alias-label-secondary)', textDecoration: 'none', whiteSpace: 'nowrap' }
+              }, t('group.' + group.key));
+            });
+            children.push(h('nav', {
+              key: 'toc',
+              'aria-label': t('jumpTo'),
+              style: {
+                position: 'sticky', top: 0, zIndex: 1,
+                display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
+                padding: '6px 0',
+                background: 'var(--dsw-alias-bg-base)',
+                borderBottom: '1px solid var(--dsw-alias-border-l1)'
+              }
+            }, [h('span', { key: 'label', style: { fontSize: '11px', color: 'var(--dsw-alias-label-tertiary)' } }, t('jumpTo'))].concat(jump)));
+
             children.push(h('div', { key: 'groups', style: { display: 'flex', flexDirection: 'column', gap: '12px' } }, GROUPS.map(function (group) {
-              return h('section', { key: group.key, style: groupStyle }, [
+              return h('section', { key: group.key, id: 'dsh-ws-group-' + group.key, style: groupStyle }, [
                 h('h4', { key: 'title', style: { margin: 0, fontSize: '13px', lineHeight: 1.4, color: 'var(--dsw-alias-label-primary)' } }, t('group.' + group.key)),
                 h('div', { key: 'grid', style: gridStyle }, group.fields.map(function (field) {
                   var key = field.key;

@@ -21,6 +21,9 @@ import { cacheKey } from './cache.ts';
 import type { SearchCache } from './cache.ts';
 import type { EngineHealth } from './health.ts';
 import { searchHost } from './transport.ts';
+import type { AttemptOutcome } from './transport.ts';
+import { keyFailureKind, keyPoolFor } from './keys.ts';
+import type { KeyPool } from './keys.ts';
 
 /** How many rows to ask AnySearch for; the merge picks from them. */
 // AnySearch caps max_results at 10: asking for more returns 10 with HTTP
@@ -214,6 +217,59 @@ interface TierLimits {
 }
 
 /**
+ * Ask one engine, rotating to the next key when the failure blames the key.
+ *
+ * A 401 or 429 from the one credentialed engine is the only failure a second
+ * attempt can fix; an engine that timed out or lost the network will fail the
+ * same way with a different token. At most two keys are tried per engine per
+ * tier, which bounds the added latency to one extra request.
+ * @param host - the engine definition.
+ * @param query - the user query.
+ * @param signal - caller cancellation.
+ * @param timeoutMs - per-engine deadline.
+ * @param proxy - tunnel URL, or `undefined`.
+ * @param timeRange - active publication window.
+ * @param pool - configured keys, possibly empty.
+ * @param domain - AnySearch vertical domain, if configured.
+ * @returns the last attempt's outcome.
+ */
+async function searchHostWithKeys(
+  host: HostSpec,
+  query: string,
+  signal: AbortSignal | undefined,
+  timeoutMs: number,
+  proxy: string | undefined,
+  timeRange: TimeRange,
+  pool: KeyPool,
+  domain: string | undefined,
+): Promise<AttemptOutcome> {
+  if (host.id !== 'anysearch' || pool.size === 0) {
+    return searchHost(host, query, signal, timeoutMs, proxy, timeRange);
+  }
+  let key = pool.pick();
+  let last: AttemptOutcome | undefined;
+  for (let attempt = 0; attempt < 2 && key !== undefined; attempt += 1) {
+    const configured = resolveHost(host, {
+      anysearchApiKey: key,
+      ...(domain === undefined ? {} : { anysearchDomain: domain }),
+    });
+    const outcome = await searchHost(configured, query, signal, timeoutMs, proxy, timeRange);
+    if (outcome.ok) {
+      pool.reward(key);
+      return outcome;
+    }
+    last = outcome;
+    const kind = keyFailureKind(outcome.error);
+    if (kind === undefined || signal?.aborted === true) return outcome;
+    pool.penalize(key, kind);
+    const next = pool.pick();
+    if (next === undefined || next === key) return outcome;
+    key = next;
+  }
+  return last as AttemptOutcome;
+}
+
+/**
  * Run one tier concurrently and return the answers that arrived in time.
  * @param hosts - engines of this tier, in priority order.
  * @param query - the user query.
@@ -234,6 +290,8 @@ async function runTier(
   proxy: string | undefined,
   limits: TierLimits,
   health: EngineHealth | undefined,
+  pool: KeyPool,
+  anysearchDomain: string | undefined,
 ): Promise<EngineAnswer[]> {
   const counters = limits.lead === 'all' || !hosts.some((host) => leadsQuery(host, limits.lead as Region))
     ? () => true
@@ -271,7 +329,7 @@ async function runTier(
   };
 
   const running = hosts.map((host, index) =>
-    searchHost(host, query, controller.signal, timeoutMs, proxy, limits.timeRange).then(
+    searchHostWithKeys(host, query, controller.signal, timeoutMs, proxy, limits.timeRange, pool, anysearchDomain).then(
       (outcome) => {
         if (outcome.ok) {
           outcomes[index] = { host, sources: outcome.sources };
@@ -427,11 +485,13 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const wait: WaitPolicy = options.wait ?? 'auto';
   const timeRange: TimeRange = options.timeRange ?? 'off';
   const proxy = options.useProxy === false ? undefined : await resolveProxy(options.proxy);
+  const pool = keyPoolFor(options.anysearchApiKey);
+  const anysearchDomain = (options.anysearchDomain ?? '').trim();
 
   const allow = options.hostIds !== undefined && options.hostIds.length > 0 ? new Set(options.hostIds) : undefined;
   const hosts = HOSTS.filter((host) => allow === undefined || allow.has(host.id))
     .filter((host) => host.viaProxy !== true || proxy !== undefined)
-    .map((host) => resolveHost(host, options));
+    .map((host) => resolveHost(host, options.anysearchDomain === undefined ? {} : { anysearchDomain: options.anysearchDomain }));
 
   // Skip engines that are cooling down, but never end up with no engine at all:
   // a throttled engine is still better than no search.
@@ -502,12 +562,12 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const fallback = ordered.filter((host) => host.tier === 'fallback');
 
   let tier: SearchTrace['tier'] = 'none';
-  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health));
+  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health, pool, anysearchDomain));
   if (answers.length > 0) tier = 'primary';
   let sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   if (sources.length === 0 && fallback.length > 0) {
     tier = 'fallback';
-    answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health));
+    answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health, pool, anysearchDomain));
     sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   }
 

@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-466%20passing-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-474%20passing-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -21,7 +21,7 @@
 - **No API key, eight engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are scraped directly; Exa joins the primary tier through its keyless MCP endpoint, and Firecrawl's search API is the measured fallback. The plugin works out of the box.
 - **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — the only search plugin here that publishes both its metric and its confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
 - **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **466 tests across 28 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **474 tests across 29 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -37,7 +37,7 @@ The web-search corner of the DSH plugin ecosystem is crowded, and most rivals ar
 | Key-free engines | 8 | ~30 | 7 channels (+X) | 1 official API |
 | Dedicated vertical sources | 34 (8 on by default) | 41 | — | — |
 | Model-facing tools | 6 | ~10 | 3 | 5 |
-| Test suite | 28 files / 466 cases | none | 29 files | 6 files |
+| Test suite | 29 files / 474 cases | none | 29 files | 6 files |
 | Ranking benchmark | 20 queries + 81-config sweep | — | — | — |
 | Store status | source contract satisfied, awaiting review | unlisted | no entry | blocked (review-required) |
 
@@ -417,7 +417,7 @@ If the Settings card appears but search still fails, start with [docs/troublesho
 
 ## Using the Settings page
 
-Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five groups. Each group owns one kind of decision:
+Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five groups. A sticky jump bar at the top scrolls to any group, and a line under the title compares the installed version with the latest one on npm (it stays hidden when the registry cannot be reached, so it never guesses). Each group owns one kind of decision:
 
 | Group | Controls | What it decides |
 | --- | --- | --- |
@@ -435,7 +435,7 @@ Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five gro
 | How long to wait | `wait` | `auto` | `auto` follows the query language; `all` waits for everyone; `fast` takes the first answer |
 | Wait limit (ms) | `timeoutMs` | `15000` | Per-engine deadline, at least 500 |
 | Proxy (relay) | `proxy` | empty (detect) | e.g. `http://127.0.0.1:7890`; empty reads the environment, then the system proxy |
-| AnySearch key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction |
+| AnySearch key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction. Several keys may be comma-separated and are rotated, with a throttled or rejected one resting automatically |
 | Vertical domain | `anysearchDomain` | empty (general) | Typical values: `finance` / `academic` / `security` / `legal` / `code`; a dotted value such as `finance.us_stock` selects a sub-domain |
 
 ### Results and ranking (7)
@@ -497,6 +497,10 @@ Three things to keep in mind:
 - A save is immediate and applies to the next search, no restart — except `cachePersist` and `cacheFile`, which decide the cache wiring when the plugin mounts.
 - **Ranking changes can be hidden by the cache**: the cache key holds `lead|wait|limit|engine set|time window|query`, not the ranking knobs. Ask the same question within ten minutes and you get the old order — and with persistence on, restarting DSH does not clear it. Rephrase it, or wait ten minutes. Changing the window changes the key, so an old entry cannot interfere.
 - **`web_fetch` cannot continue from the middle**: it makes one request per URL, so if the tail is missing, raise `fetchMaxLength` or use `read_page` to continue from the break; fetching a narrower page still costs the least context.
+
+## Using the skill from another harness
+
+`skills/dsh-web-search/SKILL.md` is a plain skill file: it states when to search, when to open pages, when to use `research`, and how to cite. Copy the folder into any harness that reads `SKILL.md` files from disk (for example `~/.claude/skills/`). The plugin itself is a DSH plugin, so another harness still needs its own search and fetch tools; the file is the part that transfers.
 
 ## FAQ
 

@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-466%20passing-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/tests-474%20passing-brightgreen" alt="测试">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -21,7 +21,7 @@
 - **不要 API key，八个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索直接抓取；Exa 走它的免密钥 MCP 通道加入主引擎，Firecrawl 的搜索 API 作为实测后的兜底。装好就能用。
 - **排序是量出来的，不是写出来的。** 跨引擎 RRF 融合，叠加权威度与时效加权；20 条离线基准 + 81 组参数扫描，是这类插件里唯一同时公开指标和置信区间的。方法见 [排序是怎么做的](docs/rrf-ranking.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
-- **28 个测试文件、466 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **29 个测试文件、474 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -37,7 +37,7 @@ DSH 插件生态里的「联网搜索」这一块已经很挤，大多数竞品�
 | 免 key 引擎 | 8 | ~30 | 7 条通道（含 X） | 1 个官方 API |
 | 专门数据源 | 34（默认开 8 个）| 41 | — | — |
 | 面向模型的工具 | 6 | ~10 | 3 | 5 |
-| 测试 | 28 文件 / 466 用例 | 无 | 29 文件 | 6 文件 |
+| 测试 | 29 文件 / 474 用例 | 无 | 29 文件 | 6 文件 |
 | 排序基准 | 20 查询 + 81 组扫描 | — | — | — |
 | 商店状态 | 源码契约已满足，待复核 | unlisted | 无条目 | blocked（review-required） |
 
@@ -417,7 +417,7 @@ pnpm install
 
 ## 设置页怎么用
 
-打开 设置 → 「网页搜索（Bing）」。页面上一共 26 个控件，按五组排列。每组只管一类事：
+打开 设置 → 「网页搜索（Bing）」。页面上一共 26 个控件，按五组排列。顶部有一条随滚动固定的跳转栏，点组名直接跳过去；标题下还会拿当前版本和 npm 上的最新版比一下（连不上 npm 时这行不显示，不会瞎猜）。每组只管一类事：
 
 | 组 | 控件数 | 这组管什么 |
 | --- | --- | --- |
@@ -435,7 +435,7 @@ pnpm install
 | 等多久 | `wait` | `auto` | `auto` 按提问语言等；`all` 等全部；`fast` 谁先回用谁 |
 | 等待上限（毫秒） | `timeoutMs` | `15000` | 单个引擎最多等多久，最小 500 |
 | 代理（中转站） | `proxy` | 空（自动探测） | 如 `http://127.0.0.1:7890`；留空先读环境变量再读系统代理 |
-| AnySearch 通行证 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取 |
+| AnySearch 通行证 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取。可以用逗号分隔填多个 key，插件轮流使用；某个被限流或拒绝会自动休息 |
 | 专业领域 | `anysearchDomain` | 空（通用） | 常见取值 `finance` / `academic` / `security` / `legal` / `code`，可带子域如 `finance.us_stock` |
 
 ### 结果与排序（7 个）

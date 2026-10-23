@@ -33,6 +33,8 @@
  * @module @fangchenghao/dsh-web-search/fetch
  */
 import { SearchError } from './errors.ts';
+import { keyFailureKind, keyPoolFor } from './keys.ts';
+import type { KeyPool } from './keys.ts';
 import { DEFAULT_FETCH_MAX_LENGTH, renderFetchText, truncateFetchText } from './markdown.ts';
 import type { FetchFormat } from './markdown.ts';
 import { proxyGet, resolveProxy } from './proxy.ts';
@@ -281,6 +283,50 @@ async function extractFetch(
 }
 
 /**
+ * Run AnySearch extraction, rotating to the next key when the failure blames
+ * the key rather than the page.
+ *
+ * A 401 means this key will never work again; a 429 means its quota needs a
+ * rest. Both are key-level facts the next fetch must remember, which is why the
+ * pool outlives this call instead of living in the provider closure.
+ * @param extract - transport hook.
+ * @param url - target page.
+ * @param pool - configured keys.
+ * @param budgetMs - remaining overall budget for this rung.
+ * @param signal - caller cancellation.
+ * @returns the extraction outcome.
+ */
+async function extractWithKeys(
+  extract: FetchDependencies['extract'],
+  url: string,
+  pool: KeyPool,
+  budgetMs: number,
+  signal: AbortSignal | undefined,
+): Promise<FetchOutcome> {
+  let key = pool.pick();
+  if (key === undefined) throw new SearchError('every configured AnySearch key is resting', 'SEARCH_THROTTLED', true);
+  let last: unknown;
+  for (let attempt = 0; attempt < 2 && key !== undefined; attempt += 1) {
+    try {
+      const outcome = await extract(url, key, budgetMs, signal);
+      pool.reward(key);
+      return outcome;
+    } catch (error) {
+      last = error;
+      const kind = keyFailureKind(
+        error instanceof SearchError ? error : { message: error instanceof Error ? error.message : String(error) },
+      );
+      if (kind === undefined || signal?.aborted === true) throw error;
+      pool.penalize(key, kind);
+      const next = pool.pick();
+      if (next === undefined || next === key) throw error;
+      key = next;
+    }
+  }
+  throw last;
+}
+
+/**
  * Build the fetch provider.
  * @param options - timeouts, tunnel and extraction settings.
  * @param overrides - transport overrides, for tests.
@@ -299,7 +345,7 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
   const userAgent = options.userAgent ?? USER_AGENT;
-  const apiKey = (options.anysearchApiKey ?? '').trim();
+  const keyPool = keyPoolFor(options.anysearchApiKey);
   /**
    * Resolve the two volatile Settings fields per request. Reading them here
    * rather than at construction is what lets a saved edit apply without a
@@ -581,11 +627,11 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
         if (!step.done) failures.push(`render: ${step.report.reason}`);
       }
 
-      if (apiKey.length > 0) {
+      if (keyPool.size > 0) {
         try {
           const extractBudget = Math.min(timeoutMs, remaining());
           if (extractBudget < MIN_RUNG_MS) throw new Error('no time left in the fetch budget');
-          const extracted = await deps.extract(target, apiKey, extractBudget, signal);
+          const extracted = await extractWithKeys(deps.extract, target, keyPool, extractBudget, signal);
           // Say where the body came from when the browser was tried first.
           const report = lastReport !== undefined && lastReport.attempted && !lastReport.applied
             ? makeReport(
