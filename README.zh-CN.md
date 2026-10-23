@@ -5,6 +5,44 @@
 - [English README](README.md)
 - [更新日志](CHANGELOG.md) · [设置页为什么不显示：四层判定链](docs/plugin-settings-form.md)
 
+<p align="center"><img src="https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/banner.png" alt="dsh-web-search — 给 DeepSeek Harness 的免 key 联网搜索与网页抓取" width="100%"></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
+  <img src="https://img.shields.io/badge/tests-361%20passing-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/engines-6%2C%20zero%20API%20key-brightgreen" alt="引擎">
+  <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
+  <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="许可证"></a>
+</p>
+
+## 为什么选这个
+
+- **不要 API key，六个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索并发查询，装好就能用。
+- **排序是量出来的，不是写出来的。** 跨引擎 RRF 融合，叠加权威度与时效加权；20 条离线基准 + 81 组参数扫描，是这类插件里唯一同时公开指标和置信区间的。方法见 [排序是怎么做的](docs/rrf-ranking.md)。
+- **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
+- **26 个测试文件、361 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **双语文档。** 本文件和 [English README](README.md) 同步维护。
+
+![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
+
+基准是离线、可复现的：20 条录制的查询，precision/recall/MRR@8，按语言、按类别、逐条输出，回归问题藏不进平均值里。运行 `node scripts/bench.mjs` 就能复现这张图。
+
+## 它在同类里的位置
+
+DSH 插件生态里的「联网搜索」这一块已经很挤，大多数竞品也比我们大。下面是一张诚实的快照（2026-10-23；最新数字请点开对应项目查看）：
+
+| | 本插件 | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
+|---|---|---|---|---|
+| 免 key 引擎 | 6 | ~30 | 7 条通道（含 X） | 1 个官方 API |
+| 专门数据源 | 8 | 41 | — | — |
+| 面向模型的工具 | 5 | ~10 | 3 | 5 |
+| 测试 | 26 文件 / 361 用例 | 无 | 29 文件 | 6 文件 |
+| 排序基准 | 20 查询 + 81 组扫描 | — | — | — |
+| 商店状态 | 源码契约已满足，待复核 | unlisted | 无条目 | blocked（review-required） |
+
+要最全的源，用 `dsh-free-search`；要跨 harness 的搜索桥，用 `modsearch`；只要官方 AnySearch 通道，用 `anysearch-dsh`。本插件把「排序」和「失败语义」当产品来做，并且把它们量出来。
+
 > 最新版本与安装命令以 [npm 上的 latest](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search) 为准（这里不写死版本号，免得文档和发布不同步）。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
 
 ## 一句话说明

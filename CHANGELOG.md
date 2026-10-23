@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.14.0
+
+Distribution release. No runtime behaviour changed; the search and fetch paths are
+the same as 0.13.11.
+
+### Added
+- A banner, a pipeline diagram, a benchmark chart and a real terminal capture in
+  `docs/images/`, referenced by both READMEs through absolute raw URLs so they
+  render on GitHub and npm alike.
+- `docs/rrf-ranking.md`: how the fusion works, why each default exists, the
+  baseline numbers, the 81-configuration sweep with its confidence interval, and
+  the limits the benchmark makes visible.
+- A "Why this one" section and an honest comparison table in both READMEs,
+  including what the larger competing plugins do better.
+
+### Changed
+- The `files` list now ships `docs/rrf-ranking.md`.
+
 ## 0.13.11
 
 ### Fixed

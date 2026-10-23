@@ -5,6 +5,44 @@
 - [中文说明](README.zh-CN.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
+<p align="center"><img src="https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/banner.png" alt="dsh-web-search — key-free web search and page fetch for DeepSeek Harness" width="100%"></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
+  <img src="https://img.shields.io/badge/tests-361%20passing-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/engines-6%2C%20zero%20API%20key-brightgreen" alt="engines">
+  <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
+  <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license"></a>
+</p>
+
+## Why this one
+
+- **No API key, six engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are queried concurrently; the plugin works out of the box.
+- **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — the only search plugin here that publishes both its metric and its confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
+- **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
+- **361 tests across 26 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
+
+![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
+
+The benchmark is offline and deterministic: 20 recorded queries, precision/recall/MRR@8, per-language and per-query output, so a regression cannot hide in an average. `node scripts/bench.mjs` reproduces the screenshot.
+
+## Where it stands
+
+The web-search corner of the DSH plugin ecosystem is crowded, and most rivals are bigger than this one. An honest snapshot (2026-10-23; check the linked projects for current numbers):
+
+| | this plugin | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
+|---|---|---|---|---|
+| Key-free engines | 6 | ~30 | 7 channels (+X) | 1 official API |
+| Dedicated vertical sources | 8 | 41 | — | — |
+| Model-facing tools | 5 | ~10 | 3 | 5 |
+| Test suite | 26 files / 361 cases | none | 29 files | 6 files |
+| Ranking benchmark | 20 queries + 81-config sweep | — | — | — |
+| Store status | source contract satisfied, awaiting review | unlisted | no entry | blocked (review-required) |
+
+If you need maximum source breadth, use `dsh-free-search`; if you need a cross-harness search bridge, use `modsearch`; if you want the official AnySearch path only, use `anysearch-dsh`. This plugin is the one that treats ranking and failure semantics as the product, and measures them.
+
 > The latest version and install command live on [npm](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search); no version number is hard-coded here, so the docs cannot drift from the release. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
