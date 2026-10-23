@@ -30,7 +30,7 @@ export const Config = z.object({
   hosts: z
     .array(z.string())
     .default([])
-    .description('只启用列出的搜索引擎（如 anysearch、cn.bing），多个用逗号分隔；留空表示全部。不想限制就留空。')
+    .description('只启用列出的搜索引擎（如 anysearch、cn.bing），多个用逗号分隔；留空表示全部八个（主引擎 anysearch、exa、ddg-html、cn.bing；兜底 firecrawl、www.bing、ddg-lite、so）。不想限制就留空。')
     .volatile(),
   timeoutMs: z.natural().min(500).default(15000).description('每次向搜索引擎要结果，最多等它多久（毫秒，1000 = 1 秒）。网络慢可加到 20000；平时保持 15000 就行。').volatile(),
   fetchFormat: z

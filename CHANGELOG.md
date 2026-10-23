@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.1
+
+### Fixed
+- The Settings page never showed which engines exist: the allow-list field now
+  names all eight (four primary: `anysearch`, `exa`, `ddg-html`, `cn.bing`;
+  four fallback: `firecrawl`, `www.bing`, `ddg-lite`, `so`) and the group label
+  says "8 total". The page description now also lists the model-facing tools,
+  including `research`, which is a tool rather than a setting.
+
 ## 0.16.0
 
 ### Added

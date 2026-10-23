@@ -47,14 +47,14 @@
           var ENTRY = 'web-search-bing';
           var PACKAGE_NAME = 'dsh-web-search-bing';
           /** Keep in step with package.json; compared with the npm registry. */
-          var VERSION = '0.16.0';
+          var VERSION = '0.16.1';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 
           // English copy. Every label the page renders lives here.
           var en = {
             title: 'Web search (Bing)',
-            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources.',
+            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources. Model tools: web_search, research, domain_search, search_many, read_page.',
             jumpTo: 'Jump to',
             latest: 'Latest on npm',
             upToDate: 'up to date',
@@ -75,8 +75,8 @@
             discard: 'Discard changes',
             saved: 'Saved.',
             saveFailed: 'The deployment did not accept these values; they were kept for correction.',
-            'field.hosts': 'Only these engines',
-            'hint.hosts': 'Comma separated engine ids; empty means every engine',
+            'field.hosts': 'Only these engines (8 total)',
+            'hint.hosts': 'Four primary: anysearch, exa, ddg-html, cn.bing. Four fallback: firecrawl, www.bing, ddg-lite, so. Empty means all eight; a comma-separated list narrows the set.',
             'field.timeoutMs': 'Wait limit (ms)',
             'hint.timeoutMs': 'How long one engine may take; raise it on a slow network',
             'field.wait': 'How long to wait',
@@ -147,7 +147,7 @@
             latest: 'npm 最新版',
             upToDate: '已是最新',
             updateAvailable: '有新版本',
-            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。',
+            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。模型工具：web_search、research、domain_search、search_many、read_page。',
             'group.engines': '引擎与传输',
             'group.ranking': '结果与排序',
             'group.cache': '缓存与冷却',
@@ -164,8 +164,8 @@
             discard: '放弃更改',
             saved: '已保存。',
             saveFailed: '本部署没有接受这些值，已保留供你修改。',
-            'field.hosts': '只查哪些引擎',
-            'hint.hosts': '只查列出的引擎，逗号分隔；留空表示全部',
+            'field.hosts': '只查哪些引擎（共 8 个）',
+            'hint.hosts': '主引擎 4 个：anysearch、exa、ddg-html、cn.bing；兜底 4 个：firecrawl、www.bing、ddg-lite、so。留空表示全部八个，逗号分隔可只留几个。',
             'field.timeoutMs': '等待上限（毫秒）',
             'hint.timeoutMs': '单个引擎最多等多久；网络慢可加到 20000',
             'field.wait': '等多久',
