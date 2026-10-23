@@ -17,6 +17,7 @@ import { filterByTimeRange, preferWindow } from './freshness.ts';
 import { resolveProxy } from './proxy.ts';
 import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseExaMcp, parseFirecrawl, parseSo } from './parsers.ts';
 import { mergeRegions } from './rank.ts';
+import { filterRelevant } from './relevance.ts';
 import { cacheKey } from './cache.ts';
 import type { SearchCache } from './cache.ts';
 import type { EngineHealth } from './health.ts';
@@ -306,6 +307,8 @@ async function runTier(
   signal?.addEventListener('abort', relayAbort, { once: true });
 
   const outcomes: Array<EngineAnswer | SearchError | undefined> = new Array(hosts.length).fill(undefined);
+  /** Rows each engine returned before the CJK relevance gate, for the failure text. */
+  const rawCounts: number[] = new Array(hosts.length).fill(0);
   const answered = () => outcomes.filter((outcome) => outcome instanceof SearchError || outcome !== undefined);
   const available = () =>
     outcomes.reduce((total, outcome) => total + (outcome instanceof SearchError || outcome === undefined ? 0 : outcome.sources.length), 0);
@@ -337,7 +340,8 @@ async function runTier(
     searchHostWithKeys(host, query, controller.signal, timeoutMs, proxy, limits.timeRange, pool, anysearchDomain).then(
       (outcome) => {
         if (outcome.ok) {
-          outcomes[index] = { host, sources: outcome.sources };
+          rawCounts[index] = outcome.sources.length;
+          outcomes[index] = { host, sources: filterRelevant(outcome.sources, query) };
           health?.noteSuccess(host.id);
         } else {
           outcomes[index] = outcome.error;
@@ -376,7 +380,7 @@ async function runTier(
     } else if (outcome instanceof SearchError) {
       failures.push(outcome.message);
     } else if (outcome.sources.length === 0) {
-      failures.push(`${host.id}: no results`);
+      failures.push(`${host.id}: ${(rawCounts[index] ?? 0) > 0 ? 'no relevant results' : 'no results'}`);
     } else {
       answers.push(outcome);
     }
@@ -524,6 +528,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   // documented shape of `ResolvedConfig.rank`.
   const rank: RankOptions = {
     ...(options.rank ?? {}),
+    query,
     ...(timeRange === 'off' ? {} : { timeRange }),
   };
 

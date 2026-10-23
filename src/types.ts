@@ -137,6 +137,14 @@ export interface RankOptions {
   /** Per-engine weight in the pre-fusion interleave. */
   weights?: number[];
   /**
+   * The query the engine rows answer.
+   *
+   * When present, CJK rows that share too few words with it are discarded
+   * before fusion (see `relevance.ts`). Bench replay passes the fixture's query
+   * so an offline run measures the same gate production applies.
+   */
+  query?: string;
+  /**
    * Evaluation instant in milliseconds for the freshness boost, defaulting to
    * `Date.now()`. Benchmarks pin this to the fixture's recording time so a
    * replay does not drift as the fixture ages.

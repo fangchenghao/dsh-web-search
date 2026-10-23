@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.18.0
+
+### Fixed
+- **Chinese queries no longer drag dictionary pages into the answer.** A long or
+  mixed query (`东数西算 八个国家枢纽节点 定位`, `如何配置 postgres 逻辑复制`)
+  made `cn.bing` answer with rows about a single character — `东（汉语文字）`,
+  `如何（汉语词语）`, a company named 李在东 — and those rows collected votes in
+  the fusion. A CJK relevance gate now splits the query into character bigrams
+  and keeps a row only when its title, snippet or URL accumulates two units of
+  overlap; an ASCII word counts double, so a PostgreSQL page survives a mixed
+  query on `postgres` alone. An engine whose entire list is filtered is reported
+  as `<id>: no relevant results`, which lets the fallback tier run instead of
+  returning the junk.
+- **Chinese official domains earn the authority boost.** `gov.cn`, `edu.cn`,
+  `news.cn`, `people.com.cn`, `xinhuanet.com`, `ncsti.gov.cn` and `cas.cn` join
+  the default authority list, so a ministry page outranks an SEO repost or a
+  Baidu Baike entry at the same fused position.
+
+### Changed
+- `RankOptions.query` carries the query into fusion; `scripts/bench.mjs` passes
+  the fixture's query, so offline replay applies the same gate production uses.
+- The 20-query benchmark is byte-for-byte unchanged (`0.4375 / 0.7917 / 0.8071`):
+  the recorded fixtures do not contain the dictionary-page failure mode.
+
+### Tests
+- 493 cases (492 pass, one environment skip), including the new
+  `test/relevance.test.ts` coverage for dropped dictionary/company rows, URL-slug
+  matches, English passthrough and the mixed-query ASCII weight.
+
 ## 0.17.0
 
 ### Fixed

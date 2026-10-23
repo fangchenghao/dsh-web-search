@@ -47,6 +47,7 @@
  */
 import type { EngineAnswer, HostSpec, RankOptions, Region, Source, TimeRange } from './types.ts';
 import { publishedTimestamp } from './freshness.ts';
+import { filterRelevant } from './relevance.ts';
 
 /**
  * Reciprocal-rank-fusion constant over the interleaved slot order; a larger
@@ -77,6 +78,17 @@ export const DEFAULT_AUTHORITY_DOMAINS: readonly string[] = [
   'dev.mysql.com',
   'redis.io',
   'nginx.org',
+  // Chinese official domains: policy and standards pages from a ministry or a
+  // university outrank the SEO reposts and dictionary pages that a scraped
+  // Chinese engine returns at the same rank. The suffix match in
+  // `isAuthoritative` makes `gov.cn` cover every ministry subdomain.
+  'gov.cn',
+  'edu.cn',
+  'news.cn',
+  'people.com.cn',
+  'xinhuanet.com',
+  'ncsti.gov.cn',
+  'cas.cn',
 ];
 
 /** Multiplier added for an authoritative domain by default. */
@@ -432,8 +444,9 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
   for (const entry of entries) {
     const seen = new Set<string>();
     const rows: CandidateRow[] = [];
-    for (let index = 0; index < entry.sources.length; index += 1) {
-      const source = entry.sources[index];
+    const sources = options.query === undefined ? entry.sources : filterRelevant(entry.sources, options.query);
+    for (let index = 0; index < sources.length; index += 1) {
+      const source = sources[index];
       if (source === undefined) continue;
       if (typeof source.url !== 'string' || source.url.trim() === '') continue;
       const key = normaliseUrl(source.url);

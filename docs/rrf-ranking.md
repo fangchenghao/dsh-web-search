@@ -131,6 +131,24 @@ Exa therefore leads; Firecrawl is parsed and tested but ships as the fallback,
 available through `hostIds: ['firecrawl']` and used whenever every primary
 returns nothing.
 
+
+## CJK relevance gate
+
+Fusion assumes each engine's list is about the query. A scraped Chinese engine
+sometimes is not: `cn.bing` answered `东数西算 八个国家枢纽节点 定位` with ten
+rows for the character `东` (dictionary entries, a company named 李在东), and
+those rows would otherwise collect votes like any other engine's. Before fusion,
+`src/relevance.ts` builds overlapping two-character tokens from the query and
+keeps a row only when its title, snippet or URL accumulates two units of
+overlap. An ASCII word is worth two units, so a PostgreSQL page in a mixed
+query (`如何配置 postgres 逻辑复制`) survives on `postgres` alone, while
+`如何（汉语词语）_百度百科` does not. English queries are returned unchanged.
+
+The gate lives in both the engine tier (so an engine whose whole list is junk is
+reported as `no relevant results` and the fallback tier can run) and the ranker
+(so offline replay applies the same rule). On the 20-query bench it changes no
+metric: the recorded fixtures do not contain that failure mode.
+
 ## Known limits
 
 - **Relative Chinese time words.** A query like "上周发布的那版" carries its time

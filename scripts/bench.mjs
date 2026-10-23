@@ -425,6 +425,9 @@ function evaluateOne(query, fixture, config, options) {
     ? primaries
     : recorded.filter((answer) => answer.sources.length > 0);
   const rank = rankOptions(config, options);
+  // The live pipeline drops CJK rows that share no words with the query; replay
+  // the same gate or the recorded junk would be counted as recall.
+  rank.query = fixture.query;
   if (Object.keys(options.weights).length > 0) {
     // `weights` is indexed like `answers`, so fill every slot: an override for
     // one engine must not reset the others to 1.
