@@ -462,6 +462,21 @@ function densestContainer(body: ElementNode): ElementNode {
   return best;
 }
 
+/** Largest container by visible text, used when density picks a stub. */
+function largestContainer(body: ElementNode): ElementNode {
+  let best = body;
+  let bestCharacters = characterCount(body);
+  walkElements(body, (node) => {
+    if (!CONTAINER_TAGS.has(node.tag)) return;
+    const characters = characterCount(node);
+    if (characters > bestCharacters) {
+      best = node;
+      bestCharacters = characters;
+    }
+  });
+  return best;
+}
+
 /** Pick the reading root: article, main, then the densest container. */
 function pickMain(root: ElementNode): ElementNode {
   const body = findElement(root, (node) => node.tag === 'body') ?? root;
@@ -493,10 +508,16 @@ function pickMain(root: ElementNode): ElementNode {
     if (landmark !== undefined && characterCount(landmark) >= floor) return landmark;
   }
   if (characterCount(densest) >= floor) return densest;
-  // Nothing reaches the floor: return whichever of the three holds the most.
-  const ranked = [article, main, densest].filter((node): node is ElementNode => node !== undefined);
+  // Density alone can crown a short, dense stub — a comment form or a footer —
+  // while the prose sits in a container with more markup and fewer characters
+  // per tag. Prefer a container that still holds a real share of the page text,
+  // then fall back to the body when every candidate is a fragment.
+  const largest = largestContainer(body);
+  if (characterCount(largest) >= floor) return largest;
+  const ranked = [article, main, densest, largest].filter((node): node is ElementNode => node !== undefined);
   ranked.sort((left, right) => characterCount(right) - characterCount(left));
-  return ranked[0] ?? body;
+  const best = ranked[0] ?? body;
+  return characterCount(best) * 2 < characterCount(body) ? body : best;
 }
 
 /** Rendering context: output style, base URL and protected code fragments. */

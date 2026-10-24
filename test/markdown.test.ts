@@ -251,3 +251,14 @@ test('renderFetchText reports the converted length, not the HTML length', () => 
   assert.equal(whole.truncated, false);
   assert.equal(whole.content, `# Title\n\n${'z'.repeat(1200)}`);
 });
+
+test('a dense footer stub does not replace the article body', () => {
+  const prose = 'Logical replication replicates data objects and their changes based on a replication identity. '.repeat(12);
+  const html = `<html><body>
+    <div class="page"><div class="content"><h1>Logical Replication</h1><p>${prose}</p></div></div>
+    <div id="docComments"><p>Submit correction</p></div>
+  </body></html>`;
+  const rendered = renderFetchText(html, { format: 'text' });
+  assert.match(rendered.content, /Logical replication replicates data objects/);
+  assert.doesNotMatch(rendered.content, /^Submit correction/);
+});

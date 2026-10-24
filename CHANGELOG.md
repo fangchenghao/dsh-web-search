@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.19.2
+
+### Fixed
+- **`web_fetch` no longer returns only a page's footer.** The reading-root picker
+  preferred the densest container, and a short comment form can be far denser
+  than an article wrapped in `<div>` markup. On PostgreSQL's documentation that
+  returned 307 characters (`Submit correction…`) instead of the chapter. The
+  picker now falls back to the largest container that holds a real share of the
+  page text, and then to the body, before accepting a fragment. The same URL now
+  returns the chapter introduction and body (6,078 characters in the text
+  format); GitHub and PyTorch pages keep their content. One regression test.
+
 ## 0.19.1
 
 ### Changed
