@@ -343,3 +343,9 @@ test('an anti-bot page counts as blocked instead of an empty result set', async 
   assert.equal(result.error.code, 'SEARCH_BLOCKED');
   assert.match(result.error.message, /bot verification page/);
 });
+
+test('Firecrawl stays direct-first: its keyless endpoint rejects the tunnel IP', () => {
+  const host = HOSTS.find((candidate) => candidate.id === 'firecrawl');
+  assert.ok(host !== undefined);
+  assert.notEqual(host.viaProxy, true);
+});

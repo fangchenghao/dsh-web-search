@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.3
+
+### Fixed
+- **Firecrawl works again.** It was marked `viaProxy`, and the keyless endpoint
+  rejects the tunnel's exit IP (`HTTP 403: Unfortunately, your IP address looks
+  like a VPN or proxy`). A direct request still answers, so Firecrawl is now
+  direct-first; the transport keeps its tunnel retry for networks where direct
+  is blocked. Verified live: `hostIds: ['firecrawl']` returns Kubernetes
+  Service rows again. One regression test pins the direct-first route.
+
 ## 0.19.2
 
 ### Fixed

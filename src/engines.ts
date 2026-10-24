@@ -99,7 +99,10 @@ export const HOSTS: readonly HostSpec[] = [
     tier: 'fallback',
     region: 'both',
     weight: 1,
-    viaProxy: true,
+    // Direct first: the tunnel's exit IP is rejected as a VPN by the keyless
+    // endpoint (`HTTP 403 … looks like a VPN or proxy`), while a direct request
+    // still answers. The transport still retries through the tunnel when the
+    // direct attempt fails, so deployments that need the tunnel lose nothing.
     method: 'POST',
     skipEcho: true,
     build: () => 'https://api.firecrawl.dev/v1/search',
