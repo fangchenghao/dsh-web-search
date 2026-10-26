@@ -77,8 +77,21 @@ export declare function noProxyIsLoopbackOnly(raw: string | undefined): boolean;
  */
 export declare function proxyFromEnv(env?: NodeJS.ProcessEnv): string | undefined;
 /**
- * Read the macOS system proxy (`scutil --proxy`), which is where a Clash-style
- * client publishes `127.0.0.1:7890` when "set as system proxy" is on.
+ * Parse the output of `reg query` for the Windows Internet Settings key.
+ *
+ * Windows stores the system proxy in the registry, not in an environment
+ * variable. `ProxyServer` may be a bare `host:port` or a semicolon-separated
+ * map such as `http=host:port;https=host:port`; SOCKS values are skipped
+ * because this transport only speaks HTTP `CONNECT`.
+ *
+ * @param output - stdout from `reg query HKCU\...\Internet Settings`.
+ * @returns an `http://` proxy URL, or `undefined` when disabled/unusable.
+ */
+export declare function proxyFromWindowsRegistry(output: string): string | undefined;
+/**
+ * Read the system proxy: `scutil --proxy` on macOS, the Internet Settings
+ * registry value on Windows. This is where a Clash-style client publishes
+ * `127.0.0.1:7890` when "set as system proxy" is on.
  *
  * @returns the HTTPS/HTTP proxy URL, or `undefined` on any other platform or
  *   when no proxy is enabled.

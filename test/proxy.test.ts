@@ -12,7 +12,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import zlib from 'node:zlib';
-import { noProxyIsLoopbackOnly, parseProxy, proxyFromEnv, proxyGet, readResponse, resolveProxy } from '../src/proxy.ts';
+import { noProxyIsLoopbackOnly, parseProxy, proxyFromEnv, proxyFromWindowsRegistry, proxyGet, readResponse, resolveProxy } from '../src/proxy.ts';
 
 /** Assemble a raw HTTP response buffer from its parts. */
 function rawResponse(statusLine: string, headerLines: string[], body: Buffer | string): Buffer {
@@ -128,6 +128,31 @@ test('noProxyIsLoopbackOnly classifies the common NO_PROXY forms', () => {
   assert.equal(noProxyIsLoopbackOnly('example.com'), false);
   assert.equal(noProxyIsLoopbackOnly('localhost,example.com'), false);
   assert.equal(noProxyIsLoopbackOnly('10.0.0.0/8'), false);
+});
+
+// --- Windows system proxy -------------------------------------------------
+
+test('proxyFromWindowsRegistry reads the Windows Internet Settings value', () => {
+  const enabled = [
+    'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings',
+    '    ProxyEnable    REG_DWORD    0x1',
+    '    ProxyServer    REG_SZ    http=127.0.0.1:7890;https=127.0.0.1:7890',
+  ].join('\r\n');
+  assert.equal(proxyFromWindowsRegistry(enabled), 'http://127.0.0.1:7890');
+});
+
+test('proxyFromWindowsRegistry accepts a bare host:port and ignores SOCKS', () => {
+  const bare = 'ProxyEnable    REG_DWORD    0x1\r\nProxyServer    REG_SZ    127.0.0.1:3128\r\n';
+  assert.equal(proxyFromWindowsRegistry(bare), 'http://127.0.0.1:3128');
+  const socks = 'ProxyEnable    REG_DWORD    0x1\r\nProxyServer    REG_SZ    socks=127.0.0.1:1080\r\n';
+  assert.equal(proxyFromWindowsRegistry(socks), undefined);
+});
+
+test('proxyFromWindowsRegistry requires ProxyEnable and a usable server', () => {
+  assert.equal(proxyFromWindowsRegistry('ProxyEnable    REG_DWORD    0x0\r\nProxyServer    REG_SZ    127.0.0.1:7890\r\n'), undefined);
+  assert.equal(proxyFromWindowsRegistry('ProxyEnable    REG_DWORD    0x1\r\n'), undefined);
+  assert.equal(proxyFromWindowsRegistry('ProxyEnable    REG_DWORD    0x1\r\nProxyServer    REG_SZ    \r\n'), undefined);
+  assert.equal(proxyFromWindowsRegistry(''), undefined);
 });
 
 // --- resolveProxy (explicit path only: no detection, no network) ----------

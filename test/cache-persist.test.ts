@@ -324,5 +324,6 @@ test('path resolution expands the documented default and a leading tilde', () =>
   assert.equal(resolveCacheFile(), expected);
   assert.equal(resolveCacheFile('   '), expected);
   assert.equal(resolveCacheFile('~/cache.json'), join(homedir(), 'cache.json'));
-  assert.equal(resolveCacheFile('/tmp/custom-cache.json'), '/tmp/custom-cache.json');
+  const custom = join(tmpdir(), 'custom-cache.json');
+  assert.equal(resolveCacheFile(custom), custom);
 });

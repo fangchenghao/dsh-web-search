@@ -21,6 +21,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import http from 'node:http';
 import net from 'node:net';
+import { join } from 'node:path';
 import tls from 'node:tls';
 import zlib from 'node:zlib';
 
@@ -229,16 +230,9 @@ export function proxyFromEnv(env: NodeJS.ProcessEnv = process.env): string | und
   return undefined;
 }
 
-/**
- * Read the macOS system proxy (`scutil --proxy`), which is where a Clash-style
- * client publishes `127.0.0.1:7890` when "set as system proxy" is on.
- *
- * @returns the HTTPS/HTTP proxy URL, or `undefined` on any other platform or
- *   when no proxy is enabled.
- */
-export async function proxyFromSystem(): Promise<string | undefined> {
-  if (process.platform !== 'darwin') return undefined;
-  const output = await new Promise<string>((resolve) => {
+/** Run a short local probe; any failure or timeout means "no answer". */
+async function captureProbe(command: string, args: readonly string[], timeoutMs = 2_000): Promise<string> {
+  return await new Promise<string>((resolve) => {
     let text = '';
     let settled = false;
     const finish = (value: string): void => {
@@ -247,21 +241,76 @@ export async function proxyFromSystem(): Promise<string | undefined> {
       clearTimeout(timer);
       resolve(value);
     };
-    // Absolute path: a hijacked PATH entry must not be able to receive this
-    // spawn. macOS ships scutil at /usr/sbin/scutil.
-    const child = spawn('/usr/sbin/scutil', ['--proxy'], { stdio: ['ignore', 'pipe', 'ignore'] });
-    // `scutil` answers in milliseconds; a wedged system call must not hold a
-    // search open, so the probe is capped and the child is killed on expiry.
+    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'ignore'] });
+    // A wedged system call must not hold a search open.
     const timer = setTimeout(() => {
       child.kill();
       finish('');
-    }, 2_000);
+    }, timeoutMs);
     child.stdout.on('data', (chunk: Buffer) => {
       text += chunk.toString();
     });
     child.on('error', () => finish(''));
     child.on('close', () => finish(text));
   });
+}
+
+/**
+ * Parse the output of `reg query` for the Windows Internet Settings key.
+ *
+ * Windows stores the system proxy in the registry, not in an environment
+ * variable. `ProxyServer` may be a bare `host:port` or a semicolon-separated
+ * map such as `http=host:port;https=host:port`; SOCKS values are skipped
+ * because this transport only speaks HTTP `CONNECT`.
+ *
+ * @param output - stdout from `reg query HKCU\...\Internet Settings`.
+ * @returns an `http://` proxy URL, or `undefined` when disabled/unusable.
+ */
+export function proxyFromWindowsRegistry(output: string): string | undefined {
+  if ((/ProxyEnable\s+REG_DWORD\s+0x([0-9a-f]+)/iu.exec(output)?.[1] ?? '0') === '0') return undefined;
+  const raw = /ProxyServer\s+REG_SZ\s+(.+)/iu.exec(output)?.[1]?.trim();
+  if (raw === undefined || raw.length === 0) return undefined;
+  let server = raw;
+  if (server.includes('=')) {
+    const entries = new Map(
+      server.split(';').map((part) => {
+        const at = part.indexOf('=');
+        return at < 0 ? [part.toLowerCase(), ''] : [part.slice(0, at).trim().toLowerCase(), part.slice(at + 1).trim()];
+      }),
+    );
+    server = entries.get('https') || entries.get('http') || '';
+  }
+  if (server.length === 0 || /^socks/iu.test(server)) return undefined;
+  const value = /^[a-z][a-z0-9+.-]*:\/\//iu.test(server) ? server : `http://${server}`;
+  const parsed = proxyUrl(value);
+  return parsed === undefined ? undefined : formatProxyUrl(parsed);
+}
+
+/** Read the Windows system proxy from HKCU Internet Settings. */
+async function proxyFromWindows(): Promise<string | undefined> {
+  const root = process.env['SystemRoot'] ?? process.env['windir'] ?? 'C:\\Windows';
+  // Absolute path: a hijacked PATH entry must not receive this spawn.
+  const output = await captureProbe(join(root, 'System32', 'reg.exe'), [
+    'query',
+    'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings',
+  ]);
+  return proxyFromWindowsRegistry(output);
+}
+
+/**
+ * Read the system proxy: `scutil --proxy` on macOS, the Internet Settings
+ * registry value on Windows. This is where a Clash-style client publishes
+ * `127.0.0.1:7890` when "set as system proxy" is on.
+ *
+ * @returns the HTTPS/HTTP proxy URL, or `undefined` on any other platform or
+ *   when no proxy is enabled.
+ */
+export async function proxyFromSystem(): Promise<string | undefined> {
+  if (process.platform === 'win32') return await proxyFromWindows();
+  if (process.platform !== 'darwin') return undefined;
+  // Absolute path: a hijacked PATH entry must not be able to receive this
+  // spawn. macOS ships scutil at /usr/sbin/scutil.
+  const output = await captureProbe('/usr/sbin/scutil', ['--proxy']);
   if (!/HTTPSEnable\s*:\s*1|HTTPEnable\s*:\s*1/.test(output)) return undefined;
   const host = /HTTPSProxy\s*:\s*(\S+)/.exec(output)?.[1] ?? /HTTPProxy\s*:\s*(\S+)/.exec(output)?.[1];
   const port = /HTTPSPort\s*:\s*(\d+)/.exec(output)?.[1] ?? /HTTPPort\s*:\s*(\d+)/.exec(output)?.[1];
@@ -288,7 +337,7 @@ async function reachable(proxy: URL, timeoutMs = 400): Promise<boolean> {
  * Decide which proxy to use, if any.
  *
  * Order: an explicit plugin setting, the cached decision, the environment, then
- * the macOS system proxy. The system proxy is only honoured when its port
+ * the system proxy (macOS `scutil`, Windows Internet Settings). The system proxy is only honoured when its port
  * accepts a connection, so turning the tunnel off degrades to a direct request
  * instead of breaking search. The decision is cached for a minute.
  *
