@@ -8,7 +8,7 @@
  *
  * @module @fangchenghao/dsh-web-search/errors
  */
-import type { SearchErrorCode } from './types.ts';
+import type { FailureKind, SearchErrorCode } from './types.ts';
 
 /** Failure raised by one engine, carrying its business code. */
 export class SearchError extends Error {
@@ -18,14 +18,52 @@ export class SearchError extends Error {
   readonly retryable: boolean;
   /** The service's own wait hint in milliseconds, when it sent one. */
   readonly retryAfterMs: number | undefined;
+  /** HTTP status when the failure came from a response. */
+  readonly status: number | undefined;
 
-  constructor(message: string, code: SearchErrorCode, retryable = true, retryAfterMs?: number) {
+  constructor(
+    message: string,
+    code: SearchErrorCode,
+    retryable = true,
+    retryAfterMs?: number,
+    status?: number,
+  ) {
     super(message);
     this.name = 'SearchError';
     this.code = code;
     this.retryable = retryable;
     this.retryAfterMs = retryAfterMs;
+    this.status = status;
   }
+}
+
+/**
+ * Classify one engine failure into an actionable kind.
+ *
+ * The mapping is deliberately conservative: only a response status that says
+ * the credential or quota is the problem becomes `auth`/`quota`; an unexplained
+ * 403 is treated as a bot wall, because retrying the same request cannot fix a
+ * missing key but a wall often clears on its own.
+ *
+ * @param error - the classified engine failure.
+ * @returns the kind used by `fallbackOn` and diagnostics.
+ */
+export function classifyFailure(error: SearchError): FailureKind {
+  if (error.code === 'SEARCH_THROTTLED' || error.code === 'SEARCH_TIMEOUT') return 'transient';
+  if (error.code === 'SEARCH_NETWORK') return 'transient';
+  if (error.code === 'SEARCH_PARSE' || error.code === 'SEARCH_EMPTY' || error.code === 'SEARCH_UNSUPPORTED') {
+    return 'invalid-response';
+  }
+  if (error.code === 'SEARCH_BLOCKED' || error.code === 'SEARCH_HTTP_STATUS') {
+    if (error.status === 401) return 'auth';
+    if (error.status === 402) return 'quota';
+    if (error.status === 429) return 'transient';
+    if (error.status !== undefined && error.status >= 500) return 'transient';
+    if (/\b(quota|credit|out of budget|limit exceeded)\b/iu.test(error.message)) return 'quota';
+    if (/\b(unauthori[sz]ed|authenticat(?:ion|ed)?|api[ _-]?key|credential)\b/iu.test(error.message)) return 'auth';
+    return 'bot-wall';
+  }
+  return 'unknown';
 }
 
 /**

@@ -167,10 +167,42 @@ test('GitHub keeps real repository metadata and the published time', async () =>
   assert.match(sources[0]?.publishedAt ?? '', /^2026-/);
 });
 
+test('GitHub surfaces the license and star count when the API provides them', () => {
+  const payload = JSON.stringify({
+    items: [
+      {
+        full_name: 'ggml-org/llama.cpp',
+        html_url: 'https://github.com/ggml-org/llama.cpp',
+        description: 'LLM inference in C/C++',
+        license: { spdx_id: 'MIT' },
+        stargazers_count: 12345,
+      },
+    ],
+  });
+  const sources = parseGithub(payload, 'https://api.github.com/', 5);
+  assert.match(sources[0]?.snippet ?? '', /MIT/u);
+  assert.match(sources[0]?.snippet ?? '', /12345 stars/u);
+});
+
 test('npm reports package@version and the npm package URL', async () => {
   const sources = parseNpm(await fixture(CASES.npm.normal), 'https://registry.npmjs.org/', 5);
   assert.equal(sources[0]?.url, 'https://www.npmjs.com/package/react');
   assert.equal(sources[0]?.title, 'react@19.3.1');
+});
+
+test('npm uses the version publish date, never the search-index update time', () => {
+  const payload = JSON.stringify({
+    objects: [
+      {
+        updated: '2026-10-24T09:31:20.780Z',
+        package: { name: 'sample', version: '1.2.3', date: '2026-10-21T11:16:18.199Z' },
+      },
+      { updated: '2026-10-24T09:31:20.780Z', package: { name: 'no-date', version: '0.0.1' } },
+    ],
+  });
+  const sources = parseNpm(payload, '', 5);
+  assert.equal(sources[0]?.publishedAt, '2026-10-21T11:16:18.199Z');
+  assert.equal(sources[1]?.publishedAt, undefined);
 });
 
 test('PyPI asks for the exact package name and keeps its upload time', async () => {
@@ -182,6 +214,21 @@ test('PyPI asks for the exact package name and keeps its upload time', async () 
   assert.equal(sources[0]?.url, 'https://pypi.org/project/requests/');
   assert.equal(sources[0]?.title, 'requests 2.34.2');
   assert.equal(sources[0]?.publishedAt, '2026-05-14T19:25:26.443000Z');
+});
+
+test('PyPI surfaces requires-python when the package declares it', () => {
+  const payload = JSON.stringify({
+    info: {
+      name: 'ruff',
+      version: '0.17.2',
+      summary: 'An extremely fast Python linter.',
+      requires_python: '>=3.7',
+      package_url: 'https://pypi.org/project/ruff/',
+    },
+    urls: [],
+  });
+  const sources = parsePypi(payload, 'https://pypi.org/pypi/ruff/json', 5);
+  assert.match(sources[0]?.snippet ?? '', /Requires-Python: >=3\.7/u);
 });
 
 test('arXiv reads the Atom feed and upgrades the id to https', async () => {
@@ -219,6 +266,24 @@ test('Hacker News falls back to the item URL when a story has no outbound link',
   assert.equal(sources[0]?.publishedAt, '2026-01-01T00:00:00Z');
 });
 
+test('Hacker News keeps points and comment counts in the snippet', () => {
+  const payload = JSON.stringify({
+    hits: [{ objectID: '42', title: 'Ask HN: SQLite', points: 123, num_comments: 45 }],
+  });
+  const sources = parseHn(payload, 'https://hn.algolia.com/api/v1/search', 5);
+  assert.match(sources[0]?.snippet ?? '', /123 points/u);
+  assert.match(sources[0]?.snippet ?? '', /45 comments/u);
+});
+
+test('Stack Exchange decodes entities in titles and snippets', () => {
+  const payload = JSON.stringify({
+    items: [{ link: 'https://stackoverflow.com/questions/1', title: 'A -&gt; B &amp; C', body: '<p>x &lt; y</p>', creation_date: 1_700_000_000 }],
+  });
+  const sources = parseStackExchange(payload, 'https://api.stackexchange.com/2.3/search/advanced', 5);
+  assert.equal(sources[0]?.title, 'A -> B & C');
+  assert.match(sources[0]?.snippet ?? '', /x < y/u);
+});
+
 test('Stack Exchange converts unix seconds and drops HTML tags', async () => {
   const sources = parseStackExchange(
     await fixture(CASES.stackexchange.normal),
@@ -246,6 +311,19 @@ test('build URLs encode the query and carry the requested limit', () => {
     if (spec.id !== 'pypi') assert.match(url, /7/, `${spec.id} must carry the limit`);
   }
   assert.equal(MAX_VERTICAL_LIMIT, 20);
+});
+
+test('a time window switches arXiv to submitted-date order', async () => {
+  const calls: string[] = [];
+  await searchVerticals('large language model', {
+    ids: ['arxiv'],
+    timeRange: 'month',
+    fetch: routed({ 'export.arxiv.org': { body: await fixture(CASES.arxiv.normal) } }, calls),
+  });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0] ?? '', /search_query=all:%22large%20language%20model%22/);
+  assert.match(calls[0] ?? '', /sortBy=submittedDate/);
+  assert.match(calls[0] ?? '', /sortOrder=descending/);
 });
 
 test('a normal run queries every source, interleaves them and reports counts', async () => {

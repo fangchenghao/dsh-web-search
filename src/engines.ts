@@ -11,8 +11,9 @@
  *
  * @module @fangchenghao/dsh-web-search/engines
  */
-import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, Source, TimeRange, WaitPolicy } from './types.ts';
-import { SearchError } from './errors.ts';
+import type { EngineAnswer, EngineFailure, FailureKind, HostSpec, RankOptions, Region, SafeSearch, SearchOptions, SearchOutcome, Source, TimeRange, WaitPolicy } from './types.ts';
+import { FAILURE_KINDS } from './types.ts';
+import { SearchError, classifyFailure } from './errors.ts';
 import { filterByTimeRange, preferWindow } from './freshness.ts';
 import { resolveProxy } from './proxy.ts';
 import { parseAnySearch, parseBing, parseDdgHtml, parseDdgLite, parseExaMcp, parseFirecrawl, parseSo } from './parsers.ts';
@@ -99,10 +100,11 @@ export const HOSTS: readonly HostSpec[] = [
     tier: 'fallback',
     region: 'both',
     weight: 1,
-    // Direct first: the tunnel's exit IP is rejected as a VPN by the keyless
-    // endpoint (`HTTP 403 … looks like a VPN or proxy`), while a direct request
-    // still answers. The transport still retries through the tunnel when the
-    // direct attempt fails, so deployments that need the tunnel lose nothing.
+    // Direct first, then the tunnel. This endpoint is IP-sensitive: measured
+    // here the direct route answered in one environment and returned 403 in
+    // another while the same query succeeded through the tunnel. The health
+    // tracker remembers which route worked, so after the first proxy success a
+    // run tries the tunnel first instead of paying for the same 403 again.
     method: 'POST',
     skipEcho: true,
     build: () => 'https://api.firecrawl.dev/v1/search',
@@ -214,6 +216,70 @@ function leadsQuery(host: HostSpec, lead: Region): boolean {
   return host.region === 'both' || host.region === lead;
 }
 
+/** Build the structured counterpart of a failure string. */
+function failureDetail(id: string, reason: string, error?: SearchError): EngineFailure {
+  return {
+    id,
+    reason,
+    ...(error === undefined ? {} : { code: error.code }),
+    kind: error === undefined ? 'unknown' : classifyFailure(error),
+    ...(error?.status === undefined ? {} : { status: error.status }),
+  };
+}
+
+/**
+ * Normalise a configured domain for suffix matching.
+ *
+ * Accepts a bare domain, a `*.domain` wildcard or a pasted URL, because all
+ * three are things a person reasonably types into a blocklist field.
+ */
+function normaliseDomain(value: string): string {
+  let text = value.trim().toLowerCase();
+  if (text.includes('://')) {
+    try {
+      text = new URL(text).hostname;
+    } catch {
+      // Fall through: the bare-domain cleanup below may still help.
+    }
+  }
+  return text
+    .replace(/^\*\./u, '')
+    .replace(/^\.+/u, '')
+    .replace(/\.+$/u, '')
+    .replace(/\/.*$/u, '')
+    .trim();
+}
+
+/** Whether a URL's host is the configured domain or a subdomain of it. */
+function isBlockedHost(hostname: string, blocked: readonly string[]): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/u, '');
+  return blocked.some((domain) => host === domain || host.endsWith(`.${domain}`));
+}
+
+/**
+ * Remove a caller-blocked domain from a result list.
+ *
+ * The filter is applied after fusion so it can never change the ranking of the
+ * rows that survive; it only removes rows the user explicitly excluded.
+ */
+function removeBlocked(sources: readonly Source[], blocked: readonly string[]): Source[] {
+  if (blocked.length === 0) return [...sources];
+  return sources.filter((source) => {
+    try {
+      return !isBlockedHost(new URL(source.url).hostname, blocked);
+    } catch {
+      return true;
+    }
+  });
+}
+
+/** Whether the primary failures permit a fallback under the configured policy. */
+function allowsFallback(details: readonly EngineFailure[], fallbackOn: readonly FailureKind[] | undefined): boolean {
+  if (fallbackOn === undefined) return true;
+  const allowed = new Set(fallbackOn);
+  return details.every((detail) => allowed.has(detail.kind));
+}
+
 /** Tuning for one tier run. */
 interface TierLimits {
   /** Caller budget. */
@@ -254,9 +320,11 @@ async function searchHostWithKeys(
   timeRange: TimeRange,
   pool: KeyPool,
   domain: string | undefined,
+  safeSearch: SafeSearch | undefined,
+  health: EngineHealth | undefined,
 ): Promise<AttemptOutcome> {
   if (host.id !== 'anysearch' || pool.size === 0) {
-    return searchHost(host, query, signal, timeoutMs, proxy, timeRange);
+    return searchHost(host, query, signal, timeoutMs, proxy, timeRange, safeSearch, health);
   }
   let key = pool.pick();
   let last: AttemptOutcome | undefined;
@@ -265,7 +333,7 @@ async function searchHostWithKeys(
       anysearchApiKey: key,
       ...(domain === undefined ? {} : { anysearchDomain: domain }),
     });
-    const outcome = await searchHost(configured, query, signal, timeoutMs, proxy, timeRange);
+    const outcome = await searchHost(configured, query, signal, timeoutMs, proxy, timeRange, safeSearch, health);
     if (outcome.ok) {
       pool.reward(key);
       return outcome;
@@ -299,11 +367,13 @@ async function runTier(
   signal: AbortSignal | undefined,
   timeoutMs: number,
   failures: string[],
+  failureDetails: EngineFailure[],
   proxy: string | undefined,
   limits: TierLimits,
   health: EngineHealth | undefined,
   pool: KeyPool,
   anysearchDomain: string | undefined,
+  safeSearch: SafeSearch | undefined,
 ): Promise<EngineAnswer[]> {
   const counters = limits.lead === 'all' || !hosts.some((host) => leadsQuery(host, limits.lead as Region))
     ? () => true
@@ -343,7 +413,7 @@ async function runTier(
   };
 
   const running = hosts.map((host, index) =>
-    searchHostWithKeys(host, query, controller.signal, timeoutMs, proxy, limits.timeRange, pool, anysearchDomain).then(
+    searchHostWithKeys(host, query, controller.signal, timeoutMs, proxy, limits.timeRange, pool, anysearchDomain, safeSearch, health).then(
       (outcome) => {
         if (outcome.ok) {
           rawCounts[index] = outcome.sources.length;
@@ -380,13 +450,16 @@ async function runTier(
   for (const [index, outcome] of outcomes.entries()) {
     const host = hosts[index] as HostSpec;
     if (outcome === undefined) {
-      failures.push(
-        releasedEarly ? `${host.id}: aborted once enough results had arrived` : `${host.id}: still running at deadline`,
-      );
+      const reason = releasedEarly ? `${host.id}: aborted once enough results had arrived` : `${host.id}: still running at deadline`;
+      failures.push(reason);
+      failureDetails.push(failureDetail(host.id, reason));
     } else if (outcome instanceof SearchError) {
       failures.push(outcome.message);
+      failureDetails.push(failureDetail(host.id, outcome.message, outcome));
     } else if (outcome.sources.length === 0) {
-      failures.push(`${host.id}: ${(rawCounts[index] ?? 0) > 0 ? 'no relevant results' : 'no results'}`);
+      const reason = `${host.id}: ${(rawCounts[index] ?? 0) > 0 ? 'no relevant results' : 'no results'}`;
+      failures.push(reason);
+      failureDetails.push(failureDetail(host.id, reason));
     } else {
       answers.push(outcome);
     }
@@ -402,6 +475,12 @@ export interface EngineRunOptions extends SearchOptions {
   anysearchDomain?: string;
   /** Ranking knobs, falling back to the documented defaults. */
   rank?: RankOptions;
+  /** Failure classes that may trigger the fallback tier; absent means all. */
+  fallbackOn?: readonly FailureKind[];
+  /** Domains the caller never wants in a result list. */
+  blockedDomains?: readonly string[];
+  /** Content-filter level forwarded to engines that support it. */
+  safeSearch?: SafeSearch;
   /** Result cache to consult and fill, when one is configured. */
   cache?: SearchCache;
   /** Cooldown tracker, when one is configured. */
@@ -445,6 +524,10 @@ export interface SearchTrace {
   sources: Source[];
   /** Failure strings accumulated by this run. */
   failures: string[];
+  /** Structured failures, including the class used by `fallbackOn`. */
+  failureDetails: EngineFailure[];
+  /** Human-readable note when policy changed the answer. */
+  note?: string;
   /** Whether the result came from the cache. */
   cached: boolean;
 }
@@ -512,15 +595,20 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   // a throttled engine is still better than no search.
   const now = Date.now();
   const failures: string[] = [];
+  const failureDetails: EngineFailure[] = [];
   const rested = hosts.filter((host) => options.health?.isCooling(host.id, now) !== true);
   if (rested.length > 0 && options.health !== undefined) {
     for (const host of hosts) {
       if (rested.includes(host)) continue;
-      const reason = options.health.skipped(host.id, now);
-      failures.push(`${host.id}: ${reason ?? 'cooling down'}`);
+      const reason = `${host.id}: ${options.health.skipped(host.id, now) ?? 'cooling down'}`;
+      failures.push(reason);
+      failureDetails.push(failureDetail(host.id, reason));
     }
   }
   const usable = rested.length > 0 ? rested : hosts;
+  const blocked = (options.blockedDomains ?? []).map(normaliseDomain).filter((domain) => domain.length > 0);
+  const safeSearch = options.safeSearch ?? 'off';
+  const fallbackOn = options.fallbackOn;
 
   const ascii = !CJK.test(query);
   const lead: Region = ascii ? 'global' : 'cn';
@@ -555,9 +643,20 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   // the cooldown filter: an engine entering or leaving a cooldown must not
   // invalidate an entry that is still fresh, or every throttle would turn the
   // next identical query into a cache miss.
-  const key = options.cache === undefined ? undefined : cacheKey({ query, limit, wait, lead, engines: hosts.map((host) => host.id), timeRange });
+  const key = options.cache === undefined ? undefined : cacheKey({
+    query,
+    limit,
+    wait,
+    lead,
+    engines: hosts.map((host) => host.id),
+    timeRange,
+    ...(safeSearch === 'off' ? {} : { safeSearch }),
+    ...(fallbackOn === undefined || fallbackOn.length === FAILURE_KINDS.length ? {} : { fallbackOn }),
+    ...(blocked.length === 0 ? {} : { blockedDomains: blocked }),
+  });
   const cached = key === undefined ? undefined : options.cache?.get(key);
-  if (cached !== undefined) {
+  const cachedSources = cached === undefined ? undefined : removeBlocked(cached, blocked);
+  if (cachedSources !== undefined && cachedSources.length > 0) {
     options.trace?.({
       limit,
       lead,
@@ -566,11 +665,12 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
       rank,
       tier: 'cache',
       answers: [],
-      sources: cached,
+      sources: cachedSources,
       failures: [...failures],
+      failureDetails: [...failureDetails],
       cached: true,
     });
-    return { sources: cached, failures, ...(proxy === undefined ? {} : { proxy }) };
+    return { sources: cachedSources, failures, failureDetails, ...(proxy === undefined ? {} : { proxy }) };
   }
 
   const ordered = [...usable.filter((host) => leadsQuery(host, lead)), ...usable.filter((host) => !leadsQuery(host, lead))];
@@ -578,16 +678,25 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const fallback = ordered.filter((host) => host.tier === 'fallback');
 
   let tier: SearchTrace['tier'] = 'none';
-  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, proxy, limits, options.health, pool, anysearchDomain));
+  let note: string | undefined;
+  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch));
   if (answers.length > 0) tier = 'primary';
   let sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   if (sources.length === 0 && fallback.length > 0) {
-    tier = 'fallback';
-    answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, proxy, limits, options.health, pool, anysearchDomain));
-    sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
+    if (allowsFallback(failureDetails, fallbackOn)) {
+      tier = 'fallback';
+      const kinds = [...new Set(failureDetails.map((detail) => detail.kind))];
+      answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch));
+      sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
+      if (answers.length > 0 && kinds.length > 0) note = `primary engines failed (${kinds.join(', ')}); using fallback.`;
+    } else {
+      const blockedKind = failureDetails.find((detail) => !(fallbackOn ?? []).includes(detail.kind))?.kind ?? 'unknown';
+      note = `fallback skipped: ${blockedKind} is not enabled in fallbackOn.`;
+    }
   }
 
   if (signal?.aborted === true) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
+  sources = removeBlocked(sources, blocked);
   if (key !== undefined && sources.length > 0) options.cache?.set(key, sources);
   options.trace?.({
     limit,
@@ -599,7 +708,9 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     answers,
     sources,
     failures: [...failures],
+    failureDetails: [...failureDetails],
+    ...(note === undefined ? {} : { note }),
     cached: false,
   });
-  return { sources, failures, ...(proxy === undefined ? {} : { proxy }) };
+  return { sources, failures, failureDetails, ...(note === undefined ? {} : { note }), ...(proxy === undefined ? {} : { proxy }) };
 }

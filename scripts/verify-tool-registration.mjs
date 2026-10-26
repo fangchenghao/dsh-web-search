@@ -48,6 +48,7 @@ async function main() {
   const { ToolRuntime } = await loadPackage('@deepseek-ai/dsh-tools');
   const { createDomainToolDefinition } = await import('../src/domain-tool.ts');
   const { createSearchManyDefinition } = await import('../src/search-many.ts');
+  const { createUnifiedToolDefinition } = await import('../src/tool-suite.ts');
 
   // The same objects the plugin hands the registry: raw JSON Schema, required
   // arrays at object level, and `output: { schema, render }`.
@@ -70,22 +71,29 @@ async function main() {
   const tools = root.get('tools');
   if (tools === undefined) throw new Error('the host tool service did not mount');
 
+  const unifiedDefinition = createUnifiedToolDefinition('web_tools', [definition, batchDefinition]);
   const dispose = tools.register(definition);
   const disposeBatch = tools.register(batchDefinition);
+  const disposeUnified = tools.register(unifiedDefinition);
   const registered = tools.get('domain_search');
   const batch = tools.get('search_many');
-  console.log('registered names:', [registered?.name, batch?.name].join(', '));
+  const unified = tools.get('web_tools');
+  console.log('registered names:', [registered?.name, batch?.name, unified?.name].join(', '));
   console.log('projected schemas:', tools.schemas().map((schema) => schema.name).join(', '));
   console.log('domain parameter required:', JSON.stringify(registered?.parameters?.required));
   console.log('domain output required:', JSON.stringify(registered?.output?.schema?.required));
   console.log('batch parameter required:', JSON.stringify(batch?.parameters?.required));
   console.log('batch output required:', JSON.stringify(batch?.output?.schema?.required));
   console.log('batch item required:', JSON.stringify(batch?.parameters?.properties?.queries?.items));
-  console.log('timeoutMs:', registered?.timeoutMs, batch?.timeoutMs);
+  console.log('timeoutMs:', registered?.timeoutMs, batch?.timeoutMs, unified?.timeoutMs);
+  console.log('unified parameter required:', JSON.stringify(unified?.parameters?.required));
+  console.log('unified actions:', JSON.stringify(unified?.parameters?.properties?.action?.enum));
+  console.log('unified output required:', JSON.stringify(unified?.output?.schema?.required));
 
   dispose();
   disposeBatch();
-  console.log('after dispose:', [tools.get('domain_search')?.name, tools.get('search_many')?.name]
+  disposeUnified();
+  console.log('after dispose:', [tools.get('domain_search')?.name, tools.get('search_many')?.name, tools.get('web_tools')?.name]
     .filter((name) => name !== undefined)
     .join(', ') || 'absent');
   console.log('projected after dispose:', tools.schemas().map((schema) => schema.name).join(', ') || 'absent');

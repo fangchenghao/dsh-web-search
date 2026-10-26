@@ -133,6 +133,19 @@ test('one failed query does not stop the others', async () => {
   assert.deepEqual(value.results[2]?.sources.map((item) => item.url), ['https://example.com/last']);
 });
 
+test('a fallback policy note is kept per query and rendered', async () => {
+  const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, async (query) => ({
+    sources: query === 'good' ? [source('https://example.com/')] : [],
+    failures: [],
+    note: query === 'good' ? undefined : 'fallback skipped: bot-wall is not enabled in fallbackOn.',
+    truncated: false,
+  }));
+  const value = await definition.execute({ queries: ['good', 'blocked'] }, {});
+  assert.equal(value.results[0]?.note, undefined);
+  assert.match(value.results[1]?.note ?? '', /fallback skipped/u);
+  assert.match(formatSearchManyValue(value), /Note: fallback skipped/u);
+});
+
 test('per-query failures from the search layer are preserved verbatim', async () => {
   const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, async (query) => ({
     sources: query === 'good' ? [source('https://example.com/good')] : [],
@@ -264,7 +277,7 @@ test('apply registers search_many with the host tools service and disposes it', 
     },
   };
 
-  apply(ctx, { cachePersist: false });
+  apply(ctx, { cachePersist: false, toolSurface: 'legacy' });
   assert.equal(providers.length, 1, 'web_search is still registered');
   assert.equal(definitions.has(SEARCH_MANY_TOOL_NAME), true);
   assert.equal(definitions.has('domain_search'), true, 'both optional tools share the registry');

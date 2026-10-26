@@ -12,8 +12,9 @@
  *
  * @module @fangchenghao/dsh-web-search/search-many
  */
-import type { Source } from './types.ts';
+import type { EngineFailure, Source } from './types.ts';
 import type { ToolContent, ToolJsonSchema } from './domain-tool.ts';
+import { wrapUntrustedContent } from './untrusted.ts';
 
 /** The name this tool prefers. */
 export const SEARCH_MANY_TOOL_NAME = 'search_many';
@@ -47,6 +48,8 @@ export interface SearchManyResult {
   sources: SearchManySource[];
   /** Failures for this query alone; a thrown search becomes one entry here. */
   failures: string[];
+  /** Short policy note, such as why the fallback tier was used or skipped. */
+  note?: string;
 }
 
 /** What the tool returns to the model. */
@@ -60,6 +63,10 @@ export interface SearchManyValue {
 export interface SearchManyOutcome {
   sources: Source[];
   failures: string[];
+  /** Structured failures from the engine layer, when it reported any. */
+  failureDetails?: EngineFailure[];
+  /** Short policy note, when the fallback policy changed the answer. */
+  note?: string;
   /** True when the deployment's configured limit cut the requested budget. */
   truncated: boolean;
 }
@@ -159,6 +166,7 @@ function outputSchema(): ToolJsonSchema {
             query: { type: 'string' },
             sources: { type: 'array', items: sourceSchema },
             failures: { type: 'array', items: { type: 'string' } },
+            note: { type: 'string' },
           },
           required: ['query', 'sources', 'failures'],
         },
@@ -263,6 +271,7 @@ export function formatSearchManyValue(value: SearchManyValue): string {
         lines.push(`      ${source.publishedAt}`);
       }
     }
+    if (result.note !== undefined && result.note.length > 0) lines.push(`   Note: ${result.note}`);
     if (result.failures.length > 0) lines.push(`   failures: ${result.failures.join('; ')}`);
     return lines.join('\n');
   });
@@ -279,11 +288,11 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
   return {
     name,
     description:
-      'Run 1–5 independent web searches in one call and return each query\'s results separately. Use it when one question needs several distinct queries; a failed query does not stop the others. For a single query use web_search.',
+      'Run 1–5 independent web searches in one call and return each query\'s results separately. Use it when one question needs several distinct queries; a failed query does not stop the others. A query that explicitly names npm, PyPI or crates.io is answered from that package registry. For a single query use web_search.',
     parameters: parameterSchema(),
     output: {
       schema: outputSchema(),
-      render: (_args, value) => [{ type: 'text', text: formatSearchManyValue(value) }],
+      render: (_args, value) => [{ type: 'text', text: wrapUntrustedContent(formatSearchManyValue(value)) }],
     },
     timeoutMs: 30_000,
     isConcurrencySafe: () => true,
@@ -301,6 +310,7 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
               query,
               sources: mapped.slice(0, parsed.limit),
               failures: [...outcome.failures],
+              ...(outcome.note === undefined ? {} : { note: outcome.note }),
             },
             truncated,
           };

@@ -618,7 +618,7 @@ test('apply registers read_page with the host tools service and disposes it', ()
     },
   };
 
-  apply(ctx, { cachePersist: false });
+  apply(ctx, { cachePersist: false, toolSurface: 'legacy' });
   assert.equal(providers.length, 1, 'web_search is still registered');
   assert.equal(definitions.has(READ_PAGE_TOOL_NAME), true);
   assert.equal(definitions.has('search_many'), true, 'all optional tools share the registry');
@@ -641,7 +641,7 @@ test('the registered read_page from apply pages a real provider response', async
       if (typeof cleanup === 'function') cleanups.push(cleanup);
     },
   };
-  apply(ctx, { cachePersist: false, fetchMaxLength: 1_000, fetchFormat: 'markdown', renderJs: 'off' });
+  apply(ctx, { cachePersist: false, fetchMaxLength: 1_000, fetchFormat: 'markdown', renderJs: 'off', toolSurface: 'legacy' });
 
   const registered = definitions.get(READ_PAGE_TOOL_NAME);
   assert.ok(registered);

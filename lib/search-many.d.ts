@@ -12,7 +12,7 @@
  *
  * @module @fangchenghao/dsh-web-search/search-many
  */
-import type { Source } from './types.ts';
+import type { EngineFailure, Source } from './types.ts';
 import type { ToolContent, ToolJsonSchema } from './domain-tool.ts';
 /** The name this tool prefers. */
 export declare const SEARCH_MANY_TOOL_NAME = "search_many";
@@ -40,6 +40,8 @@ export interface SearchManyResult {
     sources: SearchManySource[];
     /** Failures for this query alone; a thrown search becomes one entry here. */
     failures: string[];
+    /** Short policy note, such as why the fallback tier was used or skipped. */
+    note?: string;
 }
 /** What the tool returns to the model. */
 export interface SearchManyValue {
@@ -51,6 +53,10 @@ export interface SearchManyValue {
 export interface SearchManyOutcome {
     sources: Source[];
     failures: string[];
+    /** Structured failures from the engine layer, when it reported any. */
+    failureDetails?: EngineFailure[];
+    /** Short policy note, when the fallback policy changed the answer. */
+    note?: string;
     /** True when the deployment's configured limit cut the requested budget. */
     truncated: boolean;
 }

@@ -155,3 +155,23 @@ dialled from detection, because the tunnel itself is a plain `CONNECT`; an
 - `index.js`, `engines.js` and `proxy.js` are the pre-rewrite JavaScript
   implementation. They are not imported by `src/` and are not part of the
   TypeScript build.
+
+## Route memory and engine health
+
+`EngineHealth` does two jobs. It keeps the failure cooldown (an engine that
+returned a retryable block rests for 5–30 minutes) and, since 0.21.0, a
+ten-minute route preference. A direct request that ends in `403`/`429` and then
+succeeds through the tunnel records `proxy` for that engine; the next request
+tries the tunnel first, and the direct route stays as a fallback. A later direct
+success clears the preference. The transport test drives this through a real
+HTTP `CONNECT` proxy rather than mocking `proxyGet`.
+
+## MCP runner
+
+`mcp/server.mjs` is a dependency-free stdio JSON-RPC process. It imports the
+same `lib/engines.js`, `lib/fetch.js`, `lib/research.js` and
+`lib/verticals.js` as the DSH plugin, exposes four tools (`search`, `fetch`,
+`research`, `domain_search`), wraps every output in the untrusted-content
+boundary and never reads a DSH profile. It is not a second search
+implementation; a ranking or transport fix reaches both runtimes after
+`npm run build`.

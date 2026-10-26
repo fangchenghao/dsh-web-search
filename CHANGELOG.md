@@ -1,5 +1,219 @@
 # Changelog
 
+## 0.21.1
+
+### Documentation
+- **Public evidence links for the 30-query comparison.** The raw three sweeps
+  and the query corpus are linked from `docs/comparison.md` through a public
+  gist, so the evidence is reachable without publishing the working tree.
+- **README quickstart and cross-agent paths.** The package now includes
+  `docs/quickstart.md`, `docs/cross-agent.md` and the `web_tools` demo asset.
+
+No runtime behavior changed since 0.21.0. **Test suite: 668 tests across 52 files**
+(667 pass, 1 skipped).
+
+## 0.21.0
+
+### Added
+- **A dependency-free MCP server for other agents.** The package now ships
+  `dsh-web-search-mcp` (`mcp/server.mjs`) with four tools: `search`, `fetch`,
+  `research` and `domain_search`. It speaks MCP over stdio, needs no DSH
+  context and no API key, and is installable with
+  `npx -y @fffangchenghao/dsh-web-search dsh-web-search-mcp`. Claude Code and
+  Codex setup snippets are in [docs/cross-agent.md](docs/cross-agent.md).
+- **A public 30-query comparison harness.** `bench/compare30.mjs` runs the same
+  bilingual corpus against this plugin, keyless Firecrawl and anonymous Exa,
+  recording availability, latency, unique domains, official-domain presence and
+  every failure. [docs/comparison.md](docs/comparison.md) publishes the method
+  and the results, including where this plugin is slower or misses.
+- **Quickstart and demo assets.** [docs/quickstart.md](docs/quickstart.md) and
+  `docs/images/web-tools-demo.svg` show the one-tool/eight-action surface and
+  the two-minute install path.
+
+### Fixed
+- **Repeated direct 403s on IP-sensitive sources.** When a direct request is
+  blocked and the tunnel succeeds, the engine now remembers the working route
+  for ten minutes and tries it first next time, while keeping the alternate
+  route as a fallback. A recorded Firecrawl request went from 1,874 ms (403 +
+  retry) to 1,017 ms on the second call. Regression tests cover the health
+  memory and the transport behavior against a real `CONNECT` proxy.
+- **MCP notification handling.** Unknown notifications no longer receive a
+  JSON-RPC response, and `notifications/cancelled` is ignored.
+
+**Test suite: 668 tests across 52 files** (667 pass, 1 skipped).
+
+## 0.20.1
+
+### Added
+- **A manual update button for deployments without `dsh-autoupdater`.** When
+  the Settings page is local and npm reports a newer version, it shows
+  **Install update**. The button posts to a loopback-only
+  `/api/dsh-web-search/update` bridge, which calls the Host's built-in
+  `pluginManager.installBundle` with exactly
+  `@fffangchenghao/dsh-web-search@latest`; it never accepts a package name from
+  the browser. A `link:`/`file:` checkout is refused rather than replaced, a
+  deployment without a plugin manager reports that honestly, and a successful
+  install says that a restart is required. This is manual, not a scheduler:
+  periodic checks still belong to `dsh-autoupdater`.
+- **The npm version comparison is now directional.** A local build newer than
+  the registry is no longer labelled "update available"; the button appears
+  only when the registry version is actually newer.
+- **Update-bridge tests.** 8 new cases cover the fixed package spec, link/file
+  refusal, manager absence, `ctx.get` fallback, method/loopback/origin guards,
+  malformed bodies and manager failure results.
+
+**Test suite: 664 tests across 50 files** (663 pass, 1 skipped).
+
+## 0.20.0
+
+### Added
+- **One `web_tools` action surface.** The eight optional capabilities are now
+  one model-facing tool with `action` set to `search_many`, `advanced_search`,
+  `domain_search`, `platform_search`, `read_page`, `research`, `cache_search`
+  or `engine_test`. This cuts the always-visible optional surface from eight
+  names to one while keeping each handler's validation and rendering; the old
+  names remain available with `toolSurface: legacy`. The real DSH registry
+  accepts the unified schema (see `scripts/verify-tool-registration.mjs`).
+- **Auto-update compatibility.** The package is documented and installed as an
+  npm bundle so the profile-level `dsh-autoupdater` manages it; `link:`/`file:`
+  checkouts are intentionally excluded by that updater. The Settings card shows
+  the latest npm version and the running build; the plugin never hot-swaps its
+  own loaded code. The desktop profile is now installed from npm (`0.20.0`), so the profile
+  updater no longer classifies it as a local checkout.
+- **`advanced_search` uses the official Chrome Releases feed for a windowed
+  Chrome security/release query.** The feed carries the real post date that a
+  search snippet often loses; the result note states how many posts fell inside
+  the window and whether any title or summary mentions zero-day. A feed miss
+  falls back to the previous engine path.
+- **`search_many` routes explicit package-registry queries.** A query that names
+  npm, PyPI or crates.io is answered from that existing domain source (one exact
+  lookup per extracted package name) and falls back to ordinary web results if
+  the registry returns nothing.
+- **`platform_search`: community and video sources.** A new model tool queries
+  Bilibili, V2EX, Reddit, YouTube, Zhihu and Juejin. It uses each site's keyless
+  public endpoint where one exists and falls back to `site:<domain> <query>`
+  through the normal search path. Fallback rows are filtered to the platform
+  host (and aliases such as `b23.tv`, `youtu.be`, `redd.it`), so a generic page
+  cannot become a platform result; one blocked platform does not empty the
+  batch. Zhihu has no usable keyless API and is therefore fallback-only.
+- **`cache_search`: a second retrieval over `research` bodies.** `research` now
+  fetches up to 200,000 characters per page and stores the full body in an
+  in-process cache through an optional `onPage` sink. `cache_search` searches
+  those bodies (24 pages, 400,000 characters each, 7-day TTL) and returns the
+  matching passages with the same URLs, without another network request. The
+  first excerpt is query-aware too: instead of only the opening 6,000
+  characters, it scores paragraph windows against the query and keeps the best
+  windows plus opening context.
+- **Official-source query expansion is focused, not generic.** When the first
+  result set lacks a known issuer, `research` spends an unused query slot on a
+  focused `site:` query for the EU AI Act, Chinese CAC, Chrome Releases, Python,
+  Redis or WCAG, filters the rows to that issuer's domain, and never promotes a
+  landing/home page on authority alone. W3C WCAG pages that return 403 are
+  retried through `w3c.github.io`.
+- **`advanced_search` drops a redundant relative-time phrase.** When the caller
+  passes an explicit window, a `过去 7 天内` / `last 7 days` fragment is removed
+  from the engine query but kept in the returned `query`; the structured window
+  already carries that constraint.
+- **`domain_search` accepts `timeRange`.** `off`/`day`/`week`/`month`/`year`
+  filters parsed publication dates for that call; undated rows survive only
+  when no dated row qualifies, with a `note` explaining the outcome. arXiv
+  switches to `submittedDate` order and a quoted phrase when a window is set,
+  so "last month" returns recent papers rather than old relevance matches.
+- **Chrome Stable filtering and security summary.** A Stable-only Chrome query now removes Beta, Dev, Early Stable and Extended Stable posts from the official feed; its snippets preview the version, fix count and listed Critical/High/Medium/Low CVE counts when the post states them. An empty Stable result falls back to the ordinary engine path.
+
+- **Bilibili rows carry play counts, a topic gate, recency/popularity controls and an alternate endpoint.** Rows show `UP主`, play count and duration when the API returns them; adjacent topics are dropped; queries that explicitly ask for recency or high play apply a bounded date filter and play-count sort; and `/search/all/v2` is tried when `/search/type` is blocked with 412. Juejin rows also surface `点赞`/`阅读`, sort by likes for a `高赞` query, and Zhihu fallback drops a broad unrelated question when at least two specific answers remain.
+
+- **PostgreSQL version/EOL questions use the official support table.** A PostgreSQL query that asks about the current version, support or EOL now prepends the project's official versioning row (current major/minor, first release and final release/EOL), while ordinary PostgreSQL how-to queries keep the normal engine path.
+- **A clause/date AI Act question gets the official Article 113 page.** `research` adds the Article 113 page directly for a question that asks when a GPAI obligation applies or which article governs it, so a Chinese-language question does not depend on the English page winning a search ranking. The page is fetched through the normal ladder and its operative date windows are excerpted.
+- **Legal article excerpts target the operative clause.** Research excerpts now keep standalone article numbers and pick the late clause that combines an operative verb with a date, so an EU AI Act Article 113 pack shows `2 August 2025` instead of only the table-of-contents links.
+- **Longer, date-aware research excerpts.** `research` now keeps up to 1,800 characters per page and preserves the final window when a regulation query asks when a rule takes effect, so the effective-date article is not crowded out by definitions.
+
+- **Ecosystem comparison refreshed.** The README now carries a 2026-10-25 snapshot with GitHub stars, last-month npm downloads, test evidence and package size for the main DSH competitors; stale claims about tool counts, store status and test leadership were removed.
+
+**Test suite: 656 tests across 49 files** (655 pass, 1 skipped). The new
+  unified-tool, platform, cache, mirror and landing-page tests are included.
+- **`engine_test`: one probe per engine, with a reason.** A new model tool tests
+  one engine or all eight, bypasses the cache and never changes cooldown state,
+  and returns `ok`, latency, result count, and a failure class (`quota`, `auth`,
+  `bot-wall`, `transient`, `invalid-response`, `unknown`). The Settings page's
+  **Test engines** button calls the same runner through a loopback-only
+  `POST /api/dsh-web-search/engine-test` bridge, so a person can see which
+  engine is slow or blocked without reading a failure log.
+- **`fallbackOn` and a result `Note`.** A primary failure now carries a
+  structured `FailureKind`; the fallback tier runs only for the classes enabled
+  in `fallbackOn`. The default keeps every class enabled, so the old
+  always-fall-back behaviour is unchanged. When policy skips or uses the
+  fallback, the result says so in a short `note` (also rendered by
+  `search_many`).
+- **`blockedDomains`.** A comma-separated blocklist applied to merged and cached
+  results; a subdomain matches its parent. Empty by default, so it cannot change
+  existing searches.
+- **`safeSearch`.** `off` (default, engine default), `moderate` or `strict`.
+  Forwarded as `adlt` to Bing and `kp` to DuckDuckGo; other engines are left
+  untouched.
+- **`advanced_search`: a per-call date window.** One query can ask for `day`,
+  `week`, `month` or `year` without changing the global Settings value; `off`
+  disables the window for that call and omitting it keeps the setting. It shares
+  the engine, cache, cooldown and failure path with `web_search`, and falls back
+  to `web_search_advanced` if the name is taken.
+- **An explicit untrusted-content boundary.** Every plugin-owned tool wraps its
+  web-derived render in `<untrusted-web-content>...</untrusted-web-content>`,
+  strips forged boundary tags from the payload, and a short `systemPrompt`
+  section tells the model those contents are data, not instructions. The host's
+  own `web_search`/`web_fetch` notice is left in place.
+
+### Changed
+- **`research` now prefers authoritative sources on equal relevance.** A new
+  authority signal recognises government/academic TLDs, standards bodies and
+  well-known official documentation hosts, and uses documentation/legal/release
+  paths as a small boost. A credible official page that matches the query leads
+  the pack even when a generic page repeats more query words; relevance still
+  gates out official pages that match none of it. The signal is structural, not
+  a query-specific allowlist. Three regression tests.
+- The retry-policy code now records HTTP `status` on failures and classifies
+  them, but cooldown timing and retryability are unchanged.
+- Cache keys include a non-default `safeSearch`, a non-default `fallbackOn`
+  and a non-empty `blockedDomains`; the default paths keep their old keys, and
+  removing a block cannot reuse a filtered entry.
+
+### Fixed
+- **`research` rejects bot challenges and login redirects.** A challenge page can
+  be well over the 160-character floor (Anubis/Cloudflare shells, for example),
+  and a redirect can still carry a readable login URL. Both are now reported as
+  failed pages with a reason, instead of being quoted as evidence. Two
+  regression tests.
+- **npm publish dates are publish dates.** `domain_search` read the npm search
+  index's `updated` field, which moves when the index refreshes; it now reads
+  `package.date`, the version's actual publish time, and keeps an undated
+  package undated instead of inventing a date. One regression test.
+- **`advanced_search` says when a window is not proven.** If a caller asks for
+  `day`/`week`/`month`/`year` and some results have no publication date, the
+  result carries a note naming the count, instead of letting undated rows look
+  like they passed the filter. One regression test.
+- **Domain rows are readable and carry the metadata the API already returns.**
+  Stack Exchange entities (`-&gt;`, `&#39;`) are decoded; Hacker News rows show
+  points and comment counts; GitHub rows show the SPDX license and stars; PyPI
+  rows show `Requires-Python`. These are presentation-only additions on the
+  existing `Source` shape.
+- **`research` rejects shells and boilerplate instead of citing them.** A fetch
+  that comes back as a raw HTML document, or as fewer than 160 characters of
+  text, is now reported as a failed page with a reason rather than quoted as
+  evidence. Two regression tests.
+- **Long RFC-style pages keep the document, not one appendix.** The reading-root
+  heuristics could pick a code-heavy ABNF appendix (RFC 9110 returned only the
+  collected ABNF) or one dense section of a long document with no
+  `<article>`/`<main>`. A code-dominated container is now skipped, and a single
+  section is trusted only when it holds at least half the page's text. Two
+  regression tests; live RFC 9110 now converts to 603,506 characters of
+  document text instead of an ABNF-only excerpt.
+
+### Verification
+- 579 tests / 41 files (578 pass, 1 skip); `npm run typecheck` clean.
+- Replay bench unchanged: 20 queries P@8 `0.4375`, R@8 `0.7917`, MRR@8
+  `0.8071`; long corpus `0.4500 / 1.0000 / 0.7667`.
+- No publish yet: the version is bumped for the prepared package, not pushed to
+  npm.
+
 ## 0.19.3
 
 ### Fixed
@@ -143,7 +357,7 @@
   and a success clears its strikes. A throttled or rejected key retries the same
   request on the next key once, in both search and page extraction. Pools are
   cached per Settings value, so editing the field starts clean.
-- **Settings page polish.** A sticky jump bar scrolls to any of the five groups,
+- **Settings page polish.** A sticky jump bar scrolls to any of the six groups,
   and a line under the title compares the installed version with npm's latest
   (hidden when the registry is unreachable rather than guessed).
 - **Portable skill.** `skills/dsh-web-search/SKILL.md` states when to search,

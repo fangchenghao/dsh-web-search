@@ -23,7 +23,7 @@
  *
  * @module @fangchenghao/dsh-web-search/verticals
  */
-import type { Source } from './types.ts';
+import type { Source, TimeRange } from './types.ts';
 /** Identifiers accepted in `sources` and in the `domainSources` config field. */
 export type VerticalId = 'github' | 'npm' | 'pypi' | 'arxiv' | 'wikipedia' | 'hn' | 'stackexchange' | 'crates' | 'githubissues' | 'gitlab' | 'codeberg' | 'dockerhub' | 'maven' | 'nuget' | 'rubygems' | 'packagist' | 'pubdev' | 'huggingface' | 'hfdatasets' | 'openvsx' | 'terraform' | 'terraformproviders' | 'wordpress' | 'jetbrains' | 'openalex' | 'crossref' | 'europepmc' | 'uniprot' | 'clinicaltrials' | 'nvd' | 'coingecko' | 'internetarchive' | 'wikidata' | 'nominatim';
 /**
@@ -80,6 +80,8 @@ export interface VerticalSearchOptions {
     proxy?: string;
     /** Test seam; defaults to the platform `fetch`. */
     fetch?: FetchLike;
+    /** Publication window; arXiv switches to submitted-date order when set. */
+    timeRange?: TimeRange;
 }
 /** What one vertical run reports. */
 export interface VerticalOutcome {

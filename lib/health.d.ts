@@ -33,6 +33,8 @@ export declare class EngineHealth {
     private readonly maxCooldownMs;
     /** Current state per engine id. */
     private readonly records;
+    /** Engines whose direct route recently failed while the proxy worked. */
+    private readonly routePreferences;
     /**
      * @param options - base cooldown and ceiling, both optional.
      */
@@ -58,6 +60,23 @@ export declare class EngineHealth {
      */
     noteSuccess(id: string): void;
     /**
+     * Remember which route worked, so a blocked direct path is not paid for on
+     * every request. Only a proxy success creates a preference: a direct success
+     * clears it, because the direct path is normally faster and should win again
+     * as soon as it recovers.
+     *
+     * @param id - engine id.
+     * @param route - the route that produced the answer.
+     * @param now - shared timestamp; defaults to `Date.now`.
+     */
+    noteRouteSuccess(id: string, route: 'direct' | 'proxy', now?: number): void;
+    /**
+     * @param id - engine id.
+     * @param now - shared timestamp; defaults to `Date.now`.
+     * @returns whether the engine should try its tunnel before its direct route.
+     */
+    preferProxy(id: string, now?: number): boolean;
+    /**
      * @param id - engine id.
      * @param now - shared timestamp; defaults to `Date.now`.
      * @returns whether the engine must be skipped at `now`.
@@ -81,6 +100,6 @@ export declare class EngineHealth {
      *   currently resting; usable engines are omitted.
      */
     snapshot(now?: number): Record<string, number>;
-    /** Forget every engine, including failure streaks. */
+    /** Forget every engine, including failure streaks and route preferences. */
     clear(): void;
 }

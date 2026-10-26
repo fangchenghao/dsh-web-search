@@ -27,6 +27,9 @@ const DEFAULT_BASE_COOLDOWN_MS = 300_000;
 /** Default ceiling for the exponential backoff. */
 const DEFAULT_MAX_COOLDOWN_MS = 1_800_000;
 
+/** How long a successful proxy detour is remembered for an engine. */
+const DEFAULT_ROUTE_PREFERENCE_MS = 600_000;
+
 /** Codes for which a later retry cannot help, so they must not cool down. */
 const PERMANENT_CODES: ReadonlySet<SearchErrorCode> = new Set<SearchErrorCode>(['SEARCH_PARSE', 'SEARCH_ABORTED']);
 
@@ -38,6 +41,12 @@ interface HealthRecord {
   until: number;
   /** Code of the failure that opened the current cooldown. */
   code: SearchErrorCode;
+}
+
+/** A remembered, temporary transport preference for one engine. */
+interface RoutePreference {
+  /** Timestamp until which the proxy should be tried first. */
+  until: number;
 }
 
 /** Accept only a usable non-negative duration; fall back on the default. */
@@ -67,6 +76,8 @@ export class EngineHealth {
   private readonly maxCooldownMs: number;
   /** Current state per engine id. */
   private readonly records = new Map<string, HealthRecord>();
+  /** Engines whose direct route recently failed while the proxy worked. */
+  private readonly routePreferences = new Map<string, RoutePreference>();
 
   /**
    * @param options - base cooldown and ceiling, both optional.
@@ -107,6 +118,39 @@ export class EngineHealth {
    */
   noteSuccess(id: string): void {
     this.records.delete(id);
+  }
+
+  /**
+   * Remember which route worked, so a blocked direct path is not paid for on
+   * every request. Only a proxy success creates a preference: a direct success
+   * clears it, because the direct path is normally faster and should win again
+   * as soon as it recovers.
+   *
+   * @param id - engine id.
+   * @param route - the route that produced the answer.
+   * @param now - shared timestamp; defaults to `Date.now`.
+   */
+  noteRouteSuccess(id: string, route: 'direct' | 'proxy', now: number = Date.now()): void {
+    if (route === 'direct') {
+      this.routePreferences.delete(id);
+      return;
+    }
+    this.routePreferences.set(id, { until: now + DEFAULT_ROUTE_PREFERENCE_MS });
+  }
+
+  /**
+   * @param id - engine id.
+   * @param now - shared timestamp; defaults to `Date.now`.
+   * @returns whether the engine should try its tunnel before its direct route.
+   */
+  preferProxy(id: string, now: number = Date.now()): boolean {
+    const preference = this.routePreferences.get(id);
+    if (preference === undefined) return false;
+    if (preference.until <= now) {
+      this.routePreferences.delete(id);
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -151,8 +195,9 @@ export class EngineHealth {
     return snapshot;
   }
 
-  /** Forget every engine, including failure streaks. */
+  /** Forget every engine, including failure streaks and route preferences. */
   clear(): void {
     this.records.clear();
+    this.routePreferences.clear();
   }
 }

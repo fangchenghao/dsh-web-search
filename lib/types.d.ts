@@ -77,6 +77,16 @@ export interface EngineAnswer {
     host: HostSpec;
     sources: Source[];
 }
+/**
+ * Why an engine failed, in the terms a caller can act on.
+ *
+ * `quota` and `auth` are not worth retrying until the configuration changes;
+ * `bot-wall` may clear on its own; `transient` may succeed on a second try;
+ * `invalid-response` means the page came back but the parser could not use it.
+ */
+export type FailureKind = 'quota' | 'auth' | 'bot-wall' | 'transient' | 'invalid-response' | 'unknown';
+/** All failure kinds, in the order diagnostics should present them. */
+export declare const FAILURE_KINDS: readonly FailureKind[];
 /** Failure description kept per engine, surfaced to the caller verbatim. */
 export interface EngineFailure {
     /** Engine id the failure belongs to. */
@@ -85,7 +95,13 @@ export interface EngineFailure {
     reason: string;
     /** Business code from {@link SearchErrorCode} when the failure has one. */
     code?: SearchErrorCode;
+    /** Actionable class used by `fallbackOn` and the engine test. */
+    kind: FailureKind;
+    /** HTTP status when the failure came from a response, for diagnostics. */
+    status?: number;
 }
+/** Content-filtering level for the engines that support it. */
+export type SafeSearch = 'off' | 'moderate' | 'strict';
 /** Options the plugin passes down from the `web` seam request. */
 export interface SearchOptions {
     /** Maximum sources to return. */
@@ -111,6 +127,10 @@ export interface SearchOptions {
 export interface SearchOutcome {
     sources: Source[];
     failures: string[];
+    /** Structured counterparts of {@link failures}, with a stable class per row. */
+    failureDetails: EngineFailure[];
+    /** One short line the caller may show when the fallback policy changed the answer. */
+    note?: string;
     /** Proxy that was actually used, `undefined` when the run went direct. */
     proxy?: string;
 }

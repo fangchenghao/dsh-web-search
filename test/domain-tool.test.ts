@@ -22,6 +22,7 @@ import {
 } from '../src/domain-tool.ts';
 import type { DomainToolDefinition, DomainToolSettings, ToolRegistryLike } from '../src/domain-tool.ts';
 import { apply } from '../src/index.ts';
+import { UNIFIED_TOOL_NAME, UNIFIED_TOOL_FALLBACK_NAME } from '../src/tool-suite.ts';
 import type { PluginContext, SearchProvider } from '../src/index.ts';
 
 /** Read a captured GitHub response. */
@@ -159,6 +160,22 @@ test('execute reports per-source failures without throwing', async () => {
   assert.ok(value.failures.some((failure) => failure === 'github: HTTP 500'), JSON.stringify(value.failures));
 });
 
+test('execute can apply a publication window and explains the result', async () => {
+  const payload = await fixture('verticals-arxiv.xml');
+  const definition = createDomainToolDefinition(DOMAIN_TOOL_NAME, () => settings({ sourceIds: ['arxiv'] }), {
+    fetch: async () => new Response(payload, { status: 200 }),
+    detectProxy: async () => undefined,
+  });
+  const value = await definition.execute({ query: 'transformers', sources: ['arxiv'], timeRange: 'year' }, {});
+  assert.deepEqual(value.sources, []);
+  assert.equal(value.timeRange, 'year');
+  assert.match(value.note ?? '', /No result was dated inside the year window/u);
+  await assert.rejects(
+    definition.execute({ query: 'transformers', timeRange: 'decade' }, {}),
+    /timeRange must be one of/u,
+  );
+});
+
 test('pickDomainToolName uses the fallback only when domain_search is taken', () => {
   assert.equal(pickDomainToolName(registry().tools), DOMAIN_TOOL_NAME);
   assert.equal(pickDomainToolName(registry({ taken: true }).tools), DOMAIN_TOOL_FALLBACK_NAME);
@@ -187,23 +204,43 @@ test('apply loads without a tool service and still registers web_search', () => 
   assert.equal(fetchProviders.length, 1);
 });
 
-test('apply registers domain_search when the host exposes ctx.get("tools")', () => {
+test('apply registers one unified web_tools entry when the host exposes ctx.get("tools")', () => {
   const { tools, definitions } = registry();
   const { ctx, providers } = pluginContext(tools);
   assert.doesNotThrow(() => apply(ctx, {}));
   assert.equal(providers.length, 1, 'web_search is registered either way');
-  assert.equal(definitions.length, 4, 'domain_search, search_many, read_page and research share the optional registry');
-  assert.equal(definitions[0]?.name, DOMAIN_TOOL_NAME);
-  assert.equal(definitions[1]?.name, 'search_many');
-  assert.equal(definitions[2]?.name, 'read_page');
-  assert.equal(definitions[3]?.name, 'research');
+  assert.equal(definitions.length, 1, 'the eight capabilities are actions, not eight registry entries');
+  assert.equal(definitions[0]?.name, UNIFIED_TOOL_NAME);
+  assert.deepEqual(definitions[0]?.parameters.required, ['action']);
+  assert.ok((definitions[0]?.parameters.properties?.action?.enum ?? []).includes('domain_search'));
 });
 
-test('apply uses web_domain_search when another plugin owns the preferred name', () => {
-  const { tools, definitions } = registry({ taken: true });
+test('apply uses the unified fallback name when another plugin owns web_tools', () => {
+  const { tools, definitions } = registry();
+  tools.get = (name) => (name === UNIFIED_TOOL_NAME ? { name } : undefined);
   const { ctx } = pluginContext(tools);
   apply(ctx, {});
-  assert.equal(definitions.find((definition) => definition.name === DOMAIN_TOOL_FALLBACK_NAME)?.name, DOMAIN_TOOL_FALLBACK_NAME);
+  assert.equal(definitions[0]?.name, UNIFIED_TOOL_FALLBACK_NAME);
+});
+
+test('legacy mode keeps the original eight names for old prompts', () => {
+  const { tools, definitions } = registry();
+  const { ctx } = pluginContext(tools);
+  apply(ctx, { toolSurface: 'legacy' });
+  assert.equal(definitions.length, 8);
+  assert.equal(definitions[0]?.name, DOMAIN_TOOL_NAME);
+  assert.equal(definitions[7]?.name, 'engine_test');
+});
+test('the unified entry dispatches a captured action without touching another one', async () => {
+  const { tools, definitions } = registry();
+  const { ctx } = pluginContext(tools);
+  apply(ctx, { cachePersist: false });
+  const unified = definitions[0];
+  assert.ok(unified, 'web_tools was registered');
+  const value = await unified.execute({ action: 'cache_search', query: 'no such text' }, {});
+  assert.equal(value.action, 'cache_search');
+  assert.deepEqual(value.result, { query: 'no such text', matches: [], failures: [] });
+  await assert.rejects(unified.execute({ action: 'not_an_action' }, {}), /action must be one of/u);
 });
 
 test('a throwing tool registry never breaks plugin loading', () => {
@@ -218,5 +255,5 @@ test('a throwing tool registry never breaks plugin loading', () => {
     console.warn = original;
   }
   assert.equal(providers.length, 1);
-  assert.ok(warnings.some((line) => line.includes('domain_search')), JSON.stringify(warnings));
+  assert.ok(warnings.some((line) => line.includes('web_tools')), JSON.stringify(warnings));
 });

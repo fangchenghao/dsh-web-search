@@ -1,0 +1,212 @@
+[
+  {
+    "id": "node24",
+    "lang": "en",
+    "category": "release",
+    "query": "Node.js 24 release notes",
+    "official": "nodejs.org"
+  },
+  {
+    "id": "postgres18",
+    "lang": "en",
+    "category": "release",
+    "query": "PostgreSQL 18 release notes",
+    "official": "postgresql.org"
+  },
+  {
+    "id": "python314",
+    "lang": "en",
+    "category": "release",
+    "query": "Python 3.14 release notes",
+    "official": "python.org"
+  },
+  {
+    "id": "rust190",
+    "lang": "en",
+    "category": "release",
+    "query": "Rust 1.90 release notes",
+    "official": "blog.rust-lang.org"
+  },
+  {
+    "id": "go125",
+    "lang": "en",
+    "category": "release",
+    "query": "Go 1.25 release notes",
+    "official": "go.dev"
+  },
+  {
+    "id": "typescript59",
+    "lang": "en",
+    "category": "release",
+    "query": "TypeScript 5.9 release notes",
+    "official": "typescriptlang.org"
+  },
+  {
+    "id": "kubernetes134",
+    "lang": "en",
+    "category": "release",
+    "query": "Kubernetes 1.34 release notes",
+    "official": "kubernetes.io"
+  },
+  {
+    "id": "react19",
+    "lang": "en",
+    "category": "release",
+    "query": "React 19 release notes",
+    "official": "react.dev"
+  },
+  {
+    "id": "playwright-locator",
+    "lang": "en",
+    "category": "docs",
+    "query": "Playwright locator documentation",
+    "official": "playwright.dev"
+  },
+  {
+    "id": "npm-install",
+    "lang": "en",
+    "category": "docs",
+    "query": "npm install documentation",
+    "official": "docs.npmjs.com"
+  },
+  {
+    "id": "pip-install",
+    "lang": "en",
+    "category": "docs",
+    "query": "pip install documentation",
+    "official": "pip.pypa.io"
+  },
+  {
+    "id": "docker-compose",
+    "lang": "en",
+    "category": "docs",
+    "query": "Docker Compose documentation",
+    "official": "docs.docker.com"
+  },
+  {
+    "id": "github-actions-cache",
+    "lang": "en",
+    "category": "docs",
+    "query": "GitHub Actions cache documentation",
+    "official": "docs.github.com"
+  },
+  {
+    "id": "mdn-fetch",
+    "lang": "en",
+    "category": "docs",
+    "query": "MDN Fetch API documentation",
+    "official": "developer.mozilla.org"
+  },
+  {
+    "id": "fastapi-query",
+    "lang": "en",
+    "category": "docs",
+    "query": "FastAPI query parameters documentation",
+    "official": "fastapi.tiangolo.com"
+  },
+  {
+    "id": "nextjs-app-router",
+    "lang": "en",
+    "category": "docs",
+    "query": "Next.js App Router documentation",
+    "official": "nextjs.org"
+  },
+  {
+    "id": "vite-config",
+    "lang": "en",
+    "category": "docs",
+    "query": "Vite config documentation",
+    "official": "vite.dev"
+  },
+  {
+    "id": "mcp-tools",
+    "lang": "en",
+    "category": "docs",
+    "query": "Model Context Protocol tools specification",
+    "official": "modelcontextprotocol.io"
+  },
+  {
+    "id": "deepseek-api",
+    "lang": "en",
+    "category": "docs",
+    "query": "DeepSeek API documentation",
+    "official": "api-docs.deepseek.com"
+  },
+  {
+    "id": "claude-code-mcp",
+    "lang": "en",
+    "category": "docs",
+    "query": "Claude Code MCP configuration",
+    "official": "code.claude.com"
+  },
+  {
+    "id": "node24-zh",
+    "lang": "zh",
+    "category": "release",
+    "query": "Node.js 24 发布说明",
+    "official": "nodejs.org"
+  },
+  {
+    "id": "postgres18-zh",
+    "lang": "zh",
+    "category": "release",
+    "query": "PostgreSQL 18 发布说明",
+    "official": "postgresql.org"
+  },
+  {
+    "id": "react19-zh",
+    "lang": "zh",
+    "category": "release",
+    "query": "React 19 发布说明",
+    "official": "react.dev"
+  },
+  {
+    "id": "python314-zh",
+    "lang": "zh",
+    "category": "release",
+    "query": "Python 3.14 发布说明",
+    "official": "python.org"
+  },
+  {
+    "id": "rust190-zh",
+    "lang": "zh",
+    "category": "release",
+    "query": "Rust 1.90 发布说明",
+    "official": "blog.rust-lang.org"
+  },
+  {
+    "id": "npm-package",
+    "lang": "en",
+    "category": "package",
+    "query": "@fffangchenghao/dsh-web-search npm",
+    "official": "npmjs.com"
+  },
+  {
+    "id": "github-repo",
+    "lang": "en",
+    "category": "package",
+    "query": "fangchenghao dsh-web-search GitHub",
+    "official": "github.com"
+  },
+  {
+    "id": "pypi-requests",
+    "lang": "en",
+    "category": "package",
+    "query": "requests PyPI package",
+    "official": "pypi.org"
+  },
+  {
+    "id": "arxiv-rag",
+    "lang": "en",
+    "category": "research",
+    "query": "retrieval augmented generation survey arXiv",
+    "official": "arxiv.org"
+  },
+  {
+    "id": "stackoverflow-fetch-proxy",
+    "lang": "en",
+    "category": "qa",
+    "query": "Node.js fetch proxy environment variable Stack Overflow",
+    "official": "stackoverflow.com"
+  }
+]

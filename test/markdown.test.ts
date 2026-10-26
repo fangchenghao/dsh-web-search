@@ -180,6 +180,29 @@ test('when there is no article or main, the densest container wins', () => {
   assert.ok(!markdown.includes('Buy now'));
 });
 
+test('a code-heavy appendix does not become the reading root', () => {
+  const prose = 'The 404 status code indicates that the origin server did not find a current representation. '.repeat(30);
+  const code = 'rule-name = token *( OWS token )\n'.repeat(400);
+  const html = '<html><body>'
+    + `<div id="content"><h1>HTTP Semantics</h1><p>${prose}</p></div>`
+    + `<div id="appendix"><h2>Collected ABNF</h2><pre class="lang-abnf">${code}</pre></div>`
+    + '</body></html>';
+  const markdown = htmlToMarkdown(html);
+  assert.ok(markdown.startsWith('# HTTP Semantics\n\nThe 404 status code'), markdown.slice(0, 80));
+  assert.ok(markdown.includes('Collected ABNF'), 'the appendix is kept after the prose');
+});
+
+test('a long document without landmarks keeps all of its prose sections', () => {
+  const section = 'This section explains HTTP semantics in ordinary prose. '.repeat(80);
+  const html = '<html><body>'
+    + `<div id="one"><h2>One</h2><p>${section}</p></div>`
+    + `<div id="two"><h2>Two</h2><p>${section}</p></div>`
+    + '</body></html>';
+  const markdown = htmlToMarkdown(html);
+  assert.ok(markdown.includes('## One'), markdown.slice(0, 80));
+  assert.ok(markdown.includes('## Two'), markdown.slice(0, 120));
+});
+
 test('comments, scripts, hidden nodes and inline handlers never reach the output', () => {
   const html = '<html><body>'
     + '<!-- a secret comment -->'

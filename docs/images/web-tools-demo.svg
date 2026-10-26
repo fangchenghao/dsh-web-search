@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="web_tools demo: one tool, eight actions">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#111b2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000" flood-opacity=".45"/>
+    </filter>
+    <style>
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+      .sans{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}
+      .chip{fill:#18243a;stroke:#2b3d59;stroke-width:1}
+      .chipOn{fill:#122b3a;stroke:#22d3ee;stroke-width:1.5}
+      .t{fill:#e5edf7}.m{fill:#9fb0c7}.g{fill:#7ee2b8}.p{fill:#c4b5fd}
+    </style>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <circle cx="1050" cy="90" r="180" fill="#8b5cf6" opacity=".08"/>
+  <circle cx="120" cy="700" r="220" fill="#22d3ee" opacity=".06"/>
+  <text x="70" y="78" class="sans t" font-size="34" font-weight="700">One tool. Eight actions. Zero API keys.</text>
+  <text x="70" y="112" class="sans m" font-size="17">web_tools keeps the model-facing surface small while every capability stays reachable.</text>
+  <g filter="url(#shadow)">
+    <rect x="70" y="150" width="1060" height="430" rx="18" fill="#0d1728" stroke="#26364f" stroke-width="1.5"/>
+    <rect x="70" y="150" width="1060" height="46" rx="18" fill="#132137"/>
+    <rect x="70" y="178" width="1060" height="18" fill="#132137"/>
+    <circle cx="98" cy="173" r="6" fill="#ff5f57"/><circle cx="120" cy="173" r="6" fill="#febc2e"/><circle cx="142" cy="173" r="6" fill="#28c840"/>
+    <text x="170" y="179" class="mono m" font-size="13">deepseek-harness — web_tools</text>
+    <text x="100" y="238" class="mono g" font-size="16">$</text>
+    <text x="122" y="238" class="mono t" font-size="16">dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest</text>
+    <text x="100" y="274" class="mono g" font-size="16">$</text>
+    <text x="122" y="274" class="mono t" font-size="16">web_tools action=research query="MCP stdio transport spec"</text>
+    <text x="100" y="316" class="mono p" font-size="14">→ search: 4 engines answered in 1.8s</text>
+    <text x="100" y="342" class="mono p" font-size="14">→ fetch: 3 pages, 2 cited sections</text>
+    <text x="100" y="368" class="mono p" font-size="14">→ evidence pack: 3 sources, failures listed by URL</text>
+    <text x="100" y="420" class="mono m" font-size="13">actions</text>
+    <g class="sans" font-size="14">
+      <rect class="chip" x="100" y="438" width="140" height="40" rx="9"/><text x="118" y="463" class="t">search_many</text>
+      <rect class="chip" x="252" y="438" width="168" height="40" rx="9"/><text x="270" y="463" class="t">advanced_search</text>
+      <rect class="chip" x="432" y="438" width="150" height="40" rx="9"/><text x="450" y="463" class="t">domain_search</text>
+      <rect class="chip" x="594" y="438" width="160" height="40" rx="9"/><text x="612" y="463" class="t">platform_search</text>
+      <rect class="chip" x="766" y="438" width="110" height="40" rx="9"/><text x="784" y="463" class="t">read_page</text>
+      <rect class="chipOn" x="100" y="490" width="120" height="40" rx="9"/><text x="118" y="515" class="t">research</text>
+      <rect class="chip" x="232" y="490" width="150" height="40" rx="9"/><text x="250" y="515" class="t">cache_search</text>
+      <rect class="chip" x="394" y="490" width="140" height="40" rx="9"/><text x="412" y="515" class="t">engine_test</text>
+      <text x="560" y="515" class="m" font-size="13">one schema · one registration · selected action runs</text>
+    </g>
+  </g>
+  <g class="sans">
+    <rect x="70" y="620" width="330" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
+    <text x="92" y="651" class="m" font-size="13">Engines</text><text x="92" y="677" class="t" font-size="20" font-weight="700">8 key-free paths</text>
+    <rect x="420" y="620" width="330" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
+    <text x="442" y="651" class="m" font-size="13">Tests</text><text x="442" y="677" class="t" font-size="20" font-weight="700">668 local cases</text>
+    <rect x="770" y="620" width="360" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
+    <text x="792" y="651" class="m" font-size="13">Cross-agent</text><text x="792" y="677" class="t" font-size="20" font-weight="700">MCP stdio server</text>
+  </g>
+</svg>

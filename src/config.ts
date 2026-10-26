@@ -22,7 +22,7 @@
 import z from '@deepseek-ai/schemastery';
 import { DEFAULT_FETCH_MAX_LENGTH } from './markdown.ts';
 import type { RenderMode } from './render.ts';
-import type { RankOptions, TimeRange, WaitPolicy } from './types.ts';
+import type { FailureKind, RankOptions, SafeSearch, TimeRange, WaitPolicy } from './types.ts';
 import { DEFAULT_VERTICAL_IDS, VERTICAL_IDS, isVerticalId } from './verticals.ts';
 
 /** Schema of the plugin's configuration section. */
@@ -80,6 +80,21 @@ export const Config = z.object({
     .default('off')
     .description('只保留多久以内发布的结果：off 不限时间、day 最近 24 小时、week 最近 7 天、month 最近 30 天、year 最近 1 年。开启后只返回窗口内发布的结果；若一条带日期的都没落进窗口，会退回无日期的结果避免空手；不确定保持 off。')
     .volatile(),
+  blockedDomains: z
+    .array(z.string())
+    .default([])
+    .description('永远不要出现在结果里的网站（如 spam.example、ads.example），多个用逗号分隔；子域名也会被排除。留空表示不屏蔽任何网站。')
+    .volatile(),
+  safeSearch: z
+    .union(['off', 'moderate', 'strict'])
+    .default('off')
+    .description('内置引擎的安全搜索级别：off 保持引擎默认，moderate 过滤成人内容，strict 使用最严格过滤。只影响 Bing 和 DuckDuckGo；其它引擎没有对应参数。')
+    .volatile(),
+  fallbackOn: z
+    .array(z.union(['quota', 'auth', 'bot-wall', 'transient', 'invalid-response', 'unknown']))
+    .default(['quota', 'auth', 'bot-wall', 'transient', 'invalid-response', 'unknown'])
+    .description('哪些失败允许切换到备用引擎：默认全部允许，搜索不会因为一个引擎失败而中断。取消某一类后，遇到该类失败会直接报告错误，不再换引擎；留空表示任何失败都不回退。')
+    .volatile(),
   cacheTtlMs: z.natural().default(600000).description('同一问题多久内复用上次结果（缓存，即存一份备用），毫秒。想早点看到新内容就调小；保持 600000（10 分钟）即可。').volatile(),
   cacheEntries: z.natural().default(100).description('最多存多少条旧结果备用（缓存，即存起来省得重复查）。存满后先丢最久没用的；一般保持 100 即可。').volatile(),
   cachePersist: z
@@ -109,6 +124,11 @@ export const Config = z.object({
     .volatile(),
   domainLimit: z.natural().min(1).max(20).default(5).description('domain_search 一次最多返回几条（1-20）；默认 5 条，想多看可调到 10。').volatile(),
   domainTimeoutMs: z.natural().min(500).default(8000).description('每个专用源最多等多久（毫秒）；网络慢可加到 15000，平时 8000 即可。').volatile(),
+  toolSurface: z
+    .union(['unified', 'legacy'])
+    .default('unified')
+    .description('模型工具面：unified 只注册一个 web_tools，用 action 选择 search_many/domain_search/research 等能力（推荐，省上下文）；legacy 保留原来的八个独立工具名，供旧提示词兼容。修改后需要重启插件。')
+    .volatile(),
 });
 
 /** What the schema resolves a field to: a live reference, not the value. */
@@ -169,6 +189,12 @@ export interface ResolvedConfig {
   wait: WaitPolicy;
   /** Rolling publication window; `off` disables time filtering. */
   timeRange: TimeRange;
+  /** Domains the caller never wants in a result list. */
+  blockedDomains: string[];
+  /** Content-filter level forwarded to engines that support it. */
+  safeSearch: SafeSearch;
+  /** Failure classes that may trigger the fallback tier. */
+  fallbackOn: FailureKind[];
   /** AnySearch credential, or an empty string for anonymous access. */
   anysearchApiKey: string;
   /** AnySearch vertical domain, or an empty string for the open web. */
@@ -193,6 +219,8 @@ export interface ResolvedConfig {
   domainLimit: number;
   /** Per-source deadline for vertical requests. */
   domainTimeoutMs: number;
+  /** Whether the model sees one unified tool or the legacy eight names. */
+  toolSurface: 'unified' | 'legacy';
 }
 
 /**
@@ -247,11 +275,15 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     limit,
     wait: settings.wait,
     timeRange: settings.timeRange,
+    blockedDomains: settings.blockedDomains.map((domain) => domain.trim()).filter((domain) => domain.length > 0),
+    safeSearch: settings.safeSearch,
+    fallbackOn: [...settings.fallbackOn],
     anysearchApiKey: settings.anysearchApiKey.trim(),
     anysearchDomain: settings.anysearchDomain.trim(),
     domainSourceIds: domainSources.length > 0 ? domainSources : [...DEFAULT_VERTICAL_IDS],
     domainLimit: settings.domainLimit,
     domainTimeoutMs: settings.domainTimeoutMs,
+    toolSurface: settings.toolSurface,
     rank: {
       rrfConstant: settings.rrfConstant,
       ...(settings.authorityDomains.length > 0 ? { authorityDomains: [...settings.authorityDomains] } : {}),

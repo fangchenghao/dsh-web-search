@@ -443,6 +443,14 @@ function density(node: ElementNode): number {
   return characters === 0 ? 0 : characters / (1 + elementCount(node));
 }
 
+/** True when most of a container's text is one <pre> block (an appendix, not prose). */
+function codeDominated(node: ElementNode): boolean {
+  const pre = findElement(node, (child) => child.tag === 'pre');
+  if (pre === undefined) return false;
+  const characters = characterCount(node);
+  return characters > 0 && characterCount(pre) >= characters * 0.6;
+}
+
 /** Highest-density container, favouring the one that carries the most text. */
 function densestContainer(body: ElementNode): ElementNode {
   let best = body;
@@ -452,6 +460,10 @@ function densestContainer(body: ElementNode): ElementNode {
     if (!CONTAINER_TAGS.has(node.tag)) return;
     const characters = characterCount(node);
     if (characters < 120) return;
+    // An appendix that is one huge ABNF/code block has a very high text/markup
+    // ratio, but it is not the page's prose. Skipping it lets the body or a
+    // prose section win; the body fallback still keeps the code.
+    if (codeDominated(node)) return;
     const score = density(node);
     if (score > bestScore || (score === bestScore && characters > bestCharacters)) {
       best = node;
@@ -507,7 +519,11 @@ function pickMain(root: ElementNode): ElementNode {
   for (const landmark of landmarks) {
     if (landmark !== undefined && characterCount(landmark) >= floor) return landmark;
   }
-  if (characterCount(densest) >= floor) return densest;
+  // A single section can be denser than the whole body on long documents with
+  // no <article>/<main> (RFC 9110 has dozens of sections). Choosing it makes
+  // the rest of the document unreachable; only trust density when it carries
+  // at least half the page's text.
+  if (characterCount(densest) >= floor && characterCount(densest) * 2 > bodyCharacters) return densest;
   // Density alone can crown a short, dense stub — a comment form or a footer —
   // while the prose sits in a container with more markup and fewer characters
   // per tag. Prefer a container that still holds a real share of the page text,

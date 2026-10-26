@@ -21,8 +21,9 @@ const KEYS = [
   'hosts', 'wait', 'timeoutMs', 'proxy', 'fetchFormat', 'fetchMaxLength', 'renderJs', 'renderTimeoutMs',
   'anysearchApiKey', 'anysearchDomain',
   'limit', 'rrfConstant', 'authorityDomains', 'authorityBoost', 'freshnessBoost', 'freshnessDays',
-  'timeRange', 'cacheTtlMs', 'cacheEntries', 'cachePersist', 'cacheFile', 'baseCooldownMs', 'maxCooldownMs',
-  'domainSources', 'domainLimit', 'domainTimeoutMs',
+  'timeRange', 'blockedDomains', 'safeSearch', 'fallbackOn',
+  'cacheTtlMs', 'cacheEntries', 'cachePersist', 'cacheFile', 'baseCooldownMs', 'maxCooldownMs',
+  'domainSources', 'domainLimit', 'domainTimeoutMs', 'toolSurface',
 ] as const;
 
 /** One rendered element, after function components have been expanded. */
@@ -257,6 +258,13 @@ test('the page renders one control per configuration key', async () => {
   const { render } = await mount(true);
   const controls = flatten(render()).filter((element) => element.type === 'input' || element.type === 'select');
   assert.equal(controls.length, KEYS.length, `expected ${KEYS.length} controls, rendered ${controls.length}`);
+});
+
+test('the engine health section offers a test button', async () => {
+  const { render } = await mount(true);
+  const labels = texts(render());
+  assert.ok(labels.includes('testTitle'), `expected the health section, got ${JSON.stringify(labels.slice(-8))}`);
+  assert.ok(labels.includes('testButton'), 'expected the test button label');
 });
 
 test('the time range control is a five-option select showing the stored value', async () => {

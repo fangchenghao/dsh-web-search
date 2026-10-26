@@ -190,3 +190,23 @@ test('health: clear forgets cooldowns and failure streaks', () => {
   health.noteFailure('bing', failure('SEARCH_THROTTLED'), 2_000);
   assert.deepEqual(health.snapshot(2_000), { bing: 1_000 });
 });
+
+test('health: a proxy success is remembered, expires, and is cleared by a direct success', () => {
+  const health = new EngineHealth();
+  assert.equal(health.preferProxy('firecrawl', 0), false);
+  health.noteRouteSuccess('firecrawl', 'proxy', 0);
+  assert.equal(health.preferProxy('firecrawl', 0), true);
+  assert.equal(health.preferProxy('firecrawl', 599_999), true);
+  assert.equal(health.preferProxy('firecrawl', 600_000), false);
+  health.noteRouteSuccess('firecrawl', 'proxy', 1_000_000);
+  health.noteRouteSuccess('firecrawl', 'direct', 1_000_001);
+  assert.equal(health.preferProxy('firecrawl', 1_000_001), false);
+});
+
+test('health: clear forgets route preferences too', () => {
+  const health = new EngineHealth();
+  health.noteRouteSuccess('exa', 'proxy', 0);
+  assert.equal(health.preferProxy('exa', 0), true);
+  health.clear();
+  assert.equal(health.preferProxy('exa', 0), false);
+});

@@ -19,9 +19,12 @@
  * @module @fangchenghao/dsh-web-search/domain-tool
  */
 import type { Source } from './types.ts';
+import { wrapUntrustedContent } from './untrusted.ts';
 import { resolveProxy } from './proxy.ts';
+import { TIME_RANGES, filterByTimeRange } from './freshness.ts';
 import { DEFAULT_VERTICAL_IDS, searchVerticals, isVerticalId, VERTICAL_IDS } from './verticals.ts';
 import type { FetchLike, VerticalId } from './verticals.ts';
+import type { TimeRange } from './types.ts';
 
 /** The name this tool prefers. */
 export const DOMAIN_TOOL_NAME = 'domain_search';
@@ -70,6 +73,10 @@ export interface DomainToolValue {
   sources: Source[];
   failures: string[];
   truncated: boolean;
+  /** Present only when this call asked for a publication window. */
+  timeRange?: TimeRange;
+  /** Why the window did or did not narrow the rows. */
+  note?: string;
 }
 
 /** Settings the tool reads live for every call. */
@@ -124,6 +131,12 @@ function parameterSchema(): ToolJsonSchema {
         type: 'integer',
         description: 'Results wanted per source, 1–20. Omit to use the deployment default.',
       },
+      timeRange: {
+        type: 'string',
+        enum: [...TIME_RANGES],
+        description:
+          'Optional publication window: off, day, week, month or year. Sources without publication dates are kept only when no dated row falls inside the window.',
+      },
     },
     required: ['query'],
   };
@@ -151,6 +164,8 @@ function outputSchema(): ToolJsonSchema {
       },
       failures: { type: 'array', items: { type: 'string' } },
       truncated: { type: 'boolean' },
+      timeRange: { type: 'string', enum: [...TIME_RANGES] },
+      note: { type: 'string' },
     },
     required: ['sources', 'failures', 'truncated'],
   };
@@ -160,7 +175,7 @@ function outputSchema(): ToolJsonSchema {
 function parseArgs(
   args: unknown,
   settings: DomainToolSettings,
-): { query: string; ids: VerticalId[]; limit: number } {
+): { query: string; ids: VerticalId[]; limit: number; timeRange?: TimeRange } {
   if (!isRecord(args)) throw new Error('domain_search requires arguments');
   const query = typeof args.query === 'string' ? args.query.trim() : '';
   if (query.length === 0) throw new Error('domain_search requires a non-empty query');
@@ -177,15 +192,23 @@ function parseArgs(
   const limit = typeof args.limit === 'number'
     ? clampToolLimit(args.limit, settings.limit)
     : clampToolLimit(settings.limit, 5);
+  const rawRange = args['timeRange'];
+  if (rawRange !== undefined) {
+    if (typeof rawRange !== 'string' || !TIME_RANGES.includes(rawRange as TimeRange)) {
+      throw new Error(`domain_search timeRange must be one of ${TIME_RANGES.join(', ')}`);
+    }
+    return { query, ids, limit, timeRange: rawRange as TimeRange };
+  }
   return { query, ids, limit };
 }
 
 /** Format the model-facing result text. */
 export function formatDomainValue(args: unknown, value: DomainToolValue): string {
   const query = isRecord(args) && typeof args.query === 'string' ? args.query : 'the query';
+  const window = value.timeRange === undefined ? '' : ` (timeRange=${value.timeRange})`;
   const head = value.sources.length === 0
-    ? `No dedicated source returned a result for ${JSON.stringify(query)}.`
-    : `Dedicated search for ${JSON.stringify(query)}: ${value.sources.length} result(s)${value.truncated ? ' (truncated)' : ''}.`;
+    ? `No dedicated source returned a result for ${JSON.stringify(query)}${window}.`
+    : `Dedicated search for ${JSON.stringify(query)}${window}: ${value.sources.length} result(s)${value.truncated ? ' (truncated)' : ''}.`;
   const lines = value.sources.map((source, index) => {
     const title = source.title !== undefined && source.title.length > 0 ? source.title : source.url;
     const body = [`${index + 1}. ${title}`, `   ${source.url}`];
@@ -193,6 +216,7 @@ export function formatDomainValue(args: unknown, value: DomainToolValue): string
     if (source.publishedAt !== undefined && source.publishedAt.length > 0) body.push(`   ${source.publishedAt}`);
     return body.join('\n');
   });
+  if (value.note !== undefined && value.note.length > 0) lines.push(`Note: ${value.note}`);
   if (value.failures.length > 0) {
     lines.push('', 'Unavailable sources:', ...value.failures.map((failure) => `- ${failure}`));
   }
@@ -219,7 +243,7 @@ export function createDomainToolDefinition(
     parameters: parameterSchema(),
     output: {
       schema: outputSchema(),
-      render: (args, value) => [{ type: 'text', text: formatDomainValue(args, value) }],
+      render: (args, value) => [{ type: 'text', text: wrapUntrustedContent(formatDomainValue(args, value)) }],
     },
     timeoutMs: 30_000,
     isConcurrencySafe: () => true,
@@ -228,18 +252,38 @@ export function createDomainToolDefinition(
       const parsed = parseArgs(args, settings);
       const explicit = typeof settings.proxy === 'string' ? settings.proxy.trim() : '';
       const proxy = explicit.length > 0 ? explicit : await detectProxy();
+      // Ask for more than the caller needs when a window is active, so filtering
+      // does not turn a date-ordered source into a one-row answer.
+      const searchLimit = parsed.timeRange === undefined || parsed.timeRange === 'off'
+        ? parsed.limit
+        : Math.min(20, parsed.limit * 3);
       const outcome = await searchVerticals(parsed.query, {
         ids: parsed.ids,
-        limit: parsed.limit,
+        limit: searchLimit,
         timeoutMs: settings.timeoutMs,
         ...(proxy === undefined || proxy.length === 0 ? {} : { proxy }),
         ...(exec.signal === undefined ? {} : { signal: exec.signal }),
+        ...(parsed.timeRange === undefined ? {} : { timeRange: parsed.timeRange }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
       });
+      if (parsed.timeRange === undefined || parsed.timeRange === 'off') {
+        return {
+          sources: outcome.sources.slice(0, parsed.limit),
+          failures: outcome.failures,
+          truncated: outcome.truncated || outcome.sources.length > parsed.limit,
+          ...(parsed.timeRange === undefined ? {} : { timeRange: parsed.timeRange }),
+        };
+      }
+      const filtered = filterByTimeRange(outcome.sources, parsed.timeRange);
+      const note = filtered.length === 0
+        ? `No result was dated inside the ${parsed.timeRange} window.`
+        : `${filtered.length} of ${outcome.sources.length} result(s) were dated inside the ${parsed.timeRange} window; undated rows are kept only when no dated row qualified.`;
       return {
-        sources: outcome.sources,
+        sources: filtered.slice(0, parsed.limit),
         failures: outcome.failures,
-        truncated: outcome.truncated,
+        truncated: outcome.truncated || outcome.sources.length > parsed.limit,
+        timeRange: parsed.timeRange,
+        note,
       };
     },
   };

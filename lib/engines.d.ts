@@ -11,7 +11,7 @@
  *
  * @module @fangchenghao/dsh-web-search/engines
  */
-import type { EngineAnswer, HostSpec, RankOptions, Region, SearchOptions, SearchOutcome, Source, TimeRange, WaitPolicy } from './types.ts';
+import type { EngineAnswer, EngineFailure, FailureKind, HostSpec, RankOptions, Region, SafeSearch, SearchOptions, SearchOutcome, Source, TimeRange, WaitPolicy } from './types.ts';
 import type { SearchCache } from './cache.ts';
 import type { EngineHealth } from './health.ts';
 /**
@@ -30,6 +30,12 @@ export interface EngineRunOptions extends SearchOptions {
     anysearchDomain?: string;
     /** Ranking knobs, falling back to the documented defaults. */
     rank?: RankOptions;
+    /** Failure classes that may trigger the fallback tier; absent means all. */
+    fallbackOn?: readonly FailureKind[];
+    /** Domains the caller never wants in a result list. */
+    blockedDomains?: readonly string[];
+    /** Content-filter level forwarded to engines that support it. */
+    safeSearch?: SafeSearch;
     /** Result cache to consult and fill, when one is configured. */
     cache?: SearchCache;
     /** Cooldown tracker, when one is configured. */
@@ -72,6 +78,10 @@ export interface SearchTrace {
     sources: Source[];
     /** Failure strings accumulated by this run. */
     failures: string[];
+    /** Structured failures, including the class used by `fallbackOn`. */
+    failureDetails: EngineFailure[];
+    /** Human-readable note when policy changed the answer. */
+    note?: string;
     /** Whether the result came from the cache. */
     cached: boolean;
 }

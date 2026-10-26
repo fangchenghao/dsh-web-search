@@ -44,6 +44,12 @@ export interface CacheKeyParts {
     engines: string[];
     /** Active publication window; omitted and `off` share a key. */
     timeRange?: TimeRange;
+    /** Content-filter level; omitted and `off` share a key. */
+    safeSearch?: string;
+    /** Fallback policy; omitted and the full policy share a key. */
+    fallbackOn?: readonly string[];
+    /** Domain blocklist; omitted and an empty list share a key. */
+    blockedDomains?: readonly string[];
 }
 /**
  * Build the cache key for one search request.
@@ -52,10 +58,11 @@ export interface CacheKeyParts {
  * `'  PostgreSQL   Replication '` and `'postgresql replication'` share an
  * entry. Engine order never matters because the ids are sorted; every other
  * field is positional, so differing `limit`, `wait`, `lead`, `timeRange` or
- * engine set yields a different key. `timeRange` is appended only when it is
- * active, which keeps the key for an unfiltered search unchanged. The query is
- * last so a query containing the field separator cannot collide with a
- * different request's prefix.
+ * engine set yields a different key. `timeRange`, `safeSearch`, `fallbackOn`
+ * and `blockedDomains` are appended only when they are non-default, which keeps
+ * the key for an ordinary search unchanged. The query is last so a query
+ * containing the field separator cannot collide with a different request's
+ * prefix.
  *
  * @param parts - the logical request.
  * @returns a deterministic, comparison-safe cache key.

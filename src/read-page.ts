@@ -44,6 +44,7 @@ import type { FetchFormat } from './markdown.ts';
 import { DEFAULT_RENDER_TIMEOUT_MS } from './render.ts';
 import type { RenderMode, RenderReport } from './render.ts';
 import type { ToolContent, ToolJsonSchema } from './domain-tool.ts';
+import { wrapUntrustedContent } from './untrusted.ts';
 
 /** The name this tool prefers. */
 export const READ_PAGE_TOOL_NAME = 'read_page';
@@ -519,7 +520,7 @@ export function createReadPageDefinition(
     parameters: parameterSchema(),
     output: {
       schema: outputSchema(),
-      render: (_args, value) => [{ type: 'text', text: formatReadPageValue(value) }],
+      render: (_args, value) => [{ type: 'text', text: wrapUntrustedContent(formatReadPageValue(value)) }],
     },
     // A single fetch may try direct, tunnel, a browser and extraction in turn.
     timeoutMs: 60_000,

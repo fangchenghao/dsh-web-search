@@ -3,13 +3,14 @@
 **Gives DeepSeek Harness a pair of hands for the web: the model can search, then open a page and read it, without you pasting links.**
 
 - [中文说明](README.zh-CN.md)
+- [Quickstart](docs/quickstart.md) · [Cross-agent MCP](docs/cross-agent.md) · [30-query comparison](docs/comparison.md)
 - [Changelog](CHANGELOG.md) · [Why a plugin's settings go missing: the four-layer chain](docs/plugin-settings-form.md)
 
 <p align="center"><img src="https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/banner.png" alt="dsh-web-search — key-free web search and page fetch for DeepSeek Harness" width="100%"></p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-500%20passing-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-668%20passing-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -19,9 +20,11 @@
 ## Why this one
 
 - **No API key, eight engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are scraped directly; Exa joins the primary tier through its keyless MCP endpoint, and Firecrawl's search API is the measured fallback. The plugin works out of the box.
-- **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — the only search plugin here that publishes both its metric and its confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
+- **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — one of the few search plugins here that publishes its metric, per-query output and confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
+- **One package, two runtimes.** DSH gets the native plugin and one `web_tools` entry; Claude Code, Codex and other MCP clients get the same keyless search through a dependency-free stdio server with `search`, `fetch`, `research` and `domain_search`. See [Cross-agent MCP](docs/cross-agent.md).
+- **Measured in public, including the losses.** A 30-query bilingual comparison records availability, latency, unique domains, official-domain presence and every failure against keyless Firecrawl and anonymous Exa. Exa is faster here; this plugin returns more distinct domains. Both test arms were keyless. The method and raw results are in [docs/comparison.md](docs/comparison.md) and a [public gist](https://gist.github.com/fangchenghao/3db9838fa98928435c1c2df38202c373).
 - **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **501 tests across 34 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **668 tests across 52 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -30,24 +33,51 @@ The benchmark is offline and deterministic: 20 recorded queries, precision/recal
 
 ## Where it stands
 
-The web-search corner of the DSH plugin ecosystem is crowded, and most rivals are bigger than this one. An honest snapshot (2026-10-23; check the linked projects for current numbers):
+The web-search corner of the DSH plugin ecosystem is crowded. A fresh snapshot
+(2026-10-25; stars and npm downloads are adoption signals, not quality scores):
 
-| | this plugin | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
-|---|---|---|---|---|
-| Key-free engines | 8 | ~30 | 7 channels (+X) | 1 official API |
-| Dedicated vertical sources | 34 (8 on by default) | 41 | — | — |
-| Model-facing tools | 6 | ~10 | 3 | 5 |
-| Test suite | 34 files / 501 cases | none | 29 files | 6 files |
-| Ranking benchmark | 20 queries + 81-config sweep | — | — | — |
-| Store status | source contract satisfied, awaiting review | unlisted | no entry | blocked (review-required) |
+| | this plugin | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [dsh-web-search-pro](https://github.com/anweat/dsh-web-search-pro) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
+|---|---|---|---|---|---|
+| Key-free path | 8 engines, all key-free | ~30-engine free/paid chain | 5 defaults (seam, Exa, DDG, Bing, Jina) | Firecrawl + Keenable keyless defaults | 1 anonymous AnySearch API |
+| Dedicated vertical sources | 34 (8 on by default) | 41 | platform registry, not a vertical catalog | web + X, no vertical catalog | vertical API behind AnySearch |
+| Model-facing tools | 1 (`web_tools`, 8 actions) + 4 MCP tools | ~10 | 2 (`web_index` / `web_call`, 20 actions) | native search/fetch + skill | 5 |
+| Tests | 52 files / 668 cases, locally verified | no test script in `package.json` | 774 unit + 94 bench, self-reported | Vitest configured; count not published | Vitest configured; count not published |
+| GitHub stars | 0 | 620 | 77 | 836 | 663 |
+| npm downloads, last month | 1,087 | 52,436 | 6,420 | 43,151 | 9,251 |
+| npm unpacked size | 1.2 MB | 0.70 MB | 3.05 MB | 0.51 MB | 0.27 MB |
 
-If you need maximum source breadth, use `dsh-free-search`; if you need a cross-harness search bridge, use `modsearch`; if you want the official AnySearch path only, use `anysearch-dsh`. This plugin is the one that treats ranking and failure semantics as the product, and measures them.
+This is a capability snapshot, not a league table with one winner. The honest
+read is:
+
+- **Feature depth:** upper-middle. `dsh-free-search` has more engines and
+  verticals; `dsh-web-search-pro` has a deeper evidence/ranking pipeline and far
+  more platform backends; `modsearch` is the stronger cross-host bridge.
+- **Engineering and verification:** near the top. 668 local tests, a replayable
+  ranking benchmark, declared security boundaries and one runtime dependency
+  put it alongside the best-maintained entries, while remaining much smaller
+  than the Playwright-heavy option.
+- **Key-free + official-source correctness:** its strongest niche. The official
+  Chrome, PostgreSQL and AI Act paths and the 34-source vertical layer are not
+  common in the other plugins.
+- **Adoption and maturity:** bottom third of this sample. The public npm release
+  is 0.21.1, matching this tree, but the GitHub repository is four days old
+  with no stars and little independent adoption.
+- **Tool-surface economy:** now competitive. 0.20.x exposes one `web_tools`
+  entry with eight actions, close to `dsh-web-search-pro`'s two tools with 20
+  actions; the legacy eight-name surface remains opt-in for old prompts.
+
+If you need maximum install base and engine breadth, start with
+`dsh-free-search` or `modsearch`. If you need the deepest evidence/scoring
+pipeline and browser-backed platforms, look at `dsh-web-search-pro`. This plugin
+is the compact, fully key-free option for search plus vertical lookup, research
+packs and official-source correction. It is not the most popular, and it should
+not claim to be the largest.
 
 > The latest version and install command live on [npm](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search); no version number is hard-coded here, so the docs cannot drift from the release. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
-With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and get the page back as clean Markdown instead of a wall of HTML. When one question needs several separate searches, it can call `search_many` and get each query's results separately. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly. And when a page is too long to read in one pass, it can call `read_page` and continue from where the last chunk stopped.
+With this plugin installed, you can ask something like "how do I configure the version released last week?" and the model can call `web_search` against public search engines by itself, then work from a ranked list of titles, links and snippets. When a snippet is not enough, it can call `web_fetch` on one of those links and get the page back as clean Markdown instead of a wall of HTML. When one question needs several separate searches, it can call `search_many` and get each query's results separately. When the question is about an npm package, a GitHub repository, a paper or a Q&A thread, it can call `domain_search` instead and ask those dedicated sources directly. When it needs a forum, community or video site, it can call `platform_search` for Bilibili, V2EX, Reddit, YouTube, Zhihu or Juejin. A PostgreSQL version/EOL question also gets the project's official support-table row prepended, rather than trusting a stale press kit. And when a page is too long to read in one pass, it can call `read_page` and continue from where the last chunk stopped.
 
 Three things change for you:
 
@@ -55,7 +85,7 @@ Three things change for you:
 - When a question is about a package, a repository or a paper, the model can ask the matching source directly instead of hoping a web search understands.
 - You do not need a search API key, and you do not pay for search separately.
 
-Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and adds four more tools: `domain_search` for packages, repositories, papers, Q&A and reference entries, `search_many` for several searches in one call, `read_page` for walking a long page in chunks, and `research` for turning a few searches into one cited evidence pack. These names come up again below.
+Under the hood it is one sentence too: the plugin registers two providers with the harness's `web` service — `bing` for search and `http-proxy` for fetching pages — and one model-facing `web_tools` action tool: `action: "domain_search"` for packages, repositories, papers, Q&A and reference entries; `search_many` for several searches in one call; `advanced_search` for one query with a per-call date window; `read_page` for walking a long page in chunks; `research` for turning a few searches into one cited evidence pack; `platform_search` for community and video sites; `cache_search` for searching the full texts research already fetched; and `engine_test` for checking which engine is healthy. These are eight capabilities of one plugin, behind one tool registration — not eight separate plugins or eight always-visible tools.
 
 ## The problem it solves
 
@@ -152,7 +182,7 @@ Analogy: `web_search` is asking passers-by where the hardware shop is and gettin
 
 They team up well: use `domain_search` to find the package or paper, then `web_fetch` to open its homepage or README and read the detail.
 
-Three more helpers sit beside them: **`search_many`**, **`read_page`** and **`research`**. When one question needs several distinct searches — one per candidate library, say — `search_many` runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch; when a page is too long for one fetch, `read_page` continues from where the previous chunk stopped; and when snippets are not enough but the model still has to decide which page to trust, `research` searches up to three queries, opens the leading pages and returns one evidence pack with a citation under every excerpt.
+Four more helpers sit beside them: **`search_many`**, **`advanced_search`**, **`read_page`** and **`research`**. When one question needs several distinct searches — one per candidate library, say — `search_many` runs one to five queries in a single call and keeps each query's results apart, so one failed query cannot empty the batch; when only one question needs a date window, `advanced_search` applies it for that call alone; when a page is too long for one fetch, `read_page` continues from where the previous chunk stopped; and when snippets are not enough but the model still has to decide which page to trust, `research` searches up to three queries, opens the leading pages and returns one evidence pack with a citation under every excerpt.
 
 ### Reading a long page in chunks (read_page): when one pass is not enough
 
@@ -250,7 +280,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 7. **Repeating a question does not repeat the work.**
    The same query within ten minutes is answered from the previous run, almost instantly.
-   *Technical: TTL + LRU cache, `cacheTtlMs: 600000` (ten minutes) and `cacheEntries: 100`; the key is `lead|wait|limit|sorted engine ids|time window|normalised query`, where the window only appears when it is not `off`, so an unfiltered search keeps its old cache behaviour.*
+   *Technical: TTL + LRU cache, `cacheTtlMs: 600000` (ten minutes) and `cacheEntries: 100`; the key is `lead|wait|limit|sorted engine ids|time window|policy fields|normalised query`, where the window only appears when it is not `off` and the policy fields only when they are non-default, so an ordinary search keeps its old cache behaviour.*
 
 8. **A throttled engine takes a rest.**
    If one engine serves a verification page, it is skipped for a few minutes while the rest keep working.
@@ -277,8 +307,8 @@ Each line is the plain version first, the technical note second. The technical n
      *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
 
 14. **Every setting is editable in the UI.**
-     Twenty-six controls in five groups; a save takes effect on the next search, apart from `cachePersist` and `cacheFile`, which decide the cache wiring at mount.
-     *Technical: all twenty-six fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, `fetchFormat` and `fetchMaxLength` are resolved per request, `renderJs` and `renderTimeoutMs` per fetch; `proxy` and `timeoutMs` are taken at mount, and so is the cache wiring that `cachePersist` and `cacheFile` decide.*
+     Thirty controls in six groups; a save takes effect on the next search, apart from `cachePersist` and `cacheFile` (cache wiring at mount) and `toolSurface` (the tool registry is built at mount).
+     *Technical: all thirty fields carry `.volatile()`, so the Host commits them in place instead of remounting the plugin; `cacheTtlMs` and `cacheEntries` are re-read per use, `fetchFormat` and `fetchMaxLength` are resolved per request, `renderJs` and `renderTimeoutMs` per fetch; `proxy` and `timeoutMs` are taken at mount, and so is the cache wiring that `cachePersist` and `cacheFile` decide. `toolSurface` is read at mount when the registry is built, so a change needs a reload even though the value is committed live.*
 
 15. **Failures are explained, not silently empty.**
      When nothing succeeds, the error lists which engines were tried and why each one failed.
@@ -290,15 +320,15 @@ Each line is the plain version first, the technical note second. The technical n
 
 17. **Packages, repositories, papers and Q&A are one hop away.**
      For "is this npm package still maintained?" or "is there a paper on RAG?", the model can call `domain_search` against 34 dedicated sources instead of hoping a web search finds them.
-     *Technical: 34 keyless sources, eight on by default — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); the other 26 are reachable through `sources`. Arguments `query` (required), `sources` (optional array, default = the default eight), `limit` (optional, default 5, capped at 20). Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
+     *Technical: 34 keyless sources, eight on by default — `github`, `npm`, `pypi`, `arxiv`, `wikipedia`, `hn` (Hacker News), `stackexchange`, `crates` (crates.io); the other 26 are reachable through `sources`. Arguments `query` (required), `sources` (optional array, default = the default eight), `limit` (optional, default 5, capped at 20), and `timeRange` (optional `off`/`day`/`week`/`month`/`year`; undated rows survive only when no dated row qualifies, with a `note`). With a window, the arXiv adapter asks for `submittedDate` order and quotes the phrase before the local date filter. Each source has its own deadline (8000 ms by default), one failure never affects the others, and the failed names come back in `failures`. Measured with `react` at limit 3: github 3, npm 3, pypi 1, arxiv 3, wikipedia 3, hn 3, stackexchange 3, crates 3. Known limits: PyPI has no public search API, so it matches the **exact package name** taken from the first word of the query; Wikipedia searches one language only (`zh` for CJK, otherwise `en`). A host without `ctx.tools` does not register the tool and the rest of the plugin works as usual.*
 
 18. **You can look only at recently published results.**
      Choose "last 24 hours / 7 days / 30 days / 1 year" in Settings and only results inside that window stay — useful for news and releases.
-     *Technical: `timeRange` takes `off` (default) / `day` / `week` / `month` / `year` — 24 hours, 7 days, 30 days, 1 year. Publication dates are parsed from each engine's results (Bing's snippet date and `news_dt`, 360's `发贴时间`, DuckDuckGo's timestamp and snippet, AnySearch's `date:` trailer). DuckDuckGo receives the window as `df=d/w/m/y`; Bing's and 360's parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two and AnySearch filter locally. With a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone.*
+     *Technical: `timeRange` takes `off` (default) / `day` / `week` / `month` / `year` — 24 hours, 7 days, 30 days, 1 year. Publication dates are parsed from each engine's results (Bing's snippet date and `news_dt`, 360's `发贴时间`, DuckDuckGo's timestamp and snippet, AnySearch's `date:` trailer). DuckDuckGo receives the window as `df=d/w/m/y`; Bing's and 360's parameters were measured to have no effect (the page shows the option selected while the results stay the same), so those two and AnySearch filter locally. With a window on, only **dated** results inside it are kept; only when not one dated result falls inside does the undated list come back, so the answer is never empty for that reason alone. This Settings window is global; `advanced_search` can override it for one model call (see below).*
 
 19. **Several questions, one call.**
      For "compare these three libraries", the model can hand `search_many` one to five queries and get each query's results back separately; up to three run at once, and one failed query does not take the others down.
-     *Technical: `queries` (1–5, required), `limit` (default 5, 1–20), `withSites` (default false; true attaches each result's hostname). `SEARCH_MANY_CONCURRENCY = 3`. Each query goes through the same engine layer, cache and cooldown tracker as `web_search`; a thrown search becomes that query's `failures` entry, never the batch's. Use `search_many` for several questions at once, `web_search` for one, `domain_search` for packages, papers or Q&A. The tool's deadline is 30 s and it is concurrency-safe. It registers as `web_search_many` if the name is taken, and is not registered at all when the host has no `ctx.tools`.*
+     *Technical: `queries` (1–5, required), `limit` (default 5, 1–20), `withSites` (default false; true attaches each result's hostname). `SEARCH_MANY_CONCURRENCY = 3`. Each query goes through the same engine layer, cache and cooldown tracker as `web_search`; a thrown search becomes that query's `failures` entry, never the batch's. A query that explicitly names npm, PyPI or crates.io is routed to that package registry; it falls back to the ordinary path if the registry returns nothing. Use `search_many` for several questions at once, `web_search` for one, `domain_search` for packages, papers or Q&A. The tool's deadline is 30 s and it is concurrency-safe. It registers as `web_search_many` if the name is taken, and is not registered at all when the host has no `ctx.tools`.*
 
 20. **The cache survives a restart.**
      Ask the same question again after restarting DSH within ten minutes and the previous result is still there; nothing is sent to the engines.
@@ -309,10 +339,134 @@ Each line is the plain version first, the technical note second. The technical n
     *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Baseline for 0.15.0 (tier-aware replay, so the recorded fallback engines only count when production would run them): P@8 `0.4375`, R@8 `0.7917`, MRR@8 `0.8071`; Chinese `0.4000 / 0.8167 / 0.7976`, English `0.4750 / 0.7667 / 0.8167`. A separate five-query long-Chinese diagnostic (`bench/queries-long.json`, recorded with `--queries ... --fixtures ...`) scores `0.4500 / 1.0000 / 0.7667`, with every query hitting an expected domain; it is kept separate so the 20-query baseline stays comparable. The controlled experiments and known gaps are in the appendix.*
 
 22. **Research, in one call.**
-    For "what do the official docs and two other sources actually say about X", `research` runs up to three searches, opens the leading pages through the same fetch ladder, and returns one evidence pack in which every excerpt sits under its URL. A page that will not load is reported by URL and reason instead of aborting the pack.
-    *Technical: `query` (required), `queries` (up to three extra), `maxSources` (1–5, default 3); one 45 s budget for the whole call, three page fetches in flight, and a page fetch is not started with less than 2.5 s left. The tool registers as `web_research` if another plugin owns `research`. Its fetch side uses its own `http-proxy-research` provider so it cannot disturb the host `web_fetch` renderer cache. The search side is the same `web_search` path, cache and cooling included.*
+    For "what do the official docs and two other sources actually say about X", `research` runs up to three searches, opens the leading pages through the same fetch ladder, and returns one evidence pack in which every excerpt sits under its URL. A page that will not load is reported by URL and reason instead of aborting the pack; bot challenges and login redirects are rejected rather than quoted as evidence.
+    *Technical: `query` (required), `queries` (up to three extra), `maxSources` (1–5, default 3); one 45 s budget for the whole call, three page fetches in flight, and a page fetch is not started with less than 2.5 s left. A credible government, academic, standards-body or well-known official documentation page that matches the query leads the pack; a landing/home page is never promoted by authority alone, and relevance still excludes unrelated official pages. Up to the remaining query slots (three in total) can be spent on a focused official `site:` query (EU/europa, Chinese CAC, Chrome Releases, Python, Redis, W3C), with results filtered to the issuer's domain. The fetch side reads up to 200,000 characters so the excerpt selector can find a fact deep in the page; it uses its own `http-proxy-research` provider and does not disturb the host `web_fetch` renderer cache. W3C WCAG pages that return 403 are retried once through `w3c.github.io`; the body comes from that official mirror and the citation names the canonical W3C page. The search side is the same `web_search` path, cache and cooling included. The tool registers as `web_research` if another plugin owns `research`.*
+
+### Community and video platforms
+
+`platform_search` is the forum/video counterpart to `domain_search`. It asks
+Bilibili, V2EX, Reddit, YouTube, Zhihu and Juejin directly through keyless
+public endpoints where one exists, and falls back to a `site:<domain>` search
+when the endpoint is blocked or has changed. One platform failing does not
+empty the answer; the result names the platform, the URL, the snippet and a
+date when one is available. Fallback rows are filtered to the platform's own
+domain, so a generic page cannot masquerade as a platform result. Bilibili retries `/search/all/v2` when `/search/type` answers 412, applies recency and play-count sorting only when the query asks for them, and Juejin rows expose like/read counts when the API provides them.
+
+*Technical: `query` (required), `platforms` (optional subset of `bilibili`,
+`v2ex`, `reddit`, `youtube`, `zhihu`, `juejin`; omitted = all six), `limit`
+(1–10, default 5). Direct requests use a browser UA and the configured proxy;
+falls back to `site:<domain> <query>` through the normal search path. Each
+platform has an 8 s direct deadline, the tool has a 40 s budget, results are
+de-duplicated and interleaved by rank. It registers as
+`web_platform_search` if the name is taken. Zhihu has no usable keyless search
+endpoint, so it is fallback-only; if the fallback is blocked as well, it is
+reported as a platform failure rather than silently omitted.*
+
+### A second retrieval over research bodies
+
+`research` fetches full pages but only puts selected passages into the evidence
+pack. `cache_search` searches those full texts again, in-process, without a
+second network request. This is useful when a first answer needs an exact
+number, quote or section: ask `cache_search` for the detail and it returns the
+matching passages with the same source URLs. The cache holds at most 24 bodies,
+400,000 characters each, expires after seven days and is cleared when the plugin
+unloads; it never writes page bodies to disk.
+
+The first retrieval is also query-aware: the excerpt is not simply the first
+6,000 characters. Research splits the fetched body into windows, scores them
+against the query terms and keeps the best windows plus enough opening context
+to make the excerpt intelligible. This is deterministic and makes no model
+call.
+
+*Technical: `cache_search` takes `query` and optional `limit` (1–10, default 3);
+it returns `matches` with `url`, `title`, `snippet`, `score` and `fetchedAt`.
+The cache is in-memory only; a restart is a clean slate. `research` fetches up
+to 200,000 characters per page for this second pass and stores the full body
+via an optional `onPage` sink.*
+
+23. **You can test the engines without guessing.**
+    A model tool and a Settings button both run one tiny query through each engine and report which answered, how fast, and why the rest did not. It is diagnostics only: no cache entry, no cooldown, no fallback.
+    *Technical: `engine_test` takes optional `engine` and `query`, tests one engine or all eight (three in flight), and returns per-engine `ok`, `latencyMs`, `count`, `failureKind`, `code`, `status` and `reason`. The Settings button posts to a loopback-only `POST /api/dsh-web-search/engine-test` bridge, which shares the same runner. The endpoint refuses non-POST, non-loopback and cross-origin callers; it is registered only when the host exposes an injectable `webServer`, so a headless deployment simply has no button.*
+
+24. **A failure carries a class, and the fallback is a policy.**
+    "Blocked", "out of quota" and "temporarily slow" used to produce the same fallback; now each primary failure is classified, and you can decide which classes may switch to a backup engine. When a fallback is skipped or used, the result says so.
+    *Technical: `FailureKind` is `quota` / `auth` / `bot-wall` / `transient` / `invalid-response` / `unknown`, derived from the existing `SearchError` code plus HTTP status and message clues. `fallbackOn` defaults to all six, preserving the old always-fall-back behaviour; an empty list means never. `SearchOutcome.failureDetails` exposes the class, code and status, and `note` explains a skipped or used fallback (also rendered by `search_many`). Cooldown timing is unchanged.*
+
+25. **A site can be blocked, and safe search can be forwarded.**
+    Put a domain on the blocklist and it disappears from merged and cached results; choose a safe-search level and Bing and DuckDuckGo receive it.
+    *Technical: `blockedDomains` is a comma-separated suffix list (a subdomain matches its parent), applied after fusion and to cache hits; empty by default. `safeSearch` is `off` (leave the engine's own default), `moderate` or `strict`, forwarded as Bing `adlt` and DuckDuckGo `kp`; other engines are untouched. A non-empty blocklist and a non-default safe-search level join the cache key, so removing a block cannot reuse a filtered entry, while the default path keeps its old keys.*
+
+26. **A date window is available per call, not only as a setting.**
+    When only one question needs fresh results — "what changed this week?" — the model can call `advanced_search` and ask for `day`, `week`, `month` or `year` without changing the global setting. Omitting the window keeps the Settings value; `off` disables it for that one query.
+    *Technical: `advanced_search` takes `query` (required), `maxResults` (default 5, capped at 20 and by the deployment's `limit`), and `timeRange` (`off` / `day` / `week` / `month` / `year`; omitted = Settings). It shares the engine, cache, cooldown and failure path with `web_search`, so an `off` call can reuse an ordinary cache entry and a `week` call gets its own key. With an explicit window it removes a redundant `过去 7 天内` / `last 7 days` phrase from the engine query (the structured window already carries it) while returning the original query in the result. For a windowed Chrome security/release query, it reads the official Chrome Releases feed and returns the feed's real publication dates plus a note saying whether any title or summary mentions zero-day; a Stable-only query filters out Beta/Dev/Early Stable/Extended Stable posts, and each post snippet previews the version, fix count and listed CVE severity distribution when the post states them. A feed miss or an empty Stable filter falls back to the ordinary engine path. It registers as `web_search_advanced` if the name is taken, and is not registered at all when the host has no `ctx.tools`.*
+
+27. **Web text is explicitly marked as untrusted.**
+    Every custom tool now wraps its web-derived body in `<untrusted-web-content>...</untrusted-web-content>`, strips forged copies of the markers from the payload, and a short system-prompt section tells the model that the contents are data, not instructions.
+    *Technical: the wrapper is applied to `domain_search`, `search_many`, `advanced_search`, `read_page`, `research` and `engine_test` renders. The boundary tags are removed from page text (including whitespace/attribute variants) before wrapping, so a page cannot close the boundary early. The host's own `web_search`/`web_fetch` external-content notice is left in place; the plugin does not duplicate it or mutate `Source` objects that DSH also renders in result cards. The prompt section is installed through an optional `systemPrompt` injection and is absent on hosts without that service.*
 
 > **What 0.13.0 fixes (a real defect)**: from some networks 360 (`so`) returns a verification page — a 302 to the qcaptcha "unexpected access" page — while the HTTP status is still 200. The old code read that as "zero results" and swallowed it: the engine effectively disappeared and its cooldown never fired. Such pages now fail as `SEARCH_BLOCKED`, and 360 has been demoted to the **fallback tier** (tried only when the primary engines are empty), so it no longer slows every search. Measured: querying that engine alone now returns the failure `so: bot verification page` instead of zero results.
+
+## Tool surface: one entry point, eight actions
+
+0.20.x changes the model-facing surface. The eight capabilities above are now
+actions on one `web_tools` tool instead of eight separate registrations. A call
+looks like:
+
+```json
+{ "action": "domain_search", "query": "react", "sources": ["github"] }
+```
+
+The host's own `web_search` and `web_fetch` stay as they were. This keeps the
+common path unchanged while cutting the optional tool surface from eight names
+to one.
+
+Older prompts that call `domain_search`, `search_many`, `research` and the rest
+directly can opt back into the old names in the plugin config:
+
+```yaml
+- id: web-search-bing
+  name: '@fffangchenghao/dsh-web-search'
+  config:
+    toolSurface: legacy
+```
+
+`unified` is the default and is recommended. Changing the mode requires a
+plugin reload because the registry is built at mount time. The sections below
+still use the action names as labels; read them as `web_tools` actions unless
+you explicitly chose `legacy`.
+
+## Automatic updates
+
+The plugin is a DSH bundle and does **not** replace its own running code: Node
+has already loaded `lib/index.js`, and swapping files underneath it is not a
+safe update mechanism. Automatic updates belong to the profile-level updater.
+
+Use an npm install, not a `link:`/local checkout:
+
+```sh
+dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
+```
+
+Then keep a profile updater such as `dsh-autoupdater` (or
+`dsh-self-upgrade`) enabled. The updater checks the npm dist-tag,
+updates in an idle window, and asks for a restart on desktop. `link:` and
+`file:` installs are deliberately skipped by such updaters because replacing a
+local checkout with the registry package would destroy the checkout.
+
+The Settings card always shows the latest npm version. If it is newer and the
+page is local, it also shows **Install update**. That button delegates to the
+Host's built-in `pluginManager` (the same service `dsh plugin` uses), installs
+the exact npm package and tells you to restart. It works **without**
+`dsh-autoupdater`; what it does not do is run periodically. The remote web
+surface hides the button, and a `link:`/`file:` checkout is refused before it
+can be replaced. If the deployment has no plugin manager, the button reports
+that instead of pretending to update.
+
+Automatic updates trade review for freshness: the updater installs the
+registry package without a human reading the diff. If that trade is wrong for
+your deployment, pin an exact version and leave the profile updater off. The
+plugin never spawns `pnpm` itself; the manual button only asks the Host to do
+it.
 
 ## Installing and enabling it
 
@@ -322,6 +476,17 @@ Each line is the plain version first, the technical note second. The technical n
 - Node 22.18 or newer (declared as `>=22.18.0`; the source uses Node's native TypeScript type stripping and CI runs Node 24);
 - Ordinary outbound network access. A tunnel is not required — you just get fewer engines without one.
 - Optional: to read pages whose body is built by JavaScript, install Playwright yourself (item 12 above); not installing it changes nothing else.
+
+### Production install (auto-updatable)
+
+For a normal user install, add the published package to the profile. Do not use
+a `link:` if you want the profile updater to manage it:
+
+```sh
+dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
+```
+
+The rest of this section is the source-checkout development path.
 
 ### Step 1: build
 
@@ -409,7 +574,7 @@ Values saved from the Settings page apply immediately; only `cachePersist` and `
 
 Any one of these:
 
-1. **Look at Settings**: Settings → "Web search (Bing)" should show five groups of controls, 26 in all. That means the plugin loaded and the Host accepted its schema.
+1. **Look at Settings**: Settings → "Web search (Bing)" should show six groups of controls, 30 in all. That means the plugin loaded and the Host accepted its schema.
 2. **Look at the log**: no warning such as `1 entry did not activate`.
 3. **Just try it**: ask something that obviously needs the network, such as "search for a DSH plugin tutorial and give me the links". Watch whether `web_search` is called and whether the links are real.
 
@@ -417,17 +582,18 @@ If the Settings card appears but search still fails, start with [docs/troublesho
 
 ## Using the Settings page
 
-Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five groups. A sticky jump bar at the top scrolls to any group, and a line under the title compares the installed version with the latest one on npm (it stays hidden when the registry cannot be reached, so it never guesses). Each group owns one kind of decision:
+Open Settings → "Web search (Bing)". Thirty controls, arranged in six groups, plus an **Engine health** check. A sticky jump bar at the top scrolls to any group, and a line under the title compares the installed version with the latest one on npm (it stays hidden when the registry cannot be reached, so it never guesses). Each group owns one kind of decision:
 
 | Group | Controls | What it decides |
 | --- | --- | --- |
-| Engines and transport | 6 | Which engines run, how long to wait, whether to use a proxy, AnySearch credentials and vertical domain |
+| Engines and transport | 9 | Which engines run, how long to wait, whether to use a proxy, AnySearch credentials and vertical domain, blocked sites, safe search and fallback policy |
 | Results and ranking | 7 | How many results, how far back to look, how they merge and sort, how much official docs and fresh content count |
 | Dedicated search | 3 | Which sources `domain_search` queries, results per source, deadline per source |
 | Fetching | 4 | What `web_fetch` returns — Markdown or plain text, how many characters, whether a browser may render a shell, and how long that render may take |
 | Cache and cooldowns | 6 | How long results are remembered, how many, whether the cache is saved to disk, and how long a throttled engine rests |
+| Model tools | 1 | Whether the eight optional capabilities appear as one `web_tools` action tool or the legacy eight names. Requires a reload |
 
-### Engines and transport (6)
+### Engines and transport (9)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
@@ -437,13 +603,16 @@ Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five gro
 | Proxy (relay) | `proxy` | empty (detect) | e.g. `http://127.0.0.1:7890`; empty reads the environment, then the system proxy |
 | AnySearch key | `anysearchApiKey` | empty (anonymous) | Optional. Sent only to `api.anysearch.com`; raises limits and unlocks page extraction. Several keys may be comma-separated and are rotated, with a throttled or rejected one resting automatically |
 | Vertical domain | `anysearchDomain` | empty (general) | Typical values: `finance` / `academic` / `security` / `legal` / `code`; a dotted value such as `finance.us_stock` selects a sub-domain |
+| Blocked sites | `blockedDomains` | empty (nothing) | Domains that must never appear, comma-separated; a subdomain matches its parent. Applied after fusion and on a cache hit, so a blocked row cannot come back from the cache |
+| Safe search | `safeSearch` | `off` | `off` keeps each engine's default; `moderate` or `strict` is forwarded to Bing (`adlt`) and DuckDuckGo (`kp`). Other engines ignore it |
+| Fallback on | `fallbackOn` | all six classes | Failure classes that may switch to a fallback engine: `quota`, `auth`, `bot-wall`, `transient`, `invalid-response`, `unknown`. Empty means never fall back; a skipped fallback is explained in the result's `note` |
 
 ### Results and ranking (7)
 
 | Control | Key | Default | Plain meaning |
 | --- | --- | --- | --- |
 | Results per search | `limit` | `8` | How many results at most, 1–20; a smaller caller budget still wins |
-| Date window | `timeRange` | `off` | `off` disables it; `day` 24 hours, `week` 7 days, `month` 30 days, `year` 1 year. A window keeps only results inside it |
+| Date window | `timeRange` | `off` | `off` disables it; `day` 24 hours, `week` 7 days, `month` 30 days, `year` 1 year. A window keeps only results inside it. `advanced_search` can override it for one query |
 | Result blending | `rrfConstant` | `60` | Larger flattens the curve; smaller favours each engine's own top results |
 | Trusted sites | `authorityDomains` | empty (built-in list) | Extra domains to boost, on top of the built-in official-docs list |
 | Trusted-site boost | `authorityBoost` | `0.25` | Multiplies an authoritative result by `1 + this`, 0–10 |
@@ -478,9 +647,15 @@ Open Settings → "Web search (Bing)". Twenty-six controls, arranged in five gro
 | Cooldown (ms) | `baseCooldownMs` | `300000` | First rest after throttling, five minutes |
 | Max cooldown (ms) | `maxCooldownMs` | `1800000` | Ceiling for the doubling backoff, thirty minutes |
 
+### Model tools (1)
+
+| Control | Key | Default | Plain meaning |
+| --- | --- | --- | --- |
+| Tool surface | `toolSurface` | `unified` | `unified` registers one `web_tools` with eight actions; `legacy` keeps the old eight standalone names for existing prompts. Changing it builds a different registry, so reload the plugin after saving |
+
 ### My advice
 
-**For normal use: leave all twenty-six alone. The defaults are the tuned values.**
+**For normal use: leave all thirty alone. The defaults are the tuned values.**
 
 Only these situations are worth changing:
 
@@ -500,7 +675,32 @@ Three things to keep in mind:
 
 ## Using the skill from another harness
 
-`skills/dsh-web-search/SKILL.md` is a plain skill file: it states when to search, when to open pages, when to use `research`, and how to cite. Copy the folder into any harness that reads `SKILL.md` files from disk (for example `~/.claude/skills/`). The plugin itself is a DSH plugin, so another harness still needs its own search and fetch tools; the file is the part that transfers.
+`skills/dsh-web-search/SKILL.md` is a plain skill file: it states when to search, when to open pages, when to use `research`, and how to cite. Copy the folder into any harness that reads `SKILL.md` files from disk (for example `~/.claude/skills/`).
+
+For another harness that speaks MCP, the package also ships a dependency-free
+stdio server with `search`, `fetch`, `research` and `domain_search`:
+
+```sh
+npx -y @fffangchenghao/dsh-web-search dsh-web-search-mcp
+```
+
+Claude Code:
+
+```sh
+claude mcp add dsh-web-search -- npx -y @fffangchenghao/dsh-web-search dsh-web-search-mcp
+```
+
+Codex (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.dsh-web-search]
+command = "npx"
+args = ["-y", "@fffangchenghao/dsh-web-search", "dsh-web-search-mcp"]
+```
+
+See [docs/cross-agent.md](docs/cross-agent.md) for the tool list, environment
+variables and the portable skill path. The MCP server needs no DSH context and
+no API key.
 
 ## FAQ
 
@@ -859,10 +1059,15 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 - **The benchmark is only 20 queries**: news recall is 0.367 and `zh-linux-612` has zero hits; a difference of 1–4 hits cannot separate versions. It shows direction, not statistical significance.
 - **`search_many` is capped at five queries and three in flight.**
 - **Two processes sharing one cache file write last-writer-wins**: neither can corrupt the file, but one process's newer snapshot can be replaced by another's older one.
-- **A time window can only filter results that carry a date**: dates are parsed from result pages, so an engine that prints none leaves that row without an age; when nothing dated falls inside the window the undated list comes back. Bing's and 360's time parameters were measured to have no effect; only DuckDuckGo's `df=` is a real pushdown.
+- **A time window can only filter results that carry a date**: dates are parsed from result pages, so an engine that prints none leaves that row without an age; when nothing dated falls inside the window the undated list comes back, with a `Note` saying the window is not proven for those rows. Bing's and 360's time parameters were measured to have no effect; only DuckDuckGo's `df=` is a real pushdown.
+- **Domain search is discovery, not a complete record**: GitHub search omits release tags, Wikipedia search omits revision timestamps, Hacker News search omits the top comment, and Stack Overflow search omits accepted-answer text. Follow up with `web_fetch` or `read_page` when the exact record matters.
 - **PyPI matches exact package names only**: it has no public search API, so the plugin uses the first word of the query; a typo yields an empty answer.
+- **Community platforms are best-effort.** Bilibili, V2EX, Reddit, YouTube and Juejin change or block their public endpoints; the tool falls back to a domain-scoped web search and filters the rows to the platform host. Zhihu has no usable keyless API in this environment, so it is fallback-only and can still return nothing.
+- **`cache_search` is in-process.** Research bodies live for at most seven days, 24 pages and 400,000 characters each, and disappear on restart; they are never written to the search-result cache.
+- **Official-site hints are bounded.** `research` adds a focused `site:` query only for a small set of issuers (EU, CAC, Chrome Releases, Python, Redis, W3C); other official bodies rely on the ordinary ranking.
+- **A window cannot invent dates.** When all rows are undated, `advanced_search` / `domain_search` say so in the note; they do not label an undated row as in-window.
 - **Wikipedia searches one language only**: `zh` for CJK queries, `en` otherwise.
-- **`domain_search`, `search_many` and `read_page` need a host tool registry**: without `ctx.tools` they are not registered, and `web_search` is unaffected.
+- **The plugin-owned tools need a host tool registry**: without `ctx.tools`, `domain_search`, `search_many`, `advanced_search`, `read_page`, `research`, `cache_search`, `platform_search` and `engine_test` are not registered, and `web_search` is unaffected.
 - **Anonymous AnySearch caps at 10 results per call.**
 - **HTTP proxies only** — no `socks5://`.
 - **`limit` is capped at 20, and so is `domainLimit`.**
@@ -873,6 +1078,9 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 | --- | --- |
 | Result budget `limit` | `8` (1–20) |
 | Time window `timeRange` | `off` (no limit; `day` / `week` / `month` / `year`) |
+| `domain_search` window | omitted (uses no local filter); `off` / `day` / `week` / `month` / `year` |
+| `platform_search` limit | `5` (1–10) |
+| Research body cache | 24 pages, 400,000 characters, 7 days, in memory |
 | Results per source `domainLimit` | `5` (1–20) |
 | Per-source deadline `domainTimeoutMs` | `8000` ms |
 | Cache TTL `cacheTtlMs` | `600000` ms = 600 s |

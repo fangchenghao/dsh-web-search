@@ -23,7 +23,7 @@ Only `0.2.1-rc.2` is declared, because that is the version actually exercised.
 ## Environment
 
 - macOS (arm64), DeepSeek Harness **0.2.1-rc.2** (`dsh --version`), Node 22.18+.
-- Runtime artifacts: `lib/` is committed to this repository (40 files, 468 KiB),
+- Runtime artifacts: `lib/` is committed to this repository (78 files, 912 KiB),
   so the fixed commit's tree contains `lib/index.js` and `lib/index.d.ts`.
 - Disposable profile for the destructive steps: a fresh `DSH_HOME` created with
   `mktemp -d`; the real `~/.dsh` was never written to. Bundled pnpm 11.28.5.
@@ -58,10 +58,15 @@ Two independent observations:
                    status: "schema" }], total: 1 }
    ```
 
-   `status: "schema"` means the entry is active and its 26-field Config schema is
-   projected, which is what the Settings page renders. The three tools
-   (`read_page`, `search_many`, `domain_search`) and the search/fetch providers
-   are registered from the same mount; the GUI lists the plugin as 运行中.
+   `status: "schema"` means the entry is active; the current build projects a
+   29-field Config schema. Eight tools (`domain_search`, `search_many`,
+   `advanced_search`, `read_page`, `research`, `cache_search`, `platform_search`,
+   `engine_test`) and the
+   search/fetch providers are registered from the same mount; the GUI lists the
+   plugin as 运行中. This probe was retaken after a restart with the current
+   build; a live `advanced_search` window note and a fresh npm publish date were
+   observed through those tools, so the list is a live observation rather than a
+   projection.
 
 2. **Disposable profile, composed tree.** `dsh --profile e2e --dump-config`
    composes the full tree without error and contains the entry above.

@@ -23,9 +23,10 @@
  *
  * @module @fangchenghao/dsh-web-search/verticals
  */
-import type { Source } from './types.ts';
+import type { Source, TimeRange } from './types.ts';
 import { SearchError } from './errors.ts';
 import { text } from './parsers.ts';
+import { decodeEntities } from './markdown.ts';
 import { proxyGet } from './proxy.ts';
 
 /** Identifiers accepted in `sources` and in the `domainSources` config field. */
@@ -170,6 +171,8 @@ export interface VerticalSearchOptions {
   proxy?: string;
   /** Test seam; defaults to the platform `fetch`. */
   fetch?: FetchLike;
+  /** Publication window; arXiv switches to submitted-date order when set. */
+  timeRange?: TimeRange;
 }
 
 /** What one vertical run reports. */
@@ -336,10 +339,16 @@ export function parseGithub(payload: string, _url: string, limit = MAX_VERTICAL_
   for (const row of body.items) {
     if (!isRecord(row)) continue;
     const name = str(row.full_name) || str(row.name);
+    const license = isRecord(row.license) ? str(row.license.spdx_id) : '';
+    const stars =
+      typeof row.stargazers_count === 'number' && Number.isFinite(row.stargazers_count)
+        ? `${row.stargazers_count} stars`
+        : '';
+    const snippet = [license, stars, snippetOf(row.description)].filter((part) => part.length > 0).join(' — ');
     const source = sourceOf(
       str(row.html_url) || (name.length > 0 ? `https://github.com/${name}` : undefined),
       name,
-      snippetOf(row.description),
+      snippet,
       str(row.pushed_at) || str(row.updated_at),
     );
     if (source !== undefined) sources.push(source);
@@ -366,11 +375,14 @@ export function parseNpm(payload: string, _url: string, limit = MAX_VERTICAL_LIM
     if (name.length === 0) continue;
     const version = str(pkg.version);
     const links = isRecord(pkg.links) ? pkg.links : undefined;
+    // `row.updated` is the search index's update time, not a publish time;
+    // only `package.date` (and the legacy `row.date`) name the version time.
+    const signature = version.length > 0 ? `${name}@${version}` : name;
     const source = sourceOf(
       str(links?.npm) || str(links?.homepage) || `https://www.npmjs.com/package/${name}`,
-      version.length > 0 ? `${name}@${version}` : name,
+      signature,
       snippetOf(pkg.description),
-      str(row.date) || str(row.updated),
+      str(pkg.date) || str(row.date),
     );
     if (source !== undefined) sources.push(source);
     if (sources.length >= limit) break;
@@ -400,10 +412,14 @@ export function parsePypi(payload: string, _url: string, limit = MAX_VERTICAL_LI
   const version = str(info.version);
   const urls = Array.isArray(body.urls) ? body.urls : [];
   const first = isRecord(urls[0]) ? urls[0] : undefined;
+  const requires = str(info.requires_python);
+  const snippet = [requires.length > 0 ? `Requires-Python: ${requires}` : '', snippetOf(info.summary)]
+    .filter((part) => part.length > 0)
+    .join(' — ');
   const source = sourceOf(
     str(info.package_url) || `https://pypi.org/project/${encodeURIComponent(name)}/`,
     version.length > 0 ? `${name} ${version}` : name,
-    snippetOf(info.summary),
+    snippet,
     str(first?.upload_time_iso_8601) || str(first?.upload_time),
   );
   return source === undefined ? [] : [source];
@@ -483,8 +499,11 @@ export function parseHn(payload: string, _url: string, limit = MAX_VERTICAL_LIMI
     const highlighted = isRecord(row._highlightResult) && isRecord(row._highlightResult.title)
       ? row._highlightResult.title.value
       : undefined;
-    const title = str(row.title) || str(row.story_title) || snippetOf(highlighted, 120);
-    const snippet = snippetOf(row.story_text) || snippetOf(row.comment_text);
+    const title = decodeEntities(str(row.title) || str(row.story_title) || snippetOf(highlighted, 120));
+    const points = typeof row.points === 'number' && Number.isFinite(row.points) ? `${row.points} points` : '';
+    const comments = typeof row.num_comments === 'number' && Number.isFinite(row.num_comments) ? `${row.num_comments} comments` : '';
+    const body = decodeEntities(snippetOf(row.story_text) || snippetOf(row.comment_text));
+    const snippet = [points, comments, body].filter((part) => part.length > 0).join(' — ');
     const source = sourceOf(str(row.url) || fallback, title, snippet, str(row.created_at));
     if (source !== undefined) sources.push(source);
     if (sources.length >= limit) break;
@@ -508,7 +527,12 @@ export function parseStackExchange(payload: string, _url: string, limit = MAX_VE
     const created = typeof row.creation_date === 'number' && Number.isFinite(row.creation_date)
       ? new Date(row.creation_date * 1000).toISOString()
       : undefined;
-    const source = sourceOf(str(row.link), str(row.title), snippetOf(row.body), created);
+    const source = sourceOf(
+      str(row.link),
+      decodeEntities(str(row.title)),
+      decodeEntities(snippetOf(row.body)),
+      created,
+    );
     if (source !== undefined) sources.push(source);
     if (sources.length >= limit) break;
   }
@@ -1774,7 +1798,10 @@ export async function searchVerticals(
   const answers = await Promise.all(
     specs.map(async (spec) => {
       try {
-        const url = spec.build(trimmed, limit);
+        const built = spec.build(trimmed, limit);
+        const url = spec.id === 'arxiv' && options.timeRange !== undefined && options.timeRange !== 'off'
+          ? `${built.replace(/search_query=all:([^&]*)/u, 'search_query=all:%22$1%22')}&sortBy=submittedDate&sortOrder=descending`
+          : built;
         const payload = await fetchPayload(spec, url, options, timeoutMs);
         const sources = spec.parse(payload, url, limit);
         return { id: spec.id, sources };

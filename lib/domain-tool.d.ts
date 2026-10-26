@@ -20,6 +20,7 @@
  */
 import type { Source } from './types.ts';
 import type { FetchLike } from './verticals.ts';
+import type { TimeRange } from './types.ts';
 /** The name this tool prefers. */
 export declare const DOMAIN_TOOL_NAME = "domain_search";
 /** The name used when another plugin already registered `domain_search`. */
@@ -64,6 +65,10 @@ export interface DomainToolValue {
     sources: Source[];
     failures: string[];
     truncated: boolean;
+    /** Present only when this call asked for a publication window. */
+    timeRange?: TimeRange;
+    /** Why the window did or did not narrow the rows. */
+    note?: string;
 }
 /** Settings the tool reads live for every call. */
 export interface DomainToolSettings {

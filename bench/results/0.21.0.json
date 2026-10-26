@@ -1,0 +1,2590 @@
+{
+  "schemaVersion": 1,
+  "mode": "eval",
+  "label": "0.21.0",
+  "generatedAt": "2026-10-25T17:06:34.618Z",
+  "version": "0.21.0",
+  "k": 8,
+  "config": {
+    "source": "src/config.ts defaults, current rank.ts",
+    "rrfConstant": 60,
+    "authorityBoost": 0.25,
+    "freshnessBoost": 0.2,
+    "freshnessDays": 30,
+    "timeRange": "off",
+    "rankNow": "fixture.recordedAt",
+    "weightOverrides": {}
+  },
+  "corpus": {
+    "total": 20,
+    "evaluated": 20,
+    "missing": 0,
+    "byLanguage": {
+      "zh": 10,
+      "en": 10
+    },
+    "byCategory": {
+      "docs": 5,
+      "release": 5,
+      "package": 5,
+      "news": 5
+    }
+  },
+  "overall": {
+    "queries": 20,
+    "precision": 0.4375,
+    "recall": 0.7916666666666667,
+    "mrr": 0.8071428571428573,
+    "zeroHit": 0,
+    "anyHit": 20
+  },
+  "byLanguage": {
+    "zh": {
+      "queries": 10,
+      "precision": 0.4,
+      "recall": 0.8166666666666668,
+      "mrr": 0.7976190476190477,
+      "zeroHit": 0,
+      "anyHit": 10
+    },
+    "en": {
+      "queries": 10,
+      "precision": 0.475,
+      "recall": 0.7666666666666666,
+      "mrr": 0.8166666666666667,
+      "zeroHit": 0,
+      "anyHit": 10
+    }
+  },
+  "byCategory": {
+    "docs": {
+      "queries": 5,
+      "precision": 0.525,
+      "recall": 0.9,
+      "mrr": 1,
+      "zeroHit": 0,
+      "anyHit": 5
+    },
+    "release": {
+      "queries": 5,
+      "precision": 0.55,
+      "recall": 0.9,
+      "mrr": 0.9,
+      "zeroHit": 0,
+      "anyHit": 5
+    },
+    "package": {
+      "queries": 5,
+      "precision": 0.325,
+      "recall": 0.9,
+      "mrr": 0.6333333333333333,
+      "zeroHit": 0,
+      "anyHit": 5
+    },
+    "news": {
+      "queries": 5,
+      "precision": 0.35,
+      "recall": 0.4666666666666666,
+      "mrr": 0.6952380952380952,
+      "zeroHit": 0,
+      "anyHit": 5
+    }
+  },
+  "engines": {
+    "anysearch": {
+      "answered": 20,
+      "returned": 200,
+      "contributed": 110,
+      "first": 110,
+      "contributedShare": 0.6875
+    },
+    "cn.bing": {
+      "answered": 20,
+      "returned": 194,
+      "contributed": 28,
+      "first": 27,
+      "contributedShare": 0.175
+    },
+    "exa": {
+      "answered": 10,
+      "returned": 100,
+      "contributed": 41,
+      "first": 16,
+      "contributedShare": 0.25625
+    },
+    "ddg-html": {
+      "answered": 18,
+      "returned": 174,
+      "contributed": 41,
+      "first": 7,
+      "contributedShare": 0.25625
+    }
+  },
+  "consensus": {
+    "rows": 160,
+    "votes": 220,
+    "averageVotes": 1.375,
+    "histogram": {
+      "1": 110,
+      "2": 41,
+      "3": 8,
+      "4": 1
+    }
+  },
+  "worst": [
+    {
+      "id": "zh-linux-612",
+      "query": "Linux 内核 6.12 发布",
+      "language": "zh",
+      "category": "news",
+      "precision": 0.125,
+      "recall": 0.5,
+      "rr": 0.14285714285714285,
+      "hits": 1,
+      "firstHitRank": 7,
+      "resultUrls": [
+        "https://blog.csdn.net/easydvlp/article/details/144413398",
+        "https://www.reddit.com/r/linux/comments/1gtpo7n/the_612_kernel_has_been_released/?tl=zh-hans",
+        "https://www.runoob.com/linux/linux-tutorial.html",
+        "https://finance.sina.com.cn/tech/discovery/2024-11-18/doc-incwnwwk6800342.shtml",
+        "https://www.eet-china.com/mp/a533286.html",
+        "https://baike.baidu.com/en/item/Linux%20kernel%206.12/3706063",
+        "https://www.kernel.org/",
+        "https://www.linux.org/"
+      ]
+    },
+    {
+      "id": "en-linux-612",
+      "query": "Linux kernel 6.12 release",
+      "language": "en",
+      "category": "news",
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 0.3333333333333333,
+      "hits": 2,
+      "firstHitRank": 3,
+      "resultUrls": [
+        "https://en.wikipedia.org/wiki/Linux_kernel_version_history",
+        "https://kernelnewbies.org/Linux_6.12",
+        "https://www.kernel.org/pub/linux/kernel/v6.x/",
+        "https://9to5linux.com/linux-kernel-6-12-officially-released-this-is-whats-new",
+        "https://docs.aws.amazon.com/linux/al2023/ug/kernel-update.html",
+        "https://tuxcare.com/blog/linux-kernel-6-12/",
+        "https://www.kernel.org/releases.html",
+        "https://www.reddit.com/r/linux/comments/1hbfsgv/kernel_6124_changelog_summary/"
+      ]
+    },
+    {
+      "id": "zh-pip-requests",
+      "query": "pip 安装 requests 库",
+      "language": "zh",
+      "category": "package",
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 0.3333333333333333,
+      "hits": 2,
+      "firstHitRank": 3,
+      "resultUrls": [
+        "https://docs.python-requests.org/projects/cn/zh-cn/latest/user/install.html",
+        "https://pip.pypa.io/en/stable/installation/",
+        "https://pypi.org/project/requests/",
+        "https://pypi.org/project/pip/",
+        "https://blog.csdn.net/smilehappiness/article/details/113480946",
+        "https://www.reddit.com/r/Python/comments/ms897j/pip_install_requests_python_requests_module_with/?tl=zh-hans",
+        "https://www.runoob.com/w3cnote/python-pip-install-usage.html",
+        "https://zhuanlan.zhihu.com/p/2565733423"
+      ]
+    }
+  ],
+  "missingFixtures": [],
+  "queries": [
+    {
+      "id": "zh-k8s-service",
+      "query": "Kubernetes Service 官方文档",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "kubernetes.io"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 7,
+      "precision": 0.875,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "kubernetes.io"
+      ],
+      "resultUrls": [
+        "https://kubernetes.io/docs/concepts/services-networking/service/",
+        "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+        "https://kubernetes.io/zh/",
+        "https://kubernetes.io/zh-cn/docs/home/",
+        "https://kubernetes.io/docs/home/",
+        "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+        "https://kubernetes.io/docs/reference/kubernetes-api/core/service-v1/",
+        "https://kubernetes.io/docs/concepts/services-networking/"
+      ],
+      "votes": 11,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 11,
+          "averageVotes": 1.375
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 9,
+            "contributed": 2,
+            "first": 2
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 0
+          },
+          "ddg-html": {
+            "returned": 8,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service?hl=zh-cn",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/zh/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/zh-cn/docs/home/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/home/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/reference/kubernetes-api/core/service-v1/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/concepts/services-networking/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-postgres-logical",
+      "query": "PostgreSQL 逻辑复制 配置",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "postgresql.org"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "postgresql.org"
+      ],
+      "resultUrls": [
+        "https://www.postgresql.org/",
+        "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+        "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
+        "https://www.postgresql.org/download/",
+        "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
+        "https://www.postgresql.org/docs/current/logical-replication.html",
+        "https://www.cnblogs.com/tiany1224/p/18278082",
+        "http://mysql.taobao.org/monthly/2025/03/01/"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://www.postgresql.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://learn.microsoft.com/zh-cn/azure/postgresql/configure-maintain/concepts-logical",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.postgresql.org/download/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication?hl=zh-cn",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.cnblogs.com/tiany1224/p/18278082",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "http://mysql.taobao.org/monthly/2025/03/01/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-rust-ownership",
+      "query": "Rust 所有权 规则",
+      "language": "zh",
+      "category": "docs",
+      "expectedDomains": [
+        "doc.rust-lang.org",
+        "rust-lang.org"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "rust-lang.org"
+      ],
+      "resultUrls": [
+        "https://rust-lang.org/zh-CN/",
+        "https://rust-lang.org/",
+        "https://kaisery.github.io/trpl-zh-cn/ch04-01-what-is-ownership.html",
+        "https://rust-book.junmajinlong.com/ch6/02_move_copy.html",
+        "https://www.reddit.com/r/rust/comments/1otfg9e/whats_one_trick_in_rust_that_made_ownership/?tl=zh-hans",
+        "https://www.runoob.com/rust/rust-ownership.html",
+        "https://www.runoob.com/rust/rust-tutorial.html",
+        "https://zhuanlan.zhihu.com/p/678877875"
+      ],
+      "votes": 8,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 8,
+          "averageVotes": 1
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 5
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 3
+          }
+        },
+        "rows": [
+          {
+            "url": "https://rust-lang.org/zh-CN/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://rust-lang.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://kaisery.github.io/trpl-zh-cn/ch04-01-what-is-ownership.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://rust-book.junmajinlong.com/ch6/02_move_copy.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/rust/comments/1otfg9e/whats_one_trick_in_rust_that_made_ownership/?tl=zh-hans",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/rust/rust-ownership.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/rust/rust-tutorial.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/678877875",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-python-313",
+      "query": "Python 3.13 新特性",
+      "language": "zh",
+      "category": "release",
+      "expectedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 5,
+      "precision": 0.625,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "resultUrls": [
+        "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+        "https://docs.python.org/zh-cn/",
+        "https://www.python.org/",
+        "https://docs.python.org/zh-cn/3/tutorial/index.html",
+        "https://www.python.org/downloads/",
+        "https://docs.comfy.org/zh/changelog",
+        "https://github.com/Tencent/wave-mcp",
+        "https://blog.csdn.net/weixin_42212872/article/details/144067816"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://docs.python.org/zh-cn/dev/whatsnew/3.13.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.python.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/3/tutorial/index.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.python.org/downloads/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://docs.comfy.org/zh/changelog",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://github.com/Tencent/wave-mcp",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_42212872/article/details/144067816",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-node24",
+      "query": "Node.js 24 发布说明",
+      "language": "zh",
+      "category": "release",
+      "expectedDomains": [
+        "nodejs.org",
+        "github.com"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "nodejs.org",
+        "github.com"
+      ],
+      "resultUrls": [
+        "https://nodejs.org/en/blog/release/v24.0.0",
+        "https://nodejs.org/",
+        "https://www.threads.com/@tsairecca/post/Deyj61ojy9m/%E5%85%88%E6%98%AF-php%E5%86%8D%E4%BE%86%E6%98%AF-nodejs-%E5%92%8C-gophp-%E8%B5%B0%E5%9C%A8%E6%9C%80%E5%89%8D%E7%AB%AF/",
+        "https://blog.csdn.net/weixin_44829437/article/details/154421183",
+        "https://www.reddit.com/r/node/comments/1k71vnd/whats_new_in_nodejs_24/?tl=zh-hans",
+        "https://github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V24.md",
+        "https://node.org.cn/",
+        "http://nodesource.com/blog/Node.js-version-24/"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://nodejs.org/en/blog/release/v24.0.0",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://nodejs.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://www.threads.com/@tsairecca/post/Deyj61ojy9m/%E5%85%88%E6%98%AF-php%E5%86%8D%E4%BE%86%E6%98%AF-nodejs-%E5%92%8C-gophp-%E8%B5%B0%E5%9C%A8%E6%9C%80%E5%89%8D%E7%AB%AF/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_44829437/article/details/154421183",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/node/comments/1k71vnd/whats_new_in_nodejs_24/?tl=zh-hans",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V24.md",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://node.org.cn/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "http://nodesource.com/blog/Node.js-version-24/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-pip-requests",
+      "query": "pip 安装 requests 库",
+      "language": "zh",
+      "category": "package",
+      "expectedDomains": [
+        "pypi.org",
+        "requests.readthedocs.io"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 0.3333333333333333,
+      "firstHitRank": 3,
+      "matchedDomains": [
+        "pypi.org"
+      ],
+      "resultUrls": [
+        "https://docs.python-requests.org/projects/cn/zh-cn/latest/user/install.html",
+        "https://pip.pypa.io/en/stable/installation/",
+        "https://pypi.org/project/requests/",
+        "https://pypi.org/project/pip/",
+        "https://blog.csdn.net/smilehappiness/article/details/113480946",
+        "https://www.reddit.com/r/Python/comments/ms897j/pip_install_requests_python_requests_module_with/?tl=zh-hans",
+        "https://www.runoob.com/w3cnote/python-pip-install-usage.html",
+        "https://zhuanlan.zhihu.com/p/2565733423"
+      ],
+      "votes": 10,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 10,
+          "averageVotes": 1.25
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 5
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 3
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://docs.python-requests.org/projects/cn/zh-cn/latest/user/install.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://pip.pypa.io/en/stable/installation/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://pypi.org/project/requests/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://pypi.org/project/pip/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://blog.csdn.net/smilehappiness/article/details/113480946",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/Python/comments/ms897j/pip_install_requests_python_requests_module_with/?tl=zh-hans",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/w3cnote/python-pip-install-usage.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2565733423",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-npm-install",
+      "query": "npm install 依赖 package.json",
+      "language": "zh",
+      "category": "package",
+      "expectedDomains": [
+        "docs.npmjs.com",
+        "npmjs.com"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 0.5,
+      "firstHitRank": 2,
+      "matchedDomains": [
+        "docs.npmjs.com",
+        "npmjs.com"
+      ],
+      "resultUrls": [
+        "https://docs.cloud.google.com/run/docs/runtimes/nodejs-dependencies?hl=zh-cn",
+        "https://www.npmjs.com/",
+        "https://nodejs.org/en/download",
+        "https://npm.nodejs.cn/cli/v11/configuring-npm/install",
+        "https://blog.csdn.net/lydia_liuY/article/details/80816267",
+        "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+        "https://www.npmjs.com/package/npm",
+        "https://stackoverflow.com/questions/6480549/install-dependencies-globally-and-locally-using-package-json"
+      ],
+      "votes": 10,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 10,
+          "averageVotes": 1.25
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://docs.cloud.google.com/run/docs/runtimes/nodejs-dependencies?hl=zh-cn",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.npmjs.com/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://nodejs.org/en/download",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://npm.nodejs.cn/cli/v11/configuring-npm/install",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://blog.csdn.net/lydia_liuY/article/details/80816267",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.npmjs.com/specifying-dependencies-and-devdependencies-in-a-package-json-file/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.npmjs.com/package/npm",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://stackoverflow.com/questions/6480549/install-dependencies-globally-and-locally-using-package-json",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-react-useeffect",
+      "query": "React useEffect 用法",
+      "language": "zh",
+      "category": "package",
+      "expectedDomains": [
+        "react.dev"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "react.dev"
+      ],
+      "resultUrls": [
+        "https://zh-hans.react.dev/reference/react/useEffect",
+        "https://juejin.cn/post/6923070024559099918",
+        "https://zh-hans.react.dev/learn",
+        "https://zhuanlan.zhihu.com/p/673953792",
+        "https://ithelp.ithome.com.tw/articles/10224270",
+        "https://react.dev/",
+        "https://github.com/puxiao/react-hook-tutorial/blob/master/04%20useEffect%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95.md",
+        "https://medium.com/vita-for-one/react-hooks-%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-usestate-useeffect-usecontext-b11c33e69bea"
+      ],
+      "votes": 8,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 8,
+          "averageVotes": 1
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 2
+          }
+        },
+        "rows": [
+          {
+            "url": "https://zh-hans.react.dev/reference/react/useEffect",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://juejin.cn/post/6923070024559099918",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/673953792",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://ithelp.ithome.com.tw/articles/10224270",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://react.dev/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://github.com/puxiao/react-hook-tutorial/blob/master/04%20useEffect%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95.md",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://medium.com/vita-for-one/react-hooks-%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-usestate-useeffect-usecontext-b11c33e69bea",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-gpt5",
+      "query": "OpenAI GPT-5 发布",
+      "language": "zh",
+      "category": "news",
+      "expectedDomains": [
+        "openai.com",
+        "theverge.com",
+        "techcrunch.com"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 0.6666666666666666,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "openai.com",
+        "techcrunch.com"
+      ],
+      "resultUrls": [
+        "https://help.openai.com/en/articles/20001530-getting-started-with-your-dot",
+        "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/",
+        "https://www.elser.ai/zh/blog/gpt-5-6-sol-vs-terra-vs-luna-which-model-should-you-use",
+        "https://www.codex-chinese.com/chatgpt/guides/chatgpt-official-entry-domestic-guide-2026",
+        "https://finance.sina.cn/stock/jdts/2026-09-13/detail-inirscya7861103.d.html?vt=4",
+        "https://openai.com/zh-Hans-CN/gpt-5/",
+        "https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261960045-openai-ipo-openai-chatgpt-mu-tradingkey",
+        "https://zh.wikipedia.org/wiki/GPT-5"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 7,
+            "first": 7
+          },
+          "cn.bing": {
+            "returned": 8,
+            "contributed": 1,
+            "first": 1
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://help.openai.com/en/articles/20001530-getting-started-with-your-dot",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.elser.ai/zh/blog/gpt-5-6-sol-vs-terra-vs-luna-which-model-should-you-use",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.codex-chinese.com/chatgpt/guides/chatgpt-official-entry-domestic-guide-2026",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://finance.sina.cn/stock/jdts/2026-09-13/detail-inirscya7861103.d.html?vt=4",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://openai.com/zh-Hans-CN/gpt-5/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261960045-openai-ipo-openai-chatgpt-mu-tradingkey",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://zh.wikipedia.org/wiki/GPT-5",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zh-linux-612",
+      "query": "Linux 内核 6.12 发布",
+      "language": "zh",
+      "category": "news",
+      "expectedDomains": [
+        "kernel.org",
+        "lwn.net"
+      ],
+      "lead": "cn",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 1,
+      "precision": 0.125,
+      "recall": 0.5,
+      "rr": 0.14285714285714285,
+      "firstHitRank": 7,
+      "matchedDomains": [
+        "kernel.org"
+      ],
+      "resultUrls": [
+        "https://blog.csdn.net/easydvlp/article/details/144413398",
+        "https://www.reddit.com/r/linux/comments/1gtpo7n/the_612_kernel_has_been_released/?tl=zh-hans",
+        "https://www.runoob.com/linux/linux-tutorial.html",
+        "https://finance.sina.com.cn/tech/discovery/2024-11-18/doc-incwnwwk6800342.shtml",
+        "https://www.eet-china.com/mp/a533286.html",
+        "https://baike.baidu.com/en/item/Linux%20kernel%206.12/3706063",
+        "https://www.kernel.org/",
+        "https://www.linux.org/"
+      ],
+      "votes": 10,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 10,
+          "averageVotes": 1.25
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://blog.csdn.net/easydvlp/article/details/144413398",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/linux/comments/1gtpo7n/the_612_kernel_has_been_released/?tl=zh-hans",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.runoob.com/linux/linux-tutorial.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://finance.sina.com.cn/tech/discovery/2024-11-18/doc-incwnwwk6800342.shtml",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.eet-china.com/mp/a533286.html",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://baike.baidu.com/en/item/Linux%20kernel%206.12/3706063",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.kernel.org/",
+            "votes": 2,
+            "engines": [
+              "cn.bing",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.linux.org/",
+            "votes": 1,
+            "engines": [
+              "cn.bing"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-k8s-service",
+      "query": "Kubernetes Service official documentation",
+      "language": "en",
+      "category": "docs",
+      "expectedDomains": [
+        "kubernetes.io"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 6,
+      "precision": 0.75,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "kubernetes.io"
+      ],
+      "resultUrls": [
+        "https://kubernetes.io/docs/concepts/services-networking/service/",
+        "https://docs.cloud.google.com/kubernetes-engine/docs",
+        "https://kubernetes.io/docs/home/",
+        "https://cloud.google.com/learn/what-is-kubernetes",
+        "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/",
+        "https://kubernetes.io/docs/concepts/services-networking/",
+        "https://v1-33.docs.kubernetes.io/docs/concepts/services-networking/service/",
+        "https://kubernetes.io/docs/tutorials/kubernetes-basics/expose/expose-intro/"
+      ],
+      "votes": 12,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 12,
+          "averageVotes": 1.5
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 3
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 4
+          },
+          "ddg-html": {
+            "returned": 8,
+            "contributed": 4,
+            "first": 1
+          },
+          "cn.bing": {
+            "returned": 9,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://kubernetes.io/docs/concepts/services-networking/service/",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.cloud.google.com/kubernetes-engine/docs",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/home/",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://cloud.google.com/learn/what-is-kubernetes",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/concepts/services-networking/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://v1-33.docs.kubernetes.io/docs/concepts/services-networking/service/",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/expose/expose-intro/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-mdn-fetch",
+      "query": "MDN Fetch API documentation",
+      "language": "en",
+      "category": "docs",
+      "expectedDomains": [
+        "developer.mozilla.org"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "developer.mozilla.org"
+      ],
+      "resultUrls": [
+        "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+        "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+        "https://html.spec.whatwg.org/multipage/semantics.html",
+        "https://www.npmjs.com/package/multer",
+        "https://www.sitepoint.com/what-clear-form-should-really-do-managing-draft-data-in-javascript/",
+        "https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch",
+        "https://www.greatfrontend.com/questions/quiz/explain-the-concept-of-the-web-socket-api",
+        "https://docs.netlify.com/"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 7,
+            "first": 7
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 2,
+            "first": 1
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://html.spec.whatwg.org/multipage/semantics.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.npmjs.com/package/multer",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.sitepoint.com/what-clear-form-should-really-do-managing-draft-data-in-javascript/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.greatfrontend.com/questions/quiz/explain-the-concept-of-the-web-socket-api",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://docs.netlify.com/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-python-313",
+      "query": "Python 3.13 release notes",
+      "language": "en",
+      "category": "release",
+      "expectedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 6,
+      "precision": 0.75,
+      "recall": 1,
+      "rr": 0.5,
+      "firstHitRank": 2,
+      "matchedDomains": [
+        "docs.python.org",
+        "python.org"
+      ],
+      "resultUrls": [
+        "https://github.com/python/cpython/blob/main/Doc/whatsnew/3.13.rst",
+        "https://docs.python.org/3/whatsnew/3.13.html",
+        "https://www.python.org/downloads/release/python-31313/",
+        "https://docs.python.org/3.13/whatsnew/changelog.html",
+        "https://docs.python.org/3.13/whatsnew/3.13.html",
+        "https://www.python.org/downloads/release/python-3130/",
+        "https://www.python.org/downloads/release/python-3130/?featured_on=pythonbytes",
+        "https://azure.github.io/AppService/2026/10/22/node-python-emergency-release-app-service-linux.html"
+      ],
+      "votes": 13,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 13,
+          "averageVotes": 1.625
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 4
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 2
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://github.com/python/cpython/blob/main/Doc/whatsnew/3.13.rst",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/3/whatsnew/3.13.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.python.org/downloads/release/python-31313/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/3.13/whatsnew/changelog.html",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/3.13/whatsnew/3.13.html",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.python.org/downloads/release/python-3130/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.python.org/downloads/release/python-3130/?featured_on=pythonbytes",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://azure.github.io/AppService/2026/10/22/node-python-emergency-release-app-service-linux.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-go-124",
+      "query": "Go 1.24 release notes",
+      "language": "en",
+      "category": "release",
+      "expectedDomains": [
+        "go.dev",
+        "golang.org"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "go.dev"
+      ],
+      "resultUrls": [
+        "https://go.dev/doc/go1.24",
+        "https://antonz.org/go-1-24/",
+        "https://goframe.org/en/release/golang/go1.24",
+        "https://go.dev/blog/go1.24",
+        "https://leapcell.io/blog/go-1-24-release-summary",
+        "https://github.com/golang/go/issues/68545",
+        "https://www.reddit.com/r/golang/comments/1j3jo7i/go_1241_is_released/",
+        "https://developers.binance.com/en/docs/sdks-tools/connectors/go"
+      ],
+      "votes": 16,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 16,
+          "averageVotes": 2
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 7,
+            "first": 7
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 1
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 0
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://go.dev/doc/go1.24",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://antonz.org/go-1-24/",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://goframe.org/en/release/golang/go1.24",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://go.dev/blog/go1.24",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://leapcell.io/blog/go-1-24-release-summary",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://github.com/golang/go/issues/68545",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/golang/comments/1j3jo7i/go_1241_is_released/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://developers.binance.com/en/docs/sdks-tools/connectors/go",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-rust-185",
+      "query": "Rust 1.85 release notes",
+      "language": "en",
+      "category": "release",
+      "expectedDomains": [
+        "blog.rust-lang.org",
+        "rust-lang.org",
+        "doc.rust-lang.org"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 6,
+      "precision": 0.75,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "blog.rust-lang.org",
+        "rust-lang.org",
+        "doc.rust-lang.org"
+      ],
+      "resultUrls": [
+        "https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/",
+        "https://releases.rs/docs/1.85.0/",
+        "https://doc.rust-lang.org/beta/releases.html",
+        "https://blog.rust-lang.org/releases/",
+        "https://github.com/rust-lang/rust/releases",
+        "https://doc.rust-lang.org/stable/releases.html",
+        "https://internals.rust-lang.org/t/rust-1-85-1-pre-release-testing/22578",
+        "https://blog.rust-lang.org/2025/03/18/Rust-1.85.1/"
+      ],
+      "votes": 15,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 15,
+          "averageVotes": 1.875
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 5
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 1
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://releases.rs/docs/1.85.0/",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://doc.rust-lang.org/beta/releases.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://blog.rust-lang.org/releases/",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://github.com/rust-lang/rust/releases",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://doc.rust-lang.org/stable/releases.html",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://internals.rust-lang.org/t/rust-1-85-1-pre-release-testing/22578",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://blog.rust-lang.org/2025/03/18/Rust-1.85.1/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-pip-requests",
+      "query": "pip install requests",
+      "language": "en",
+      "category": "package",
+      "expectedDomains": [
+        "pypi.org",
+        "requests.readthedocs.io"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 1,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "pypi.org",
+        "requests.readthedocs.io"
+      ],
+      "resultUrls": [
+        "https://pypi.org/project/requests/",
+        "https://stackoverflow.com/questions/62080010/how-to-install-requests-module-with-pip",
+        "https://requests.readthedocs.io/en/latest/user/install/",
+        "https://www.w3schools.com/python/module_requests.asp",
+        "https://github.com/psf/requests",
+        "https://docs.python.org/3/installing/index.html",
+        "https://docs.python-requests.org/en/stable/user/install/",
+        "https://www.reddit.com/r/learnpython/comments/1jkvx0v/pip_install_requests/"
+      ],
+      "votes": 15,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 15,
+          "averageVotes": 1.875
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 9,
+            "contributed": 3,
+            "first": 0
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 1,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://pypi.org/project/requests/",
+            "votes": 4,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html",
+              "cn.bing"
+            ]
+          },
+          {
+            "url": "https://stackoverflow.com/questions/62080010/how-to-install-requests-module-with-pip",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://requests.readthedocs.io/en/latest/user/install/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.w3schools.com/python/module_requests.asp",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://github.com/psf/requests",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://docs.python.org/3/installing/index.html",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://docs.python-requests.org/en/stable/user/install/",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/learnpython/comments/1jkvx0v/pip_install_requests/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-npm-install",
+      "query": "npm install package.json dependencies",
+      "language": "en",
+      "category": "package",
+      "expectedDomains": [
+        "docs.npmjs.com",
+        "npmjs.com"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 1,
+      "rr": 0.3333333333333333,
+      "firstHitRank": 3,
+      "matchedDomains": [
+        "docs.npmjs.com",
+        "npmjs.com"
+      ],
+      "resultUrls": [
+        "https://stackoverflow.com/questions/8367031/how-do-i-install-package-json-dependencies-in-the-current-directory-using-npm",
+        "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+        "https://www.npmjs.com/package/nodemailer",
+        "https://tuxcare.com/blog/package-managers-treat-patched-versions/",
+        "https://nx.dev/docs/technologies/node/introduction",
+        "https://docs.npmjs.com/cli/v11/configuring-npm/package-json/",
+        "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+        "https://github.com/npm/npm/issues/17282"
+      ],
+      "votes": 9,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 9,
+          "averageVotes": 1.125
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 7,
+            "first": 7
+          },
+          "ddg-html": {
+            "returned": 9,
+            "contributed": 2,
+            "first": 1
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://stackoverflow.com/questions/8367031/how-do-i-install-package-json-dependencies-in-the-current-directory-using-npm",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.npmjs.com/package/nodemailer",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://tuxcare.com/blog/package-managers-treat-patched-versions/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://nx.dev/docs/technologies/node/introduction",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v11/configuring-npm/package-json/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://github.com/npm/npm/issues/17282",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-gpt5",
+      "query": "OpenAI GPT-5 announcement",
+      "language": "en",
+      "category": "news",
+      "expectedDomains": [
+        "openai.com",
+        "theverge.com",
+        "techcrunch.com"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 3,
+      "precision": 0.375,
+      "recall": 0.3333333333333333,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "openai.com"
+      ],
+      "resultUrls": [
+        "https://openai.com/index/introducing-gpt-5/",
+        "https://openai.com/gpt-5/",
+        "https://en.wikipedia.org/wiki/GPT-5",
+        "https://developers.openai.com/api/docs/models/gpt-5",
+        "https://www.cnbc.com/2025/08/07/openai-launches-gpt-5-model-for-all-chatgpt-users.html",
+        "https://www.reddit.com/r/ChatGPT/comments/1xcku7w/why_does_openai_keep_making_updates_on_chatgpt/",
+        "https://www.youtube.com/watch?v=0Uu_VJeVVfo",
+        "https://every.to/p/how-codex-happened"
+      ],
+      "votes": 14,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 14,
+          "averageVotes": 1.75
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 7,
+            "first": 7
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 1
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 0
+          },
+          "cn.bing": {
+            "returned": 8,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://openai.com/index/introducing-gpt-5/",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://openai.com/gpt-5/",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/GPT-5",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://developers.openai.com/api/docs/models/gpt-5",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.cnbc.com/2025/08/07/openai-launches-gpt-5-model-for-all-chatgpt-users.html",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/ChatGPT/comments/1xcku7w/why_does_openai_keep_making_updates_on_chatgpt/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=0Uu_VJeVVfo",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://every.to/p/how-codex-happened",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-linux-612",
+      "query": "Linux kernel 6.12 release",
+      "language": "en",
+      "category": "news",
+      "expectedDomains": [
+        "kernel.org",
+        "lwn.net"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 2,
+      "precision": 0.25,
+      "recall": 0.5,
+      "rr": 0.3333333333333333,
+      "firstHitRank": 3,
+      "matchedDomains": [
+        "kernel.org"
+      ],
+      "resultUrls": [
+        "https://en.wikipedia.org/wiki/Linux_kernel_version_history",
+        "https://kernelnewbies.org/Linux_6.12",
+        "https://www.kernel.org/pub/linux/kernel/v6.x/",
+        "https://9to5linux.com/linux-kernel-6-12-officially-released-this-is-whats-new",
+        "https://docs.aws.amazon.com/linux/al2023/ug/kernel-update.html",
+        "https://tuxcare.com/blog/linux-kernel-6-12/",
+        "https://www.kernel.org/releases.html",
+        "https://www.reddit.com/r/linux/comments/1hbfsgv/kernel_6124_changelog_summary/"
+      ],
+      "votes": 13,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 13,
+          "averageVotes": 1.625
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 6,
+            "first": 6
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 4,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 0
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://en.wikipedia.org/wiki/Linux_kernel_version_history",
+            "votes": 3,
+            "engines": [
+              "anysearch",
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://kernelnewbies.org/Linux_6.12",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.kernel.org/pub/linux/kernel/v6.x/",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://9to5linux.com/linux-kernel-6-12-officially-released-this-is-whats-new",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://docs.aws.amazon.com/linux/al2023/ug/kernel-update.html",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://tuxcare.com/blog/linux-kernel-6-12/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.kernel.org/releases.html",
+            "votes": 1,
+            "engines": [
+              "exa"
+            ]
+          },
+          {
+            "url": "https://www.reddit.com/r/linux/comments/1hbfsgv/kernel_6124_changelog_summary/",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-nvidia-earnings",
+      "query": "NVIDIA third quarter fiscal 2025 earnings",
+      "language": "en",
+      "category": "news",
+      "expectedDomains": [
+        "nvidia.com",
+        "reuters.com",
+        "cnbc.com"
+      ],
+      "lead": "global",
+      "limit": 8,
+      "resultCount": 8,
+      "hits": 5,
+      "precision": 0.625,
+      "recall": 0.3333333333333333,
+      "rr": 1,
+      "firstHitRank": 1,
+      "matchedDomains": [
+        "nvidia.com"
+      ],
+      "resultUrls": [
+        "https://investor.nvidia.com/financial-info/financial-reports/default.aspx",
+        "https://investor.nvidia.com/news/press-release-details/2024/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2025/default.aspx",
+        "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2025",
+        "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2026",
+        "https://www.zacks.com/stock/research/NVDA/earnings-calendar",
+        "https://nvidianews.nvidia.com/_gallery/download_pdf/673e52d63d6332ce4bb72f56/",
+        "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000315/q3fy25pr.htm",
+        "https://seekingalpha.com/symbol/NVDA"
+      ],
+      "votes": 11,
+      "contributions": {
+        "totals": {
+          "rows": 8,
+          "votes": 11,
+          "averageVotes": 1.375
+        },
+        "engines": {
+          "anysearch": {
+            "returned": 10,
+            "contributed": 5,
+            "first": 5
+          },
+          "exa": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 2
+          },
+          "ddg-html": {
+            "returned": 10,
+            "contributed": 3,
+            "first": 1
+          },
+          "cn.bing": {
+            "returned": 10,
+            "contributed": 0,
+            "first": 0
+          }
+        },
+        "rows": [
+          {
+            "url": "https://investor.nvidia.com/financial-info/financial-reports/default.aspx",
+            "votes": 2,
+            "engines": [
+              "anysearch",
+              "exa"
+            ]
+          },
+          {
+            "url": "https://investor.nvidia.com/news/press-release-details/2024/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2025/default.aspx",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2025",
+            "votes": 2,
+            "engines": [
+              "exa",
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2026",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://www.zacks.com/stock/research/NVDA/earnings-calendar",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://nvidianews.nvidia.com/_gallery/download_pdf/673e52d63d6332ce4bb72f56/",
+            "votes": 1,
+            "engines": [
+              "ddg-html"
+            ]
+          },
+          {
+            "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000315/q3fy25pr.htm",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          },
+          {
+            "url": "https://seekingalpha.com/symbol/NVDA",
+            "votes": 1,
+            "engines": [
+              "anysearch"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

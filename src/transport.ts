@@ -8,11 +8,12 @@
  *
  * @module @fangchenghao/dsh-web-search/transport
  */
-import type { HostSpec, Source, TimeRange } from './types.ts';
+import type { HostSpec, SafeSearch, Source, TimeRange } from './types.ts';
 import { SearchError, parseRetryAfter } from './errors.ts';
 import { proxyGet } from './proxy.ts';
 import { echoesQuery } from './parsers.ts';
 import { gateFor } from './semaphore.ts';
+import type { EngineHealth } from './health.ts';
 import { isRelevant, queryProfile } from './relevance.ts';
 
 /** Markers of an interstitial anti-bot page, narrow enough not to hit prose. */
@@ -34,7 +35,9 @@ const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
 
 /** Outcome of asking one engine once. */
-export type AttemptOutcome = { ok: true; sources: Source[] } | { ok: false; error: SearchError };
+export type AttemptOutcome =
+  | { ok: true; sources: Source[]; route?: 'direct' | 'proxy' }
+  | { ok: false; error: SearchError };
 
 /**
  * Turn a non-2xx status into a classified failure.
@@ -44,10 +47,10 @@ export type AttemptOutcome = { ok: true; sources: Source[] } | { ok: false; erro
  * @returns the classified error.
  */
 function statusError(id: string, status: number, retryAfter: number | undefined): SearchError {
-  if (status === 429) return new SearchError(`${id}: HTTP 429`, 'SEARCH_THROTTLED', true, retryAfter);
-  if (status === 403) return new SearchError(`${id}: HTTP 403`, 'SEARCH_BLOCKED', true, retryAfter);
-  if (status >= 500) return new SearchError(`${id}: HTTP ${status}`, 'SEARCH_NETWORK', true, retryAfter);
-  return new SearchError(`${id}: HTTP ${status}`, 'SEARCH_BLOCKED', true, retryAfter);
+  if (status === 429) return new SearchError(`${id}: HTTP 429`, 'SEARCH_THROTTLED', true, retryAfter, status);
+  if (status === 403) return new SearchError(`${id}: HTTP 403`, 'SEARCH_BLOCKED', true, retryAfter, status);
+  if (status >= 500) return new SearchError(`${id}: HTTP ${status}`, 'SEARCH_NETWORK', true, retryAfter, status);
+  return new SearchError(`${id}: HTTP ${status}`, 'SEARCH_BLOCKED', true, retryAfter, status);
 }
 
 /**
@@ -144,7 +147,7 @@ async function attempt(
   }
 
   try {
-    return { ok: true, sources: host.parse(payload, url) };
+    return { ok: true, sources: host.parse(payload, url), route: proxy === undefined ? 'direct' : 'proxy' };
   } catch (error) {
     // Markup drift upstream must degrade to the next engine, not fail the
     // search, and it must not cost the engine a cooldown: retrying markup that
@@ -155,12 +158,14 @@ async function attempt(
 }
 
 /**
- * Ask one engine, going direct first unless it is marked `viaProxy`.
+ * Ask one engine, choosing its first route from health and host policy.
  *
- * A domestic engine goes direct first, because that is both faster and the path
- * its site expects; only if that fails is it retried through the tunnel, so a
- * network that blocks it directly still works. An engine marked `viaProxy` is
- * tunnelled from the start.
+ * A domestic engine normally goes direct first, because that is both faster
+ * and the path its site expects. If direct fails, the tunnel is tried; if the
+ * tunnel succeeds, a short-lived health preference makes the next request try
+ * it first. The alternate route is still kept as a fallback, so a tunnel that
+ * goes down does not make the engine disappear. An engine marked `viaProxy` is
+ * tunnelled from the start, with the direct route as its fallback.
  *
  * @param host - the engine.
  * @param query - the user query.
@@ -171,20 +176,63 @@ async function attempt(
  *   push it into their query (currently DuckDuckGo's `df`).
  * @returns the outcome of the route that got furthest; cancellation is rethrown.
  */
+/**
+ * Push the configured content filter down to the engines that accept one.
+ *
+ * `off` leaves the URL untouched on purpose: the engine then keeps its own
+ * default, which is what every search did before this option existed. Only a
+ * non-default choice changes the request, so old URLs and cached fixtures stay
+ * valid.
+ *
+ * @param hostId - engine id.
+ * @param url - the URL the engine definition built.
+ * @param safeSearch - configured level.
+ * @returns the URL to request.
+ */
+export function withSafeSearch(hostId: string, url: string, safeSearch: SafeSearch | undefined): string {
+  if (safeSearch === undefined || safeSearch === 'off') return url;
+  if (hostId !== 'ddg-html' && hostId !== 'ddg-lite' && hostId !== 'www.bing' && hostId !== 'cn.bing') return url;
+  try {
+    const parsed = new URL(url);
+    if (hostId === 'ddg-html' || hostId === 'ddg-lite') {
+      // DuckDuckGo names the filter `kp`: 1 strict, -1 moderate, 0 off.
+      parsed.searchParams.set('kp', safeSearch === 'strict' ? '1' : '-1');
+    } else {
+      parsed.searchParams.set('adlt', safeSearch);
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 /** Ask one engine one query, with the direct-then-tunnel retry. */
 async function attemptWithRoute(
   host: HostSpec,
   query: string,
   signal: AbortSignal | undefined,
   timeoutMs: number,
-  route: string | undefined,
   proxy: string | undefined,
   timeRange: TimeRange | undefined,
+  safeSearch?: SafeSearch,
+  health?: EngineHealth,
 ): Promise<AttemptOutcome> {
-  const url = host.build(query, timeRange);
-  const first = await attempt(host, url, signal, timeoutMs, route, query);
-  if (first.ok || route !== undefined || proxy === undefined || signal?.aborted === true) return first;
-  const retry = await attempt(host, url, signal, timeoutMs, proxy, query);
+  const url = withSafeSearch(host.id, host.build(query, timeRange), safeSearch);
+  // A previous proxy success means the direct path was blocked. Try the route
+  // that is known to work first, but always keep the other route as a fallback:
+  // a tunnel can go down too, and a search must not become single-route.
+  const preferProxy = proxy !== undefined && health?.preferProxy(host.id) === true;
+  const firstRoute = preferProxy || host.viaProxy === true ? proxy : undefined;
+  const first = await attempt(host, url, signal, timeoutMs, firstRoute, query);
+  if (first.ok) {
+    if (first.route !== undefined) health?.noteRouteSuccess(host.id, first.route);
+    return first;
+  }
+  if (signal?.aborted === true || proxy === undefined) return first;
+  const alternateRoute = firstRoute === proxy ? undefined : proxy;
+  if (alternateRoute === undefined) return first;
+  const retry = await attempt(host, url, signal, timeoutMs, alternateRoute, query);
+  if (retry.ok && retry.route !== undefined) health?.noteRouteSuccess(host.id, retry.route);
   return retry.ok ? retry : first;
 }
 
@@ -195,8 +243,9 @@ export async function searchHost(
   timeoutMs = 15000,
   proxy?: string,
   timeRange?: TimeRange,
+  safeSearch?: SafeSearch,
+  health?: EngineHealth,
 ): Promise<AttemptOutcome> {
-  const route = host.viaProxy === true ? proxy : undefined;
   // A gate holds the permit for the whole engine attempt, including the
   // direct-then-tunnel retry, so a burst of concurrent searches cannot stack
   // two requests on an engine that only tolerates a couple.
@@ -204,7 +253,7 @@ export async function searchHost(
     ? undefined
     : await gateFor(host.id, host.maxConcurrent).acquire(signal);
   try {
-    const result = await attemptWithRoute(host, query, signal, timeoutMs, route, proxy, timeRange);
+    const result = await attemptWithRoute(host, query, signal, timeoutMs, proxy, timeRange, safeSearch, health);
     const variants = host.variants?.(query) ?? [];
     if (variants.length === 0 || signal?.aborted === true) return result;
     // Only pay for the extra request when the engine's first answer is unusable.
@@ -218,7 +267,7 @@ export async function searchHost(
       // `signal?.aborted === true` above narrowed the false branch to
       // `aborted: false`, so test truthiness here instead of the literal.
       if (signal?.aborted) break;
-      const extra = await attemptWithRoute(host, variant, signal, timeoutMs, route, proxy, timeRange);
+      const extra = await attemptWithRoute(host, variant, signal, timeoutMs, proxy, timeRange, safeSearch, health);
       if (!extra.ok) continue;
       for (const source of extra.sources) {
         if (seen.has(source.url)) continue;

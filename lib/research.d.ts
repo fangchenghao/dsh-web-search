@@ -7,8 +7,11 @@
  * two or three rows that matter, fetch them without timing out, and keep track
  * of which sentence came from which URL. This tool performs exactly that step:
  * it runs up to three searches through the normal engine path, de-duplicates
- * the rows, fetches the leading pages through the same ladder `web_fetch` uses,
- * and returns one Markdown document in which every excerpt sits under its URL.
+ * the rows, ranks them by query relevance and then source authority, fetches
+ * the leading pages through the same ladder `web_fetch` uses, and returns one
+ * Markdown document in which every excerpt sits under its URL. A credible
+ * government/academic/official-documentation page that matches the query leads
+ * the pack; relevance still gates out official pages that match none of it.
  *
  * Failure is part of the contract. A page that will not load is reported by
  * URL and reason, the remaining pages still arrive, and a total fetch failure
@@ -32,7 +35,9 @@ export declare const RESEARCH_MAX_SOURCES = 5;
 /** Distinct queries accepted in one call. */
 export declare const RESEARCH_MAX_QUERIES = 3;
 /** Characters kept from each fetched page. */
-export declare const RESEARCH_EXCERPT_CHARS = 1200;
+export declare const RESEARCH_EXCERPT_CHARS = 1800;
+/** Below this much readable text a page is boilerplate, not evidence. */
+export declare const RESEARCH_MIN_TEXT_CHARS = 160;
 /** Pages fetched at the same time. */
 export declare const RESEARCH_PAGE_CONCURRENCY = 3;
 /** Wall-clock budget for the whole call, below the tool's host timeout. */
@@ -111,6 +116,17 @@ export interface ResearchRegistryLike {
 export interface ResearchOptions {
     /** Registration diagnostics. */
     warn?: (message: string) => void;
+    /**
+     * Called once for every page that survives validation, with the full body.
+     * Used by the optional cache_search tool; a throwing sink must never fail the
+     * research call.
+     */
+    onPage?: (page: {
+        url: string;
+        title?: string;
+        text: string;
+        queries: readonly string[];
+    }) => void;
 }
 /** A successful registration plus the exact way to undo it. */
 export interface ResearchRegistration {
@@ -128,6 +144,31 @@ export interface ResearchRegistration {
  */
 export declare function canonicalKey(raw: string): string | undefined;
 /**
+ * Select the passages of a fetched page that actually answer the research
+ * question, instead of always returning the first N characters.
+ *
+ * The search result's snippet is a summary, not the page: the fact can be
+ * 20 KB down (a Kubernetes field, an RFC section). This second pass scores
+ * paragraph windows against the same query tokens and keeps the best ones in
+ * reading order. It is deterministic and lexical; no model call and no extra
+ * network request. When nothing matches, the opening is still returned, so a
+ * weakly matched page is not silently turned into an empty excerpt.
+ *
+ * @param text - full page text from the fetch layer.
+ * @param tokens - query tokens from all research queries.
+ * @param max - excerpt budget in characters.
+ * @returns a bounded excerpt, with best passages first preserved in page order.
+ */
+export declare function selectExcerpt(text: string, tokens: readonly string[], max: number): string;
+/**
+ * Score a URL's source authority from 0 (generic page) to 5 (government,
+ * academic or standards body). Credible sources lead only after they pass the
+ * relevance gate, so an unrelated official page is not fetched as evidence.
+ * @param raw - candidate URL from any engine.
+ * @returns the authority score; malformed and non-HTTP(S) URLs score 0.
+ */
+export declare function authorityScore(raw: string): number;
+/**
  * Format the evidence pack the model reads.
  * @param value - what the call produced.
  * @returns a Markdown document with one section per fetched page.
@@ -140,7 +181,7 @@ export declare function formatResearchValue(value: ResearchValue): string;
  * @param fetchPage - fetches one URL through the plugin's fetch ladder.
  * @returns a registry-ready definition.
  */
-export declare function createResearchDefinition(name: string, search: ResearchSearcher, fetchPage: ResearchFetcher): ResearchDefinition;
+export declare function createResearchDefinition(name: string, search: ResearchSearcher, fetchPage: ResearchFetcher, options?: ResearchOptions): ResearchDefinition;
 /**
  * Pick the tool name this deployment can accept.
  * @param tools - the live registry.

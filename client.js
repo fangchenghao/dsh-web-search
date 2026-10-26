@@ -39,6 +39,33 @@
           var React = require('react');
           var h = React.createElement;
 
+          /** Compare dotted versions without treating a local build as older. */
+          function isNewerVersion(candidate, current) {
+            try {
+              var a = String(candidate).split('-')[0].split('.').map(function (part) { return Number(part); });
+              var b = String(current).split('-')[0].split('.').map(function (part) { return Number(part); });
+              var length = Math.max(a.length, b.length);
+              for (var i = 0; i < length; i += 1) {
+                var left = a[i] === undefined || !isFinite(a[i]) ? 0 : a[i];
+                var right = b[i] === undefined || !isFinite(b[i]) ? 0 : b[i];
+                if (left !== right) return left > right;
+              }
+              return String(candidate).indexOf('-') === -1 && String(current).indexOf('-') !== -1;
+            } catch (ignored) {
+              return false;
+            }
+          }
+
+          /** The one-click updater route only exists on the local desktop surface. */
+          function isLocalPage() {
+            try {
+              var host = window.location.hostname;
+              return host === '127.0.0.1' || host === 'localhost' || host === '::1' || host === '[::1]';
+            } catch (ignored) {
+              return false;
+            }
+          }
+
           /** Dictionary namespace owned by this plugin. */
           var NS = 'webSearchBing';
           /** The Settings surface slot: one settings page per list entry. */
@@ -47,22 +74,28 @@
           var ENTRY = 'web-search-bing';
           var PACKAGE_NAME = 'dsh-web-search-bing';
           /** Keep in step with package.json; compared with the npm registry. */
-          var VERSION = '0.19.3';
+          var VERSION = '0.21.1';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 
           // English copy. Every label the page renders lives here.
           var en = {
             title: 'Web search (Bing)',
-            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources. Model tools: web_search, research, domain_search, search_many, read_page.',
+            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources. Model tools: web_search, web_fetch and one unified web_tools action tool (legacy eight-name mode is opt-in).',
             jumpTo: 'Jump to',
             latest: 'Latest on npm',
             upToDate: 'up to date',
             updateAvailable: 'update available',
             'group.engines': 'Engines and transport',
             'group.ranking': 'Results and ranking',
+            'group.fetch': 'Fetching',
             'group.cache': 'Cache and cooldowns',
             'group.domain': 'Dedicated sources',
+            'group.tools': 'Model tools',
+            'field.toolSurface': 'Tool surface',
+            'hint.toolSurface': 'unified exposes one web_tools with eight actions and is the recommended context-efficient mode; legacy keeps the old eight names for existing prompts. Restart the plugin after changing this.',
+            'toolSurface.unified': 'Unified (one web_tools)',
+            'toolSurface.legacy': 'Legacy (eight names)',
             'wait.auto': 'Auto (query language)',
             'wait.all': 'All engines',
             'wait.fast': 'Fastest answer',
@@ -113,6 +146,22 @@
             'timeRange.week': 'Past 7 days',
             'timeRange.month': 'Past 30 days',
             'timeRange.year': 'Past year',
+            'field.blockedDomains': 'Blocked sites',
+            'hint.blockedDomains': 'Domains that must never appear (spam.example, ads.example); subdomains are blocked too. Empty blocks nothing.',
+            'field.safeSearch': 'Safe search',
+            'hint.safeSearch': 'Applies only to Bing and DuckDuckGo; off keeps each engine default',
+            'safeSearch.off': 'Off (engine default)',
+            'safeSearch.moderate': 'Moderate',
+            'safeSearch.strict': 'Strict',
+            'field.fallbackOn': 'Fallback on',
+            'hint.fallbackOn': 'Failure classes that may switch to a fallback engine. Empty means never fall back; all six means search never fails just because one engine did.',
+            'testTitle': 'Engine health',
+            'testHint': 'Run one tiny query through each engine. This does not use the cache or change cooldowns.',
+            'testButton': 'Test engines',
+            'testRunning': 'Testing…',
+            'testUnavailable': 'The test endpoint is not available in this deployment.',
+            'testFailed': 'The test could not run.',
+            'testSummary': 'OK / failed',
             'field.cacheTtlMs': 'Cache lifetime',
             'hint.cacheTtlMs': 'How long an identical question reuses its cached answer (ms)',
             'field.cacheEntries': 'Cache size',
@@ -145,13 +194,28 @@
             title: '网页搜索（Bing）',
             jumpTo: '跳到',
             latest: 'npm 最新版',
+            autoUpdateHint: '定时自动更新需要 profile 更新器（dsh-autoupdater）；「安装更新」按钮不依赖它：它会请 Host 插件管理器安装 npm 包，装完需重启。link:/file: 安装会被拒绝。',
+            updateButton: '安装更新',
+            updateInstalling: '正在安装…请保持此页打开。',
+            updateDone: '更新已安装。',
+            updateRestart: '更新已安装；重启 DeepSeek Harness 后生效。',
+            updateFailed: '更新失败：',
+            updateLocal: '当前是 link:/file: 安装。请先改成 npm 安装，再使用这个按钮。',
+            updateRemote: '更新按钮只在本地桌面 App 中可用。',
+            updateUnavailable: '当前部署没有内置插件管理器；请用 profile 的包管理器更新。',
             upToDate: '已是最新',
             updateAvailable: '有新版本',
-            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。模型工具：web_search、research、domain_search、search_many、read_page。',
+            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。模型工具：web_search、web_fetch，以及一个统一的 web_tools action 工具（旧版八个工具名可选）。',
             'group.engines': '引擎与传输',
             'group.ranking': '结果与排序',
+            'group.fetch': '抓取',
             'group.cache': '缓存与冷却',
             'group.domain': '专用检索',
+            'group.tools': '模型工具',
+            'field.toolSurface': '工具面',
+            'hint.toolSurface': 'unified 只暴露一个 web_tools、用 action 调用八种能力，推荐且更省上下文；legacy 保留原来的八个工具名，兼容旧提示词。修改后需要重启插件。',
+            'toolSurface.unified': '统一（一个 web_tools）',
+            'toolSurface.legacy': '旧版（八个工具名）',
             'wait.auto': '自动（按提问语言）',
             'wait.all': '等待全部引擎',
             'wait.fast': '最快回答',
@@ -202,6 +266,22 @@
             'timeRange.week': '最近 7 天',
             'timeRange.month': '最近 30 天',
             'timeRange.year': '最近 1 年',
+            'field.blockedDomains': '屏蔽网站',
+            'hint.blockedDomains': '永远不要出现在结果里的网站（如 spam.example、ads.example），子域名也会被屏蔽；留空表示不屏蔽。',
+            'field.safeSearch': '安全搜索',
+            'hint.safeSearch': '只影响 Bing 和 DuckDuckGo；off 保持引擎默认',
+            'safeSearch.off': '关闭（引擎默认）',
+            'safeSearch.moderate': '适中',
+            'safeSearch.strict': '严格',
+            'field.fallbackOn': '哪些失败可回退',
+            'hint.fallbackOn': '允许切换到备用引擎的失败类别；留空表示任何失败都不回退，六类全选表示一个引擎失败不会让搜索失败。',
+            'testTitle': '引擎健康',
+            'testHint': '用一条短查询逐个测试引擎；不会使用缓存，也不会改变冷却状态。',
+            'testButton': '测试引擎',
+            'testRunning': '测试中…',
+            'testUnavailable': '当前部署没有提供测试接口。',
+            'testFailed': '测试没能执行。',
+            'testSummary': '成功 / 失败',
             'field.cacheTtlMs': '缓存保留多久',
             'hint.cacheTtlMs': '同一问题复用旧结果多久（毫秒）；想更快见新内容就调小',
             'field.cacheEntries': '缓存条数上限',
@@ -235,10 +315,10 @@
             { key: 'wait', group: 'engines', kind: 'select', options: ['auto', 'all', 'fast'] },
             { key: 'timeoutMs', group: 'engines', kind: 'number', integer: true, min: 500 },
             { key: 'proxy', group: 'engines', kind: 'text' },
-            { key: 'fetchFormat', group: 'engines', kind: 'select', options: ['markdown', 'text'] },
-            { key: 'fetchMaxLength', group: 'engines', kind: 'number', integer: true, min: 1000, max: 200000 },
-            { key: 'renderJs', group: 'engines', kind: 'select', options: ['auto', 'always', 'off'] },
-            { key: 'renderTimeoutMs', group: 'engines', kind: 'number', integer: true, min: 1000, max: 120000 },
+            { key: 'fetchFormat', group: 'fetch', kind: 'select', options: ['markdown', 'text'] },
+            { key: 'fetchMaxLength', group: 'fetch', kind: 'number', integer: true, min: 1000, max: 200000 },
+            { key: 'renderJs', group: 'fetch', kind: 'select', options: ['auto', 'always', 'off'] },
+            { key: 'renderTimeoutMs', group: 'fetch', kind: 'number', integer: true, min: 1000, max: 120000 },
             { key: 'anysearchApiKey', group: 'engines', kind: 'text' },
             { key: 'anysearchDomain', group: 'engines', kind: 'text' },
             { key: 'limit', group: 'ranking', kind: 'number', integer: true, min: 1, max: 20 },
@@ -248,6 +328,9 @@
             { key: 'freshnessBoost', group: 'ranking', kind: 'number', min: 0, max: 10 },
             { key: 'freshnessDays', group: 'ranking', kind: 'number', integer: true, min: 1 },
             { key: 'timeRange', group: 'ranking', kind: 'select', options: ['off', 'day', 'week', 'month', 'year'] },
+            { key: 'blockedDomains', group: 'engines', kind: 'list' },
+            { key: 'safeSearch', group: 'engines', kind: 'select', options: ['off', 'moderate', 'strict'] },
+            { key: 'fallbackOn', group: 'engines', kind: 'list' },
             { key: 'cacheTtlMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'cacheEntries', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'cachePersist', group: 'cache', kind: 'select', options: ['true', 'false'], boolean: true },
@@ -256,11 +339,12 @@
             { key: 'maxCooldownMs', group: 'cache', kind: 'number', integer: true, min: 0 },
             { key: 'domainSources', group: 'domain', kind: 'list' },
             { key: 'domainLimit', group: 'domain', kind: 'number', integer: true, min: 1, max: 20 },
-            { key: 'domainTimeoutMs', group: 'domain', kind: 'number', integer: true, min: 500 }
+            { key: 'domainTimeoutMs', group: 'domain', kind: 'number', integer: true, min: 500 },
+            { key: 'toolSurface', group: 'tools', kind: 'select', options: ['unified', 'legacy'] }
           ];
 
           /** Groups in render order. */
-          var GROUPS = ['engines', 'ranking', 'cache', 'domain'].map(function (group) {
+          var GROUPS = ['engines', 'ranking', 'fetch', 'cache', 'domain', 'tools'].map(function (group) {
             return { key: group, fields: FIELDS.filter(function (field) { return field.group === group; }) };
           });
 
@@ -479,6 +563,12 @@
             var latestPair = React.useState(null);
             var latest = latestPair[0];
             var setLatest = latestPair[1];
+            var testPair = React.useState({ phase: 'idle', value: null, error: null });
+            var test = testPair[0];
+            var setTest = testPair[1];
+            var installPair = React.useState({ phase: 'idle', message: '', version: '' });
+            var installation = installPair[0];
+            var setInstallation = installPair[1];
 
             // Ask the npm registry once per mount. A failure (offline, proxy
             // down, registry error) hides the line instead of showing an
@@ -504,6 +594,47 @@
               setErrors({});
             }, [state.revision]);
 
+            function installUpdate() {
+              if (installation.phase === 'working') return;
+              setInstallation({ phase: 'working', message: '', version: '' });
+              try {
+                fetch('/api/dsh-web-search/update', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: '{}'
+                }).then(function (response) {
+                  return response.json().then(function (body) {
+                    return { status: response.status, body: body };
+                  }, function () {
+                    return { status: response.status, body: null };
+                  });
+                }).then(function (out) {
+                  var body = out.body;
+                  if (out.status === 200 && body !== null && body.ok === true) {
+                    setInstallation({
+                      phase: body.restartRequired === true ? 'restart' : 'done',
+                      message: '',
+                      version: typeof body.version === 'string' ? body.version : ''
+                    });
+                    return;
+                  }
+                  var code = body === null ? '' : body.code;
+                  var message = code === 'local-install'
+                    ? t('updateLocal')
+                    : code === 'manager-unavailable' || out.status === 404 || out.status === 405
+                      ? t('updateUnavailable')
+                      : body !== null && typeof body.message === 'string'
+                        ? body.message
+                        : t('updateFailed') + 'HTTP ' + out.status;
+                  setInstallation({ phase: 'failed', message: message, version: '' });
+                }, function (error) {
+                  setInstallation({ phase: 'failed', message: String(error), version: '' });
+                });
+              } catch (error) {
+                setInstallation({ phase: 'failed', message: String(error), version: '' });
+              }
+            }
+
             var ready = form !== null && form !== undefined && state.status === 'ready';
             var values = ready && state.value !== null && typeof state.value === 'object' ? state.value : {};
             var current = draft === null ? toDraft(values) : draft;
@@ -518,6 +649,41 @@
                 delete cleared[key];
                 setErrors(cleared);
               }
+            }
+
+            function runEngineTest() {
+              if (test.phase === 'running') return;
+              setTest({ phase: 'running', value: null, error: null });
+              var request;
+              try {
+                request = fetch('/api/dsh-web-search/engine-test', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json', accept: 'application/json' },
+                  body: JSON.stringify({ query: 'DeepSeek Harness' })
+                });
+              } catch (error) {
+                setTest({ phase: 'failed', value: null, error: t('testUnavailable') });
+                return;
+              }
+              Promise.resolve(request).then(function (response) {
+                return Promise.resolve(response.text()).then(function (text) {
+                  var body = null;
+                  try {
+                    body = text.length === 0 ? null : JSON.parse(text);
+                  } catch (ignored) {
+                    body = null;
+                  }
+                  if (!response.ok || body === null || body.ok !== true || body.value === undefined) {
+                    var fallback = response.status === 404 || response.status === 405
+                      ? t('testUnavailable')
+                      : t('testFailed');
+                    throw new Error(body !== null && typeof body.message === 'string' ? body.message : fallback);
+                  }
+                  setTest({ phase: 'done', value: body.value, error: null });
+                });
+              }).catch(function (error) {
+                setTest({ phase: 'failed', value: null, error: error instanceof Error ? error.message : t('testUnavailable') });
+              });
             }
 
             function save() {
@@ -558,12 +724,52 @@
               h('p', { key: 'description', style: { margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--dsw-alias-label-tertiary)' } }, t('description'))
             ];
             if (latest !== null) {
-              var newer = latest !== VERSION;
+              var newer = isNewerVersion(latest, VERSION);
               children.push(h('p', {
                 key: 'latest',
                 style: { margin: 0, fontSize: '12px', color: newer ? 'var(--dsw-alias-state-warn-primary)' : 'var(--dsw-alias-label-tertiary)' },
                 role: 'status'
               }, t('latest') + ': ' + latest + (newer ? ' — ' + t('updateAvailable') : ' — ' + t('upToDate'))));
+              children.push(h('p', {
+                key: 'auto-update', style: { margin: 0, fontSize: '11px', lineHeight: 1.5, color: 'var(--dsw-alias-label-tertiary)' }, role: 'note'
+              }, t('autoUpdateHint')));
+              if (newer) {
+                if (isLocalPage()) {
+                  children.push(h('button', {
+                    key: 'install-update',
+                    type: 'button',
+                    disabled: installation.phase === 'working',
+                    onClick: installUpdate,
+                    style: {
+                      alignSelf: 'flex-start',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--dsw-alias-border-l1)',
+                      background: 'var(--dsw-alias-bg-base)',
+                      color: 'var(--dsw-alias-label-primary)',
+                      cursor: installation.phase === 'working' ? 'wait' : 'pointer',
+                      fontSize: '12px'
+                    }
+                  }, installation.phase === 'working' ? t('updateInstalling') : t('updateButton')));
+                } else {
+                  children.push(h('p', {
+                    key: 'update-remote', style: { margin: 0, fontSize: '11px', color: 'var(--dsw-alias-label-tertiary)' }
+                  }, t('updateRemote')));
+                }
+              }
+              if (installation.phase === 'working') {
+                children.push(h('p', {
+                  key: 'update-status', style: { margin: 0, fontSize: '12px', color: 'var(--dsw-alias-label-tertiary)' }, role: 'status', 'aria-live': 'polite'
+                }, t('updateInstalling')));
+              } else if (installation.phase === 'restart' || installation.phase === 'done') {
+                children.push(h('p', {
+                  key: 'update-status', style: { margin: 0, fontSize: '12px', color: 'var(--dsw-alias-state-success-primary, var(--dsw-alias-label-secondary))' }, role: 'status'
+                }, t(installation.phase === 'restart' ? 'updateRestart' : 'updateDone') + (installation.version === '' ? '' : ' (' + installation.version + ')')));
+              } else if (installation.phase === 'failed') {
+                children.push(h('p', {
+                  key: 'update-status', style: { margin: 0, fontSize: '12px', color: 'var(--dsw-alias-state-warn-primary)' }, role: 'alert'
+                }, t('updateFailed') + installation.message));
+              }
             }
 
             if (!ready) {
@@ -653,6 +859,38 @@
                 }))
               ]);
             })));
+
+            var testStatus = null;
+            if (test.phase === 'running') {
+              testStatus = h('p', { key: 'test-running', style: hintStyle, role: 'status' }, t('testRunning'));
+            } else if (test.phase === 'failed') {
+              testStatus = h('p', { key: 'test-failed', style: errorStyle, role: 'alert' }, test.error === null ? t('testFailed') : test.error);
+            } else if (test.phase === 'done' && test.value !== null) {
+              var rows = (Array.isArray(test.value.results) ? test.value.results : []).map(function (result) {
+                var kind = result.ok === true ? 'OK' : 'FAIL';
+                var detail = result.ok === true
+                  ? String(result.latencyMs) + 'ms · ' + String(result.count) + ' result(s)'
+                  : (typeof result.failureKind === 'string' ? '[' + result.failureKind + '] ' : '') + (typeof result.reason === 'string' ? result.reason : '');
+                return h('li', { key: result.engine, style: { margin: '2px 0', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '12px' } },
+                  result.engine + ': ' + kind + ' · ' + detail);
+              });
+              testStatus = h('div', { key: 'test-done' }, [
+                h('p', { key: 'summary', style: hintStyle, role: 'status' }, t('testSummary') + ': ' + String(test.value.ok) + ' / ' + String(test.value.failed)),
+                h('ul', { key: 'rows', style: { margin: 0, paddingLeft: '18px' } }, rows)
+              ]);
+            }
+            children.push(h('section', { key: 'engine-test', style: groupStyle }, [
+              h('h4', { key: 'title', style: { margin: 0, fontSize: '13px', lineHeight: 1.4, color: 'var(--dsw-alias-label-primary)' } }, t('testTitle')),
+              h('p', { key: 'hint', style: hintStyle }, t('testHint')),
+              h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } }, [
+                h('button', {
+                  key: 'run', type: 'button', style: buttonStyle,
+                  disabled: test.phase === 'running',
+                  onClick: runEngineTest
+                }, t(test.phase === 'running' ? 'testRunning' : 'testButton')),
+                testStatus
+              ])
+            ]));
 
             var footer = [
               h('button', {

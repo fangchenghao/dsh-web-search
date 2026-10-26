@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { Config, resolveConfig } from '../src/config.ts';
 import { apply } from '../src/index.ts';
 import type { ConfigInput } from '../src/config.ts';
+import { FAILURE_KINDS } from '../src/types.ts';
 
 /** The config a profile patch carries for this plugin today. */
 const RAW = { anysearchApiKey: 'as_sk_test', anysearchDomain: '' };
@@ -56,11 +57,23 @@ test('a plain object still validates, and a partial one gets every default', () 
   assert.equal(resolveConfig({}, undefined).cacheTtlMs, 600000);
   assert.equal(resolveConfig(undefined, undefined).timeoutMs, 15000);
   assert.equal(resolved.timeRange, 'off', 'time filtering is opt-in');
+  assert.deepEqual(resolveConfig({}, undefined).blockedDomains, [], 'blocking is opt-in');
+  assert.equal(resolveConfig({}, undefined).safeSearch, 'off', 'safe search keeps the engine default');
+  assert.deepEqual(resolveConfig({}, undefined).fallbackOn, FAILURE_KINDS);
   assert.equal(resolveConfig({ timeRange: 'week' } as ConfigInput, undefined).timeRange, 'week');
   assert.throws(
     () => resolveConfig({ timeRange: 'fortnight' } as unknown as ConfigInput, undefined),
     /\$\.timeRange/,
   );
+  assert.throws(
+    () => resolveConfig({ fallbackOn: ['not-a-kind'] } as unknown as ConfigInput, undefined),
+    /\$\.fallbackOn/,
+  );
+  assert.throws(
+    () => resolveConfig({ safeSearch: 'aggressive' } as unknown as ConfigInput, undefined),
+    /\$\.safeSearch/,
+  );
+  assert.deepEqual(resolveConfig({ fallbackOn: [] } as unknown as ConfigInput, undefined).fallbackOn, []);
 });
 
 test('an invalid plain value still fails with the offending path', () => {
@@ -97,10 +110,10 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
   assert.equal(marked.length, Object.keys(fields).length, 'every field must be editable, or the served form disagrees with the card');
   assert.deepEqual(marked, [
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
-    'cacheEntries', 'cacheFile', 'cachePersist', 'cacheTtlMs',
-    'domainLimit', 'domainSources', 'domainTimeoutMs',
+    'blockedDomains', 'cacheEntries', 'cacheFile', 'cachePersist', 'cacheTtlMs',
+    'domainLimit', 'domainSources', 'domainTimeoutMs', 'fallbackOn',
     'fetchFormat', 'fetchMaxLength', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
-    'maxCooldownMs', 'proxy', 'renderJs', 'renderTimeoutMs', 'rrfConstant', 'timeRange', 'timeoutMs', 'wait',
+    'maxCooldownMs', 'proxy', 'renderJs', 'renderTimeoutMs', 'rrfConstant', 'safeSearch', 'timeRange', 'timeoutMs', 'toolSurface', 'wait',
   ]);
 });
 

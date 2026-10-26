@@ -21,12 +21,12 @@
  */
 import z from '@deepseek-ai/schemastery';
 import type { RenderMode } from './render.ts';
-import type { RankOptions, TimeRange, WaitPolicy } from './types.ts';
+import type { FailureKind, RankOptions, SafeSearch, TimeRange, WaitPolicy } from './types.ts';
 /** Schema of the plugin's configuration section. */
 export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     hosts: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     timeoutMs: z<number, number, "volatile-defined">;
-    fetchFormat: z<"markdown" | "text", "markdown" | "text", "volatile-defined">;
+    fetchFormat: z<"text" | "markdown", "text" | "markdown", "volatile-defined">;
     fetchMaxLength: z<number, number, "volatile-defined">;
     renderJs: z<"off" | "auto" | "always", "off" | "auto" | "always", "volatile-defined">;
     renderTimeoutMs: z<number, number, "volatile-defined">;
@@ -39,6 +39,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     freshnessBoost: z<number, number, "volatile-defined">;
     freshnessDays: z<number, number, "volatile-defined">;
     timeRange: z<"off" | "day" | "week" | "month" | "year", "off" | "day" | "week" | "month" | "year", "volatile-defined">;
+    blockedDomains: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
+    safeSearch: z<"off" | "moderate" | "strict", "off" | "moderate" | "strict", "volatile-defined">;
+    fallbackOn: z<NoInfer<("quota" | "auth" | "bot-wall" | "transient" | "invalid-response" | "unknown")[]>, NoInfer<("quota" | "auth" | "bot-wall" | "transient" | "invalid-response" | "unknown")[]>, "volatile-defined">;
     cacheTtlMs: z<number, number, "volatile-defined">;
     cacheEntries: z<number, number, "volatile-defined">;
     cachePersist: z<boolean, boolean, "volatile-defined">;
@@ -50,10 +53,11 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     domainSources: z<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;
     domainLimit: z<number, number, "volatile-defined">;
     domainTimeoutMs: z<number, number, "volatile-defined">;
+    toolSurface: z<"unified" | "legacy", "unified" | "legacy", "volatile-defined">;
 }>>, Schemastery.ObjectT<NoInfer<{
     hosts: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     timeoutMs: z<number, number, "volatile-defined">;
-    fetchFormat: z<"markdown" | "text", "markdown" | "text", "volatile-defined">;
+    fetchFormat: z<"text" | "markdown", "text" | "markdown", "volatile-defined">;
     fetchMaxLength: z<number, number, "volatile-defined">;
     renderJs: z<"off" | "auto" | "always", "off" | "auto" | "always", "volatile-defined">;
     renderTimeoutMs: z<number, number, "volatile-defined">;
@@ -66,6 +70,9 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     freshnessBoost: z<number, number, "volatile-defined">;
     freshnessDays: z<number, number, "volatile-defined">;
     timeRange: z<"off" | "day" | "week" | "month" | "year", "off" | "day" | "week" | "month" | "year", "volatile-defined">;
+    blockedDomains: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
+    safeSearch: z<"off" | "moderate" | "strict", "off" | "moderate" | "strict", "volatile-defined">;
+    fallbackOn: z<NoInfer<("quota" | "auth" | "bot-wall" | "transient" | "invalid-response" | "unknown")[]>, NoInfer<("quota" | "auth" | "bot-wall" | "transient" | "invalid-response" | "unknown")[]>, "volatile-defined">;
     cacheTtlMs: z<number, number, "volatile-defined">;
     cacheEntries: z<number, number, "volatile-defined">;
     cachePersist: z<boolean, boolean, "volatile-defined">;
@@ -77,6 +84,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     domainSources: z<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;
     domainLimit: z<number, number, "volatile-defined">;
     domainTimeoutMs: z<number, number, "volatile-defined">;
+    toolSurface: z<"unified" | "legacy", "unified" | "legacy", "volatile-defined">;
 }>>, "plain">;
 /** What the schema resolves a field to: a live reference, not the value. */
 export interface LiveRef<T> {
@@ -121,6 +129,12 @@ export interface ResolvedConfig {
     wait: WaitPolicy;
     /** Rolling publication window; `off` disables time filtering. */
     timeRange: TimeRange;
+    /** Domains the caller never wants in a result list. */
+    blockedDomains: string[];
+    /** Content-filter level forwarded to engines that support it. */
+    safeSearch: SafeSearch;
+    /** Failure classes that may trigger the fallback tier. */
+    fallbackOn: FailureKind[];
     /** AnySearch credential, or an empty string for anonymous access. */
     anysearchApiKey: string;
     /** AnySearch vertical domain, or an empty string for the open web. */
@@ -145,6 +159,8 @@ export interface ResolvedConfig {
     domainLimit: number;
     /** Per-source deadline for vertical requests. */
     domainTimeoutMs: number;
+    /** Whether the model sees one unified tool or the legacy eight names. */
+    toolSurface: 'unified' | 'legacy';
 }
 /**
  * Normalise the validated config into the shape the engine layer consumes.
