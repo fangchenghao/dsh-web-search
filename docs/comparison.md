@@ -43,7 +43,8 @@ error: Claude Code documentation moved from `docs.anthropic.com` to
 `code.claude.com`; all three providers returned the new host. With that expected
 host corrected, the counts would be **29/30, 30/30 and 30/30**. The remaining
 real plugin miss is the Chinese Rust 1.90 query, which returned the Rust home
-page rather than the release blog.
+page rather than the release blog. Both plugin misses are fixed in 0.23.0:
+the Rust official lookup and the explicit arXiv research route.
 
 By category (first sweep; answered / official / mean ms):
 
@@ -121,21 +122,23 @@ The script writes a JSON file next to a Markdown report. The three raw files are
 immediately after sweep 1 to test repeatability, which is why Firecrawl's quota
 failed. A single sweep is a snapshot, not a permanent ranking.
 
-## Follow-up after the 0.21.1 baseline
+## Follow-ups after the 0.21.1 baseline
 
-The original clean sweep above is kept unchanged as the baseline. A later
-plugin-only run after the tail-tolerant early release, a 3 s CJK deadline and
-the Rust official-release lookup is also checked in:
+The original clean sweep above is kept unchanged as the baseline. Later
+plugin-only runs after the tail-tolerant early release, a 3 s CJK deadline, the
+Rust official-release lookup and the arXiv research path are also checked in:
 
-- [plugin-only follow-up](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json)
+- [0.22.0 plugin-only follow-up](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json)
+- [0.23.0 plugin-only follow-up](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-arxiv.json)
 - [latency and sources note](latency-and-sources.md)
 
 The five reported Chinese release queries went from 3502–3506 ms each to
-2565–3012 ms, and all five now hit their expected official domain. The full
-30-query follow-up still has one official miss (arXiv) and its mean was
-3768 ms under a slower network window, so this is not presented as a universal
-latency win. Exa remains faster; the follow-up only removes the specific
-AnySearch fan-out wait and the Rust source miss.
+2565–3012 ms, and all five now hit their expected official domain. The 0.22.0
+30-query run still had one official miss (arXiv) and its mean was 3768 ms under
+a slower network window. The 0.23.0 run answers 30/30, hits the official domain
+30/30, and measures mean 2263 ms / p95 2997 ms; that faster window is not
+presented as a pure code win. The arXiv query now returns real surveys at rank
+1 instead of dictionary pages. Exa remains faster.
 
 ## Bottom line
 

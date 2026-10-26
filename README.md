@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-680%20tests-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-687%20tests-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -21,12 +21,13 @@
 
 - **No API key, eight engines.** AnySearch, CN Bing, DuckDuckGo HTML, www Bing, DuckDuckGo Lite and 360 Search are scraped directly; Exa joins the primary tier through its keyless MCP endpoint, and Firecrawl's search API is the measured fallback. The plugin works out of the box.
 - **Official release facts, not generic ranking.** Explicit PostgreSQL, Rust and scoped npm queries start a narrow official lookup in parallel; `Rust 1.90 发布说明` returns the canonical Rust Blog announcement at rank 1. The lookup is capped at 2.5 s and failure leaves the ordinary rows intact.
+- **arXiv is a first-class research source.** An explicit arXiv paper or survey query is routed to arXiv's own API in parallel, with boolean terms instead of a loose keyword string, so a survey query returns surveys rather than incidental mentions. arXiv PDF links are read through the HTML full-text view instead of being rejected as binary, and abstract pages parse even when a site-wide wrapper is named `footer`.
 - **A tail budget and an honest quota story.** Interactive searches release after two independent contributors and cap at 5 s for Latin-script queries / 3 s for CJK queries. Firecrawl stays a fallback; `firecrawlApiKey` is optional for users who need repeatable quota. Keyless Firecrawl cannot be made dependable from the client side.
 - **The ranking is measured, not asserted.** Cross-engine reciprocal-rank fusion with authority and freshness boosts, a 20-query offline benchmark, and an 81-configuration parameter sweep — one of the few search plugins here that publishes its metric, per-query output and confidence intervals. See [How the ranking works](docs/rrf-ranking.md).
 - **One package, two runtimes.** DSH gets the native plugin and one `web_tools` entry; Claude Code, Codex and other MCP clients get the same keyless search through a dependency-free stdio server with `search`, `fetch`, `research` and `domain_search`. See [Cross-agent MCP](docs/cross-agent.md).
 - **Measured in public, including the losses.** A 30-query bilingual comparison records availability, latency, unique domains, official-domain presence and every failure against keyless Firecrawl and anonymous Exa. The follow-up documents the Exa architecture difference, the 3 s CJK budget and the Rust official-source lookup. Exa is faster here; this plugin returns more distinct domains. Both test arms were keyless. The method and raw results are in [docs/comparison.md](docs/comparison.md) and a [public gist](https://gist.github.com/fangchenghao/3db9838fa98928435c1c2df38202c373).
-- **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **680 tests across 55 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; arXiv PDF links are the deliberate exception and are read through the HTML full-text view; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
+- **687 tests across 56 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -43,7 +44,7 @@ The web-search corner of the DSH plugin ecosystem is crowded. A fresh snapshot
 | Key-free path | 8 engines, all key-free | ~30-engine free/paid chain | 5 defaults (seam, Exa, DDG, Bing, Jina) | Firecrawl + Keenable keyless defaults | 1 anonymous AnySearch API |
 | Dedicated vertical sources | 34 (8 on by default) | 41 | platform registry, not a vertical catalog | web + X, no vertical catalog | vertical API behind AnySearch |
 | Model-facing tools | 1 (`web_tools`, 8 actions) + 4 MCP tools | ~10 | 2 (`web_index` / `web_call`, 20 actions) | native search/fetch + skill | 5 |
-| Tests | 55 files / 680 cases, locally verified | no test script in `package.json` | 774 unit + 94 bench, self-reported | Vitest configured; count not published | Vitest configured; count not published |
+| Tests | 56 files / 687 cases, locally verified | no test script in `package.json` | 774 unit + 94 bench, self-reported | Vitest configured; count not published | Vitest configured; count not published |
 | GitHub stars | 0 | 620 | 77 | 836 | 663 |
 | npm downloads, last month | 1,087 | 52,436 | 6,420 | 43,151 | 9,251 |
 | npm unpacked size | 1.2 MB | 0.70 MB | 3.05 MB | 0.51 MB | 0.27 MB |
@@ -54,7 +55,7 @@ read is:
 - **Feature depth:** upper-middle. `dsh-free-search` has more engines and
   verticals; `dsh-web-search-pro` has a deeper evidence/ranking pipeline and far
   more platform backends; `modsearch` is the stronger cross-host bridge.
-- **Engineering and verification:** near the top. 680 local tests, a replayable
+- **Engineering and verification:** near the top. 687 local tests, a replayable
   ranking benchmark, declared security boundaries and one runtime dependency
   put it alongside the best-maintained entries, while remaining much smaller
   than the Playwright-heavy option.
@@ -62,7 +63,7 @@ read is:
   Chrome, PostgreSQL and AI Act paths and the 34-source vertical layer are not
   common in the other plugins.
 - **Adoption and maturity:** bottom third of this sample. The public npm release
-  is 0.22.0, matching this tree, but the GitHub repository is four days old
+  is 0.23.0, matching this tree, but the GitHub repository is four days old
   with no stars and little independent adoption.
 - **Tool-surface economy:** now competitive. 0.20.x exposes one `web_tools`
   entry with eight actions, close to `dsh-web-search-pro`'s two tools with 20
@@ -731,7 +732,7 @@ Four usual causes:
 2. **The content is rendered by JavaScript**: what comes back is an empty shell. With Playwright installed it is rendered automatically; without it, you see the shell. **If stripping the shell leaves no readable text at all, the fetch fails with `SEARCH_EMPTY` and says why — including "no renderer installed" — instead of returning an empty page as a success.**
 3. **It needs a login or a subscription**: fetching carries no session of yours.
 4. **Direct requests time out**: 5 seconds direct, then the tunnel; if neither works and no key is configured you get an error, and with a key there is one more rung, server-side extraction. The whole ladder shares a 25-second budget, so later rungs get only what is left. The message names each rung's failure.
-5. **Binary documents**: PDFs, images and archives are refused explicitly (`SEARCH_UNSUPPORTED`) with the content type, rather than handing you a byte stream as prose. To read a PDF, extract its text with another tool first.
+5. **Binary documents**: PDFs, images and archives are refused explicitly (`SEARCH_UNSUPPORTED`) with the content type, rather than handing you a byte stream as prose. The exception is an arXiv `/pdf/<id>` link: the fetch ladder rewrites it to arXiv's HTML full-text view, so research papers can be read without a separate PDF extractor. For other PDFs, extract the text with another tool first.
 
 360's captcha belongs to the first cause, but it used to be especially quiet: from some networks the request 302s to the qcaptcha "unexpected access" page while the HTTP status is still 200. The plugin now records that as `SEARCH_BLOCKED`; querying that engine alone shows `so: bot verification page` instead of zero results, and 360 has been demoted to the fallback tier.
 

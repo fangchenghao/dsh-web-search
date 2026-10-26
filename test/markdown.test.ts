@@ -180,6 +180,21 @@ test('when there is no article or main, the densest container wins', () => {
   assert.ok(!markdown.includes('Buy now'));
 });
 
+test('a wrapper named footer does not hide a main landmark', () => {
+  const prose = 'The abstract explains the retrieval method and its evaluation. '.repeat(8);
+  const html = '<html><body>'
+    + '<div class="flex-wrap-footer">'
+    + '<header><a href="/">Site home</a></header>'
+    + `<main><div id="content"><h1>arXiv paper</h1><p>${prose}</p></div></main>`
+    + '<footer>Footer text</footer>'
+    + '</div></body></html>';
+  const markdown = htmlToMarkdown(html);
+  assert.ok(markdown.includes('# arXiv paper'), markdown);
+  assert.ok(markdown.includes('The abstract explains'));
+  assert.ok(!markdown.includes('Site home'));
+  assert.ok(!markdown.includes('Footer text'));
+});
+
 test('a code-heavy appendix does not become the reading root', () => {
   const prose = 'The 404 status code indicates that the origin server did not find a current representation. '.repeat(30);
   const code = 'rule-name = token *( OWS token )\n'.repeat(400);

@@ -52,7 +52,7 @@
     <rect x="70" y="620" width="330" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
     <text x="92" y="651" class="m" font-size="13">Engines</text><text x="92" y="677" class="t" font-size="20" font-weight="700">8 key-free paths</text>
     <rect x="420" y="620" width="330" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
-    <text x="442" y="651" class="m" font-size="13">Tests</text><text x="442" y="677" class="t" font-size="20" font-weight="700">680 local cases</text>
+    <text x="442" y="651" class="m" font-size="13">Tests</text><text x="442" y="677" class="t" font-size="20" font-weight="700">687 local cases</text>
     <rect x="770" y="620" width="360" height="76" rx="14" fill="#101d31" stroke="#26364f"/>
     <text x="792" y="651" class="m" font-size="13">Cross-agent</text><text x="792" y="677" class="t" font-size="20" font-weight="700">MCP stdio server</text>
   </g>

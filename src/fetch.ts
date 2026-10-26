@@ -36,6 +36,7 @@ import { SearchError } from './errors.ts';
 import { keyFailureKind, keyPoolFor } from './keys.ts';
 import type { KeyPool } from './keys.ts';
 import { DEFAULT_FETCH_MAX_LENGTH, renderFetchText, truncateFetchText } from './markdown.ts';
+import { arxivReadableUrl } from './arxiv-url.ts';
 import type { FetchFormat } from './markdown.ts';
 import { proxyGet, resolveProxy } from './proxy.ts';
 import {
@@ -531,10 +532,13 @@ export function createFetchProvider(options: FetchProviderOptions = {}, override
     id: options.id ?? 'http-proxy',
     available: () => true,
     async fetch(request, signal) {
-      const target = request.url;
-      if (typeof target !== 'string' || !/^https?:\/\//i.test(target)) {
-        throw new SearchError(`not an http(s) URL: ${String(target)}`, 'SEARCH_PARSE', false);
+      const requested = request.url;
+      if (typeof requested !== 'string' || !/^https?:\/\//i.test(requested)) {
+        throw new SearchError(`not an http(s) URL: ${String(requested)}`, 'SEARCH_PARSE', false);
       }
+      // arXiv PDFs are binary and would otherwise be rejected as unsupported.
+      // Read the HTML full-text view instead; ordinary HTML pages pass through.
+      const target = arxivReadableUrl(requested);
 
       // The ladder budget belongs to THIS request. Starting it in the factory
       // made it start at plugin mount, so every fetch more than 25 s after a

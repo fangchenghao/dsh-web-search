@@ -24,6 +24,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { search } from '../src/engines.ts';
 import { mergeOfficial, officialLookup } from '../src/official-sources.ts';
+import { arxivLookup, mergeArxiv } from '../src/arxiv.ts';
 import { parseExaMcp } from '../src/parsers.ts';
 import { proxyGet } from '../src/proxy.ts';
 
@@ -128,6 +129,11 @@ async function runPlugin(query) {
       timeoutMs: Math.min(TIMEOUT_MS, 2_500),
       ...(PROXY === undefined ? {} : { proxy: PROXY }),
     });
+    const arxiv = arxivLookup(query, {
+      limit: 4,
+      timeoutMs: Math.min(TIMEOUT_MS, 3_500),
+      ...(PROXY === undefined ? {} : { proxy: PROXY }),
+    });
     const outcome = await search(query, undefined, {
       limit: LIMIT,
       timeoutMs: TIMEOUT_MS,
@@ -135,7 +141,7 @@ async function runPlugin(query) {
       ...(process.env.ANYSEARCH_API_KEY === undefined ? {} : { anysearchApiKey: process.env.ANYSEARCH_API_KEY }),
       ...(process.env.FIRECRAWL_API_KEY === undefined ? {} : { firecrawlApiKey: process.env.FIRECRAWL_API_KEY }),
     });
-    const sources = mergeOfficial(outcome.sources, await official);
+    const sources = mergeArxiv(mergeOfficial(outcome.sources, await official), await arxiv);
     return {
       ok: sources.length > 0,
       ms: Date.now() - started,
@@ -227,7 +233,7 @@ function report(data) {
     '## Method',
     '',
     '- Same 30 queries, same top-8 budget, same machine and network route.',
-    ...(includePlugin ? ['- Plugin arm: `search()` plus the narrow official release lookup, no cache, 15 s timeout.'] : []),
+    ...(includePlugin ? ['- Plugin arm: `search()` plus the narrow official-release and explicit-arXiv lookups, no cache, 15 s timeout.'] : []),
     ...(providers.includes('firecrawl') ? ['- Firecrawl arm: `POST https://api.firecrawl.dev/v1/search` keyless tier unless `FIRECRAWL_API_KEY` is set, direct then the configured tunnel.'] : []),
     ...(providers.includes('exa') ? ['- Exa arm: anonymous MCP `web_search_exa`, direct then the configured tunnel.'] : []),
     '- Metrics are availability, latency, unique domains and whether a known official domain appears. They are not a human relevance grade; failures are listed below.',

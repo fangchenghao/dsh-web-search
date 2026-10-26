@@ -122,28 +122,46 @@ All five now hit the expected official host. AnySearch still appears as a
 deadline failure on a few runs; that is the `wait` budget doing its job, not a
 blocking wait. The user-visible tail is capped at about 3 s for these queries.
 
-### Full 30-query follow-up
+### Full 30-query follow-ups
 
-A plugin-only run with the official lookups enabled produced:
+Plugin-only runs with the official lookups enabled produced:
 
-| Metric | Original clean sweep | Follow-up |
-| --- | ---: | ---: |
-| Answered | 30/30 | 30/30 |
-| Official-domain hit | 28/30 | 29/30 |
-| Mean unique domains | 5.83 | 5.67 |
-| Mean latency | 3008 ms | 3768 ms |
-| p50 | 2791 ms | 4000 ms |
-| p95 | 5188 ms | 5003 ms |
+| Metric | Original clean sweep | 0.22.0 follow-up | 0.23.0 follow-up |
+| --- | ---: | ---: | ---: |
+| Answered | 30/30 | 30/30 | 30/30 |
+| Official-domain hit | 28/30 | 29/30 | 30/30 |
+| Mean unique domains | 5.83 | 5.67 | 5.47 |
+| Mean latency | 3008 ms | 3768 ms | 2263 ms |
+| p50 | 2791 ms | 4000 ms | 2112 ms |
+| p95 | 5188 ms | 5003 ms | 2997 ms |
 
-The follow-up's **mean got worse**, not better. The run happened under more
-variable upstream latency, and the new official lookup adds work to release
-queries; the 5 s cap improves the p95 but does not make the average as fast as
-the original clean network window. The remaining official miss is the arXiv
-query, unrelated to the three issues above. Raw data:
-[`results-2026-10-26-plugin-after.json`](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json).
+The 0.22.0 follow-up's mean got **worse** than the original clean sweep: it
+ran under more variable upstream latency, and the new official lookup adds work
+to release queries. The 0.23.0 run is faster, but part of that is a better
+network window, not only code; the honest claim is that it fixes the arXiv
+official miss and the survey ranking, not that every query is now faster.
+
+The 0.23.0 run's mean unique domains is slightly lower because the explicitly
+routed arXiv query now returns eight arXiv rows instead of eight unrelated
+domains. That is the intended trade for a research query. Raw data:
+[`results-2026-10-26-plugin-after.json`](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json)
+(0.22.0) and
+[`results-2026-10-26-plugin-arxiv.json`](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-arxiv.json)
+(0.23.0).
+
+### arXiv follow-up
+
+The arXiv benchmark query used to fail not because the arXiv API was down but
+because the query was never routed there: the ordinary fan-out returned
+dictionary and encyclopedia pages for the word "retrieval". The 0.23.0 run
+routes explicit arXiv paper/survey queries to the arXiv Atom API, uses boolean
+terms (`all:"retrieval augmented generation" AND all:survey`), and ranks the
+first survey at position 1. Fetching was separately broken: the abstract page
+was erased by a `div.flex-wrap-footer` wrapper, and `/pdf/` links were rejected
+as binary. Both are fixed; PDF links now read arXiv's HTML full-text view.
 
 The five-query table is the targeted result for the reported Chinese tail; the
-30-query table is the honest full-run result, including the regression in mean.
+30-query table is the honest full-run result.
 
 ## 4. Do we need a vector database?
 

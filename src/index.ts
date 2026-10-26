@@ -35,6 +35,7 @@ import type { AdvancedSearchOutcome, AdvancedSearchRegistryLike, AdvancedSearchR
 import { searchVerticals } from './verticals.ts';
 import { routePackageQuery } from './query-router.ts';
 import { mergeOfficial, officialLookup } from './official-sources.ts';
+import { arxivLookup, arxivQueryText, mergeArxiv } from './arxiv.ts';
 import {
   chromeFeedNote,
   chromeWindow,
@@ -346,12 +347,22 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
         ...(signal === undefined ? {} : { signal }),
       });
+      // An explicit `arXiv` query gets the preprint index in parallel with the
+      // ordinary fan-out. This is separate from the official-release lookup:
+      // a survey query needs arXiv's own search, not a release announcement.
+      const arxiv = arxivLookup(query, {
+        limit: 4,
+        timeoutMs: Math.min(live.timeoutMs, 3_500),
+        ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
+        ...(signal === undefined ? {} : { signal }),
+      });
       const outcome = await runQuery(query, asked, signal);
       // A version/EOL question about PostgreSQL or Rust is better answered by
       // the project's own release facts than by whatever an engine ranks first.
       // The lookup is query-scoped and failure-tolerant; it never replaces the
       // ordinary rows when the page is unavailable.
-      const sources = mergeOfficial(outcome.sources, await official);
+      let sources = mergeOfficial(outcome.sources, await official);
+      sources = mergeArxiv(sources, await arxiv);
       if (sources.length === 0) {
         throw new Error(`no search engine returned results for ${JSON.stringify(query)} (${outcome.failures.join('; ')})`);
       }
@@ -408,6 +419,26 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         limit: number,
         signal?: AbortSignal,
       ): Promise<SearchManyOutcome> => {
+        // An explicit arXiv query is a paper lookup, not a general web query.
+        // Keep the ordinary path as the fallback when the index returns no rows.
+        const arxivText = arxivQueryText(query);
+        if (arxivText !== undefined) {
+          const live = resolveConfig(section, undefined);
+          const papers = await arxivLookup(query, {
+            limit,
+            timeoutMs: live.domainTimeoutMs,
+            ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
+            ...(signal === undefined ? {} : { signal }),
+          });
+          if (papers.length > 0) {
+            return {
+              sources: papers.slice(0, limit),
+              failures: [],
+              note: `arXiv query routed to the arXiv index for ${JSON.stringify(arxivText)}; rows are preprints with stable abs URLs.`,
+              truncated: papers.length > limit,
+            };
+          }
+        }
         const route = routePackageQuery(query);
         if (route !== undefined) {
           const live = resolveConfig(section, undefined);

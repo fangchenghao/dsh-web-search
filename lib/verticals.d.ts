@@ -124,6 +124,19 @@ export declare function parseNpm(payload: string, _url: string, limit?: number):
  */
 export declare function parsePypi(payload: string, _url: string, limit?: number): Source[];
 /**
+ * Turn a human query into an arXiv `search_query`.
+ *
+ * `all:retrieval augmented generation survey` is interpreted loosely and can
+ * rank an image-generation paper above actual surveys. arXiv's API honours
+ * explicit boolean operators, so a survey query becomes a quoted topic phrase
+ * plus `all:survey`; other multi-word queries become ANDed terms. A query that
+ * already contains field syntax or booleans is passed through unchanged.
+ *
+ * @param query - the human query.
+ * @returns a value for the `search_query` parameter.
+ */
+export declare function arxivSearchQuery(query: string): string;
+/**
  * Parse the arXiv Atom feed.
  * @param payload - `export.arxiv.org/api/query` XML.
  * @param _url - request URL, unused by this XML shape.

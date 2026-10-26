@@ -1,0 +1,2103 @@
+{
+  "generatedAt": "2026-10-26T08:58:27.747Z",
+  "proxy": null,
+  "limit": 8,
+  "queries": [
+    {
+      "id": "node24",
+      "lang": "en",
+      "category": "release",
+      "query": "Node.js 24 release notes",
+      "official": "nodejs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2093,
+        "results": [
+          {
+            "url": "https://nodejs.org/en/blog/release/v24.0.0",
+            "title": "Node.js — Node.js 24.0.0 (Current)",
+            "snippet": "2025-05-06, Version 24.0.0 (Current), @RafaelGSS and @juanarbol We're excited to announce the release"
+          },
+          {
+            "url": "https://nodejs.org/en/about/previous-releases",
+            "title": "Node.js — Node.js Releases",
+            "snippet": "Major Node.js"
+          },
+          {
+            "url": "https://github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V24.md",
+            "title": "node/doc/changelogs/CHANGELOG_V24.md at main · nodejs/node",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://github.com/nodejs/node/releases",
+            "title": "Releases · nodejs/node - GitHub",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://versionlog.com/nodejs/24/",
+            "title": "Node.js 24 (LTS) - What's New, Support Lifecycle & EOL",
+            "snippet": "Discover what's new in Node.js"
+          },
+          {
+            "url": "https://docs.redhat.com/en/documentation/red_hat_build_of_node.js/24/html-single/release_notes_for_node.js_24/index",
+            "title": "Release Notes for Node.js 24 | Red Hat build of Node.js | 24 | Red Hat ...",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://docs.redhat.com/en/documentation/red_hat_build_of_node.js/24/html/release_notes_for_node.js_24/index",
+            "title": "Release Notes for Node.js 24 | Red Hat build of Node.js | 24 | Red Hat ...",
+            "snippet": "This Release"
+          },
+          {
+            "url": "https://www.nodechangelog.com/",
+            "title": "Node.js Changelog - Latest Release Notes",
+            "snippet": "A comprehensive summary of Node.js"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "postgres18",
+      "lang": "en",
+      "category": "release",
+      "query": "PostgreSQL 18 release notes",
+      "official": "postgresql.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2033,
+        "results": [
+          {
+            "url": "https://www.postgresql.org/support/versioning/",
+            "title": "PostgreSQL versioning policy: major 18 (18.6), supported",
+            "snippet": "Official PostgreSQL versioning policy: latest major 18; current minor 18.6; status supported; first release September 25, 2025; final release (EOL) November 14, 2030."
+          },
+          {
+            "url": "https://www.postgresql.org/docs/release/18/",
+            "title": "Release Notes - PostgreSQL",
+            "snippet": "A dump/restore using pg_dumpall or use of pg_upgrade or logical replication is required for those wishing to migrate data from any previous release"
+          },
+          {
+            "url": "https://www.postgresql.org/about/news/postgresql-18-released-3142/",
+            "title": "PostgreSQL 18 Released!",
+            "snippet": "The PostgreSQL"
+          },
+          {
+            "url": "https://pg.edu.rich/en/docs/reference/postgresql-18",
+            "title": "PostgreSQL 18 features and upgrade notes · PostgreSQL Field Guide",
+            "snippet": "PostgreSQL"
+          },
+          {
+            "url": "https://postgrespro.com/docs/postgresql/current/release",
+            "title": "PostgreSQL : Documentation: 18: Appendix E. Release Notes",
+            "snippet": "The release"
+          },
+          {
+            "url": "https://versionlog.com/postgresql/18/",
+            "title": "PostgreSQL 18 - What's New, Support Lifecycle & EOL",
+            "snippet": "Discover what's new in PostgreSQL"
+          },
+          {
+            "url": "https://docs.pgedge.com/postgresql/v18/appendixes/release-notes/release-18/",
+            "title": "Release 18 - pgEdge Documentation",
+            "snippet": "Release"
+          },
+          {
+            "url": "https://neverblink.ai/kb/postgresql-18-release-notes",
+            "title": "PostgreSQL 18 Release Notes: New Features and Improvements",
+            "snippet": "Complete guide to PostgreSQL"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "python314",
+      "lang": "en",
+      "category": "release",
+      "query": "Python 3.14 release notes",
+      "official": "python.org",
+      "plugin": {
+        "ok": true,
+        "ms": 1996,
+        "results": [
+          {
+            "url": "https://docs.python.org/3/whatsnew/3.14.html",
+            "title": "What's new in Python 3.14 — Python 3.15.1 documentation",
+            "snippet": "Summary - Release"
+          },
+          {
+            "url": "https://docs.python.org/3.14/whatsnew/changelog.html",
+            "title": "Changelog — Python 3.14.9 documentation",
+            "snippet": "Python"
+          },
+          {
+            "url": "https://www.python.org/downloads/release/python-3149/",
+            "title": "Python Release Python 3.14.9 | Python.org",
+            "snippet": "Python"
+          },
+          {
+            "url": "https://www.python.org/downloads/release/python-3147/",
+            "title": "Python Release Python 3.14.7 | Python.org",
+            "snippet": "Python"
+          },
+          {
+            "url": "https://blog.python.org/2026/10/python-3151-3149-31317/",
+            "title": "Python 3.15.1, 3.14.9 and 3.13.17 are out | Python Insider",
+            "snippet": "Here are expedited security releases"
+          },
+          {
+            "url": "https://discuss.python.org/t/python-3-14-0-final-is-here/104210",
+            "title": "Python 3.14.0 (final) is here! - Discussions on Python.org",
+            "snippet": "Python"
+          },
+          {
+            "url": "https://discuss.python.org/t/python-3-15-1-3-14-9-and-3-13-17-are-out/109595",
+            "title": "Python 3.15.1, 3.14.9 and 3.13.17 are out - Discussions on Python.org",
+            "snippet": "Here are expedited security releases"
+          },
+          {
+            "url": "https://blog.python.org/2026/08/python-3147-31315/",
+            "title": "Python 3.14.7 and 3.13.15 are now available! | Python Insider",
+            "snippet": "Python"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 4
+      }
+    },
+    {
+      "id": "rust190",
+      "lang": "en",
+      "category": "release",
+      "query": "Rust 1.90 release notes",
+      "official": "blog.rust-lang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2276,
+        "results": [
+          {
+            "url": "https://blog.rust-lang.org/2025/09/18/Rust-1.90.0/",
+            "title": "Announcing Rust 1.90.0 - Rust Blog",
+            "snippet": "Official Rust 1.90.0 release notes. ## Language - Split up the `unknown_or_malformed_diagnostic_attributes` lint. This lint has been split up into four finer-grained lints, with `unknown_or_malformed_diagnostic_attributes` now being the lint group that contains these lints: 1. `unknown_diagnostic_attributes`: unknown to the current compiler 2. `misplaced_diagnostic_attributes`: placed on the wrong item 3. `malformed_…"
+          },
+          {
+            "url": "https://doc.rust-lang.org/releases.html",
+            "title": "Rust Release Notes",
+            "snippet": "Refer to Rust's"
+          },
+          {
+            "url": "https://doc.rust-lang.org/beta/releases.html",
+            "title": "Rust Release Notes",
+            "snippet": "Note"
+          },
+          {
+            "url": "https://social.rust-lang.org/@rust/115226918528405945",
+            "title": "Rust Language: \"Rust 1.90.0 has been released!…\" - Rust Language Mastodon",
+            "snippet": "Rust"
+          },
+          {
+            "url": "https://blog.rust-lang.org/releases/",
+            "title": "The Rust Release Announcements",
+            "snippet": "This is a subset of the main Rust"
+          },
+          {
+            "url": "https://releases.rs/docs/1.90.0/",
+            "title": "1.90.0 | Rust Changelogs - releases.rs",
+            "snippet": "Allow volatile access to non- Rust"
+          },
+          {
+            "url": "https://releases.rs/",
+            "title": "Rust Versions | Rust Changelogs",
+            "snippet": "Rust"
+          },
+          {
+            "url": "https://versionlog.com/rust/1.90/",
+            "title": "Rust 1.90 - What's New, Support Lifecycle & EOL - VersionLog",
+            "snippet": "Discover what's new in Rust"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "go125",
+      "lang": "en",
+      "category": "release",
+      "query": "Go 1.25 release notes",
+      "official": "go.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 1975,
+        "results": [
+          {
+            "url": "https://go.dev/doc/go1.25",
+            "title": "Go 1.25 Release Notes - The Go Programming Language",
+            "snippet": "Go"
+          },
+          {
+            "url": "https://go.dev/doc/devel/release",
+            "title": "Release History - The Go Programming Language",
+            "snippet": "go1.1 (released 2013-05-13) Go 1.1 is a major release"
+          },
+          {
+            "url": "https://www.golangdev.cn/guide/release.html",
+            "title": "Go Release Notes - GoLang Syntax Documentation",
+            "snippet": "Go"
+          },
+          {
+            "url": "https://versionlog.com/golang/1.25/",
+            "title": "Go 1.25 - What's New, Support Lifecycle & EOL - VersionLog",
+            "snippet": "Discover what's new in Go 1.25"
+          },
+          {
+            "url": "https://programmerscareer.com/go-1-25/",
+            "title": "Go 1.25 Release: Features and Innovations | Wesley Wei",
+            "snippet": "Go"
+          },
+          {
+            "url": "https://github.com/microsoft/go/releases",
+            "title": "Releases · microsoft/go - GitHub",
+            "snippet": "Microsoft build of Go v1.26.10-1 What's Changed This release"
+          },
+          {
+            "url": "https://lwn.net/Articles/1033646/",
+            "title": "Go 1.25 released - lwn.net",
+            "snippet": "Version 1.25"
+          },
+          {
+            "url": "http://dev.golang.org/release",
+            "title": "Go Release Dashboard",
+            "snippet": "★ #79427 cmd/compile,cmd/ go"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "typescript59",
+      "lang": "en",
+      "category": "release",
+      "query": "TypeScript 5.9 release notes",
+      "official": "typescriptlang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2578,
+        "results": [
+          {
+            "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-9.html",
+            "title": "TypeScript: Documentation - TypeScript 5.9",
+            "snippet": "Support for `--module node20` TypeScript provides several `node*` options for the `--module` and `--moduleResolution` settings. Most recently, `--module nodenext` has supported the ability to `require()` ECMAScript modules from CommonJS mo…"
+          },
+          {
+            "url": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/",
+            "title": "Announcing TypeScript 5.9 - TypeScript",
+            "snippet": "Announcing TypeScript 5.9 - TypeScript August 1st, 2025 # Announcing TypeScript 5.9 Daniel Rosenwasser Principal Product Manager Today we are excited to announce the release of TypeScript 5.9! If you’re not familiar with TypeScript, it’s a…"
+          },
+          {
+            "url": "https://www.tslang.org/en/release-notes/typescript-5-9",
+            "title": "TypeScript 5.9 - JavaScript With Syntax For Types.",
+            "snippet": "TypeScript 5.9 brings a stable option for these settings called `node20 ... unlike `--module nodenext` or `--moduleResolution nodenext`. Also unlike `nodenext`, ... module nodenext`, on the other hand, implies the floating `--target esnext…"
+          },
+          {
+            "url": "https://github.com/microsoft/TypeScript-Website/blob/v2/packages/documentation/copy/en/release-notes/TypeScript%205.9.md",
+            "title": "packages/documentation/copy/en/release-notes/TypeScript%205.9.md"
+          },
+          {
+            "url": "https://github.com/microsoft/TypeScript/releases/tag/v5.9.2",
+            "title": "TypeScript 5.9",
+            "snippet": "TypeScript 5.9 - Tag: v5.9.2 - Repository: microsoft/TypeScript - Published: 2025-10-01T20:37:10Z - Author: jakebailey"
+          },
+          {
+            "url": "https://typescriptdocs.com/release-notes/TypeScript%205.9",
+            "title": "TypeScript 5.9 | TypeScript Docs",
+            "snippet": "TypeScript ... ## Minimal and Updated `tsc --init` ​ For a long time, TypeScript has generated a verbose `tsconfig.json` when running `tsc --init`, filled with extensive commented-out options. Most users immediately deleted these comments…"
+          },
+          {
+            "url": "https://github.com/microsoft/typescript/releases",
+            "title": "Releases · microsoft/TypeScript · GitHub",
+            "snippet": "For release notes, check out the release announcement - fixed issues query for Typescript 5.9.0 (Beta). - fixed issues query for Typescript 5.9.1 (RC). - No specific changes for TypeScript 5.9.2 (Stable) - fixed issues query for Typescript…"
+          },
+          {
+            "url": "https://devblogs.microsoft.com/typescript/page/2/",
+            "title": "TypeScript - Page 2 of 19",
+            "snippet": "Announcing TypeScript 5.9 RC Daniel Rosenwasser Today we are excited to announce the Release Candidate (RC) of TypeScript 5.9! To ... Let's take a look at what's new in TypeScript 5.9! What's New Since the Beta? A few reported fixes have b…"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "kubernetes134",
+      "lang": "en",
+      "category": "release",
+      "query": "Kubernetes 1.34 release notes",
+      "official": "kubernetes.io",
+      "plugin": {
+        "ok": true,
+        "ms": 2069,
+        "results": [
+          {
+            "url": "https://kubernetes.io/releases/1.34/",
+            "title": "Kubernetes 1.34",
+            "snippet": "Kubernetes"
+          },
+          {
+            "url": "https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/",
+            "title": "Kubernetes v1.34: Of Wind & Will (O' WaW) | Kubernetes",
+            "snippet": "Editors: Agustina Barbetta, Alejandro Josue Leon Bellido, Graziano Casto, Melony Qin, Dipesh Rawat Similar to previous releases"
+          },
+          {
+            "url": "https://v1-34.docs.kubernetes.io/releases/notes/",
+            "title": "Notes | Kubernetes",
+            "snippet": "Release"
+          },
+          {
+            "url": "https://v1-35.docs.kubernetes.io/releases/1.34/",
+            "title": "Kubernetes 1.34 | Kubernetes",
+            "snippet": "Kubernetes"
+          },
+          {
+            "url": "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions-standard.html",
+            "title": "Review release notes for Kubernetes versions on standard support",
+            "snippet": "When upgrading, carefully review the changes that have occurred between the old and new versions for your cluster. Kubernetes"
+          },
+          {
+            "url": "https://v1-34.docs.kubernetes.io/releases/",
+            "title": "Releases | Kubernetes",
+            "snippet": "The Kubernetes"
+          },
+          {
+            "url": "https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.34.md",
+            "title": "kubernetes/CHANGELOG/CHANGELOG-1.34.md at master · kubernetes ... - GitHub",
+            "snippet": "Changelog since v1.34.10 Changes by Kind Dependency Kubernetes"
+          },
+          {
+            "url": "https://documentation.ubuntu.com/canonical-kubernetes/main/releases/snap/1.34/",
+            "title": "1.34 - Canonical Kubernetes documentation",
+            "snippet": "Canonical Kubernetes"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "react19",
+      "lang": "en",
+      "category": "release",
+      "query": "React 19 release notes",
+      "official": "react.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2287,
+        "results": [
+          {
+            "url": "https://react.dev/blog/2026/09/09/react-19-3",
+            "title": "React 19.3 - React",
+            "snippet": "React"
+          },
+          {
+            "url": "https://react.dev/blog/2024/12/05/react-19",
+            "title": "React v19 - React",
+            "snippet": "React"
+          },
+          {
+            "url": "https://github.com/react/react/releases",
+            "title": "Releases · react/react - GitHub",
+            "snippet": "Below is a list of all new features, APIs, and bug fixes. Read the React"
+          },
+          {
+            "url": "https://updatify.io/releases/react",
+            "title": "React release notes - Product release notes & changelog tool - Updatify",
+            "snippet": "This release"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/reactjs/react-19-new-features-and-updates/",
+            "title": "React 19 : New Features and Updates - GeeksforGeeks",
+            "snippet": "Developers need to review the React"
+          },
+          {
+            "url": "https://github.com/react/react/blob/main/CHANGELOG.md",
+            "title": "react/CHANGELOG.md at main · react/react · GitHub",
+            "snippet": "The library for web and native user interfaces. Contribute to react"
+          },
+          {
+            "url": "https://versionlog.com/react/19.0/",
+            "title": "React 19.0 - What's New, Support Lifecycle & EOL - VersionLog",
+            "snippet": "Discover what's new in React"
+          },
+          {
+            "url": "https://releasebot.io/updates/meta/react",
+            "title": "React Updates by Meta - September 2026 - Releasebot",
+            "snippet": "Browse a full list of updates made to React"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "playwright-locator",
+      "lang": "en",
+      "category": "docs",
+      "query": "Playwright locator documentation",
+      "official": "playwright.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2428,
+        "results": [
+          {
+            "url": "https://learn.microsoft.com/en-us/power-platform/developer/playwright-samples/locators",
+            "title": "Locators in Power Platform Playwright samples - Power Platform",
+            "snippet": "Learn how to use the built-in locator"
+          },
+          {
+            "url": "https://playwright.dev/docs/locators",
+            "title": "Locators | Playwright",
+            "snippet": "Locators"
+          },
+          {
+            "url": "https://playwright.dev/docs/api/class-locator",
+            "title": "Locator | Playwright",
+            "snippet": "Locators"
+          },
+          {
+            "url": "https://github.com/microsoft/playwright/blob/main/docs/src/locators.md",
+            "title": "playwright/docs/src/locators.md at main · microsoft/playwright",
+            "snippet": "Introduction [ Locator]s"
+          },
+          {
+            "url": "https://qa-auto-lab.com/en/2026/10/25/playwright-locator-guide-en/",
+            "title": "Playwright Locator Complete Guide — How to Use get_by_role, filter, and ...",
+            "snippet": "A Playwright"
+          },
+          {
+            "url": "https://software-testing-tutorials-automation.com/2025/08/playwright-locators.html",
+            "title": "Playwright Locators: Complete Guide to 11 Types & Examples",
+            "snippet": "Learn how Playwright"
+          },
+          {
+            "url": "https://w3testautomation.com/tutorials/playwright-ui-automation/playwright-locators-complete-guide",
+            "title": "Playwright Locators: The Complete Guide with Real-World Examples",
+            "snippet": "Learn every Playwright"
+          },
+          {
+            "url": "https://playwright.hexdocs.pm/Playwright.Locator.html",
+            "title": "Playwright.Locator — playwright v1.49.1-alpha.2 - HexDocs",
+            "snippet": "Playwright.Locator"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 2,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "npm-install",
+      "lang": "en",
+      "category": "docs",
+      "query": "npm install documentation",
+      "official": "docs.npmjs.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2997,
+        "results": [
+          {
+            "url": "https://nodejs.org/en/download",
+            "title": "Download Node.js®",
+            "snippet": "Download Node.js® Get Node.js® v24.22.1 LTS for Windows using Chocolatey with npm"
+          },
+          {
+            "url": "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+            "title": "An introduction to the npm package manager | Node.js Learn",
+            "snippet": "An introduction to the npm"
+          },
+          {
+            "url": "https://www.npmjs.com/",
+            "title": "npm | Home",
+            "snippet": "Get started today for free, or step up to npm"
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+            "title": "npm-install - npm Docs",
+            "snippet": "npm"
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v9/configuring-npm/install/?v=true",
+            "title": "install | npm Docs",
+            "snippet": "Description To publish and install"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/node-js/npm-install-command/",
+            "title": "npm install command - GeeksforGeeks",
+            "snippet": "The npm"
+          },
+          {
+            "url": "https://www.npmjs.com/npm-install",
+            "title": "npm-install - npm",
+            "snippet": "GitHub Action for install"
+          },
+          {
+            "url": "https://github.com/npm/documentation",
+            "title": "GitHub - npm/documentation: Documentation for the npm registry, website ...",
+            "snippet": "The npm"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 4,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "pip-install",
+      "lang": "en",
+      "category": "docs",
+      "query": "pip install documentation",
+      "official": "pip.pypa.io",
+      "plugin": {
+        "ok": true,
+        "ms": 5003,
+        "results": [
+          {
+            "url": "https://pip.pypa.io/en/stable/installation/",
+            "title": "Installation - pip documentation v26.2.2",
+            "snippet": "6 天之前 · Pip is tested to work on the latest patch version of the Python interpreter, for each of the minor versions listed above. …"
+          },
+          {
+            "url": "https://pypi.org/project/pip/",
+            "title": "pip · PyPI",
+            "snippet": "pip - The Python Package Installer Pip is the package installer for Python. You can use pip to install packages from the Python Package … 阅读更多"
+          },
+          {
+            "url": "https://www.runoob.com/w3cnote/python-pip-install-usage.html",
+            "title": "Python pip 安装与使用 - 菜鸟教程",
+            "snippet": "目前如果你在 python.org 下载最新版本的安装包，则是已经自带了该工具。 注意：Python 2.7.9 + 或 Python 3.4+ 以上版本都自带 pip 工具 …"
+          },
+          {
+            "url": "https://www.toolbox365.cn/tools/cn-mirrors/pip/",
+            "title": "pip 国内镜像源 — 清华 / 阿里云 / 华为云 / 腾讯云 一键配置 ...",
+            "snippet": "2026年10月10日 · pip（Python 包管理（PyPI））国内镜像源汇总：清华、阿里云、华为云、腾讯云、中科大、北外、南大，提供永久配置 / …"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/693291485",
+            "title": "【Python】 pip 超详细教程， pip 的安装与使用，解决 pip 下载 ...",
+            "snippet": "2024年4月18日 · pip的安装与卸载 1.1 pip的安装 python中有许多有用的库，要使用这些第三方库，需要安装pip 打开cmd，输入以下命令安 …"
+          },
+          {
+            "url": "https://www.zhihu.com/question/343789205",
+            "title": "什么是 pip ？ - 知乎",
+            "snippet": "2022年4月23日 · PIP 是Performance Improvement Plan的缩写，中文通常翻译为『绩效改善计划』。 从名字上就知道是 外资企业 推行的东 …"
+          },
+          {
+            "url": "https://blog.csdn.net/acktomas/article/details/117926803",
+            "title": "windows下python安装pip方法详解 _windows pip -CSDN博客",
+            "snippet": "2024年1月26日 · 本文详细介绍了如何在Python环境中安装和升级pip。 强调了避免在安装Python时勾选pip选项，建议通过官方推荐的方法手 …"
+          },
+          {
+            "url": "https://blog.csdn.net/Stromboli/article/details/143116950",
+            "title": "【 Pip 】初识 Pip ：Python 包管理的基本命令详解_ pip 命令 ...",
+            "snippet": "2024年10月21日 · 引言 在当今的编程世界中，库和包是代码重用和高效开发的关键。 pip 作为 Python 的标准包管理工具，帮助开发者轻松地 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "docker-compose",
+      "lang": "en",
+      "category": "docs",
+      "query": "Docker Compose documentation",
+      "official": "docs.docker.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2091,
+        "results": [
+          {
+            "url": "https://docs.docker.com/compose/",
+            "title": "Docker Compose | Docker Docs - Docker Documentation",
+            "snippet": "Learn how to use Docker"
+          },
+          {
+            "url": "https://docs.docker.com/reference/compose-file/",
+            "title": "Compose file reference | Docker Docs",
+            "snippet": "Find the latest recommended version of the Docker"
+          },
+          {
+            "url": "https://docs.twenty.com/developers/self-host/capabilities/docker-compose",
+            "title": "Docker Compose - Twenty Documentation",
+            "snippet": "Data Volumes: The Docker"
+          },
+          {
+            "url": "https://github.com/docker/compose/blob/main/docs/reference/compose.md",
+            "title": "compose/docs/reference/compose.md at main · docker/compose",
+            "snippet": "Use --profile to specify one or more active profiles Calling docker"
+          },
+          {
+            "url": "https://github.com/docker/compose",
+            "title": "Docker Compose - GitHub",
+            "snippet": "Docker"
+          },
+          {
+            "url": "https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html",
+            "title": "Running Airflow in Docker — Airflow 3.3.2 Documentation",
+            "snippet": "Install Docker"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/devops/docker-compose/",
+            "title": "Docker Compose - GeeksforGeeks",
+            "snippet": "Docker"
+          },
+          {
+            "url": "https://shattered.io/docker-compose-tutorial-production-stack-12-steps-2026/",
+            "title": "Docker Compose Tutorial: 12 Steps, 60 Min [2026] - shattered.io",
+            "snippet": "Docker"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "github-actions-cache",
+      "lang": "en",
+      "category": "docs",
+      "query": "GitHub Actions cache documentation",
+      "official": "docs.github.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2092,
+        "results": [
+          {
+            "url": "https://docs.docker.com/build/cache/backends/gha/",
+            "title": "GitHub Actions cache | Docker Docs",
+            "snippet": "The GitHub"
+          },
+          {
+            "url": "https://docs.docker.com/build/ci/github-actions/cache/",
+            "title": "Cache management with GitHub Actions | Docker Docs",
+            "snippet": "Configure build cache"
+          },
+          {
+            "url": "https://github.com/actions/cache",
+            "title": "GitHub - actions/cache: Cache dependencies and build outputs in GitHub ...",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+            "title": "Dependency caching reference - GitHub Docs",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manage-caches",
+            "title": "Managing caches - GitHub Docs",
+            "snippet": "In the cache"
+          },
+          {
+            "url": "https://github.com/marketplace/actions/cache",
+            "title": "Cache · Actions · GitHub Marketplace · GitHub",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://namespace.so/docs/solutions/github-actions/caching",
+            "title": "Caching in GitHub Actions - Namespace Documentation",
+            "snippet": "Cache"
+          },
+          {
+            "url": "https://gitea.psi.ch/actions/cache",
+            "title": "actions/cache: Cache dependencies and build outputs in GitHub Actions ...",
+            "snippet": "A cache"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 4,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "mdn-fetch",
+      "lang": "en",
+      "category": "docs",
+      "query": "MDN Fetch API documentation",
+      "official": "developer.mozilla.org",
+      "plugin": {
+        "ok": true,
+        "ms": 1993,
+        "results": [
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+            "title": "Fetch API - Web APIs | MDN - MDN Web Docs",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+            "title": "Using the Fetch API - Web APIs | MDN - MDN Web Docs",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://mdn.org.cn/en-US/docs/Web/API/Fetch_API",
+            "title": "Fetch API - Web APIs | MDN - MDN 文档",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API.html",
+            "title": "Fetch API - Web APIs | MDN - devdoc.net",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://mdn.org.cn/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+            "title": "使用 Fetch API - Web API | MDN - MDN 文档",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://www.devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch.html",
+            "title": "Using Fetch - Web APIs | MDN - devdoc.net",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://mdn2.netlify.app/en-us/docs/web/api/fetch/",
+            "title": "fetch () - Web APIs | MDN",
+            "snippet": "The global fetch"
+          },
+          {
+            "url": "https://www.w3schools.com/js/js_api_fetch.asp",
+            "title": "JavaScript Fetch API - W3Schools",
+            "snippet": "The Fetch"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "fastapi-query",
+      "lang": "en",
+      "category": "docs",
+      "query": "FastAPI query parameters documentation",
+      "official": "fastapi.tiangolo.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2173,
+        "results": [
+          {
+            "url": "https://fastapi.tiangolo.com/tutorial/query-params/",
+            "title": "Query Parameters - FastAPI",
+            "snippet": "All the same processes that apply to path parameters"
+          },
+          {
+            "url": "https://fastapi.tiangolo.com/tutorial/query-params-str-validations/",
+            "title": "Query Parameters and String Validations - FastAPI - tiangolo",
+            "snippet": "FastAPI"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/python/fastapi-query-parameters/",
+            "title": "FastAPI - Query Parameters - GeeksforGeeks",
+            "snippet": "Whether filtering data, setting defaults, or handling optional parameters"
+          },
+          {
+            "url": "https://oneuptime.com/blog/post/2026-02-03-fastapi-query-parameters/view",
+            "title": "How to Use FastAPI Query Parameters Effectively",
+            "snippet": "Learn how to handle query"
+          },
+          {
+            "url": "https://learn.programmingline.com/learn/fastapi/fastapi-path-and-query-parameters",
+            "title": "FastAPI Path and Query Parameters - learn.programmingline.com",
+            "snippet": "Learn how FastAPI"
+          },
+          {
+            "url": "https://github.com/fastapi/fastapi/blob/master/docs/en/docs/tutorial/query-params.md",
+            "title": "fastapi/docs/en/docs/tutorial/query-params.md at master - GitHub",
+            "snippet": "Multiple path and query"
+          },
+          {
+            "url": "https://medium.com/@likhith0715/fastapi-path-and-query-parameters-validation-metadata-query-models-and-pydantic-explained-89b8f05c82ce",
+            "title": "FastAPI Path & Query Parameters: Validation, Metadata, and ... - Medium",
+            "snippet": "q=hello is a query"
+          },
+          {
+            "url": "https://www.getorchestra.io/guides/fast-api-query-parameter-lists-handling-lists-in-query-parameters",
+            "title": "Fast API Query Parameters: Handle Lists Efficiently | Guide",
+            "snippet": "FastAPI"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "nextjs-app-router",
+      "lang": "en",
+      "category": "docs",
+      "query": "Next.js App Router documentation",
+      "official": "nextjs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 1808,
+        "results": [
+          {
+            "url": "https://nextjs.org/docs/app",
+            "title": "App Router",
+            "snippet": "# App Router Copy page ## [Next Steps](https://nextjs.org/docs/app#next-steps) Learn the fundamentals of building an App Router project, from installation to layouts, navigation, server and client components. [**Installation** \\ Learn how to create a new Next.js application with the `create-next-app..."
+          },
+          {
+            "url": "https://www.freecodecamp.org/news/routing-in-nextjs/",
+            "title": "Routing in Next.js – How to Use App Router in your Next Apps",
+            "snippet": "## Features of App Router in Next.js ### Layout Component ```js export default function layout({ children }) { return {children}; } ``` ### Error Component ```js }> ``` ### Built-in SEO ```js import { Metadata } from \"next\"; export const Metadata = { title: \"Blog page title\", description: \"Blog page..."
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=EbrBRQ6UbIY&vl=en",
+            "title": "Next.js App Router Explained: What I Wish I Knew Earlier - YouTube",
+            "snippet": "I built a time tracker for freelancer — free to try: https://timentrack.com/yt Next.js is a powerful React framework that blends the best of ..."
+          },
+          {
+            "url": "https://medium.com/@kulsumansari4/next-js-app-router-routing-8d795dbe324c",
+            "title": "Next.js App Router: Routing - Medium",
+            "snippet": "The next.js version 13 has introduced the app router, which works with the app directory of the application. The app directory can work ..."
+          },
+          {
+            "url": "https://dev.to/prateekshaweb/nextjs-app-router-for-beginners-pages-layouts-and-navigation-4kd",
+            "title": "Next.js App Router for Beginners: Pages, Layouts, and Navigation",
+            "snippet": "Master the Next.js app router with this beginner-friendly tutorial. Learn to set up pages, layouts, and navigation step by step, ..."
+          },
+          {
+            "url": "https://www.facebook.com/fb-answers/next-js-official-documentation-app-router/",
+            "title": "Next.js Official Documentation App Router Guide - Facebook",
+            "snippet": "For new Next.js projects, the App Router is the recommended approach — it uses the `app` directory with React Server Components, nested layouts, and..."
+          },
+          {
+            "url": "https://nextjs.org/learn/dashboard-app",
+            "title": "App Router - Next.js",
+            "snippet": "In this free interactive course, you'll learn the main features of Next.js by building a full-stack web application. Routing: How to create nested layouts and ..."
+          },
+          {
+            "url": "https://nextjs.org/docs",
+            "title": "Next.js Docs",
+            "snippet": "# Next.js Docs ## [App Router and Pages Router](https://nextjs.org/docs#app-router-and-pages-router) Next.js has two different routers: - **App Router**: The newer router that supports new React features like Server Components. - **Pages Router**: The original router, still supported and being impro..."
+          }
+        ],
+        "failures": [
+          "exa: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "vite-config",
+      "lang": "en",
+      "category": "docs",
+      "query": "Vite config documentation",
+      "official": "vite.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2291,
+        "results": [
+          {
+            "url": "https://vite.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://v3.vite.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://vite.dev/guide/",
+            "title": "Getting Started | Vite",
+            "snippet": "The Config"
+          },
+          {
+            "url": "https://v2.vitejs.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://vitest.dev/guide/",
+            "title": "Getting Started | Guide | Vitest",
+            "snippet": "Vitest reads your vite.config"
+          },
+          {
+            "url": "https://docs.vite.org/vite-basics/network/configuration/",
+            "title": "Node Configurations - Vite Documentation",
+            "snippet": "Node Configurations This section introduces how to manually configure a node on your machine. However, if you just want to develop locally, it's recommended you get Visual Studio Code Solidity++ Extension which includes a local development node. Node When downloading the latest release of go- vite"
+          },
+          {
+            "url": "https://vitepress.dev/guide/getting-started",
+            "title": "Getting Started - VitePress",
+            "snippet": "To explore the features provided by the default documentation"
+          },
+          {
+            "url": "https://vitepress.dev/reference/site-config",
+            "title": "Site Config - VitePress",
+            "snippet": "Complete reference of VitePress site configuration options including app-level settings, theming, and build options."
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "mcp-tools",
+      "lang": "en",
+      "category": "docs",
+      "query": "Model Context Protocol tools specification",
+      "official": "modelcontextprotocol.io",
+      "plugin": {
+        "ok": true,
+        "ms": 2169,
+        "results": [
+          {
+            "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+            "title": "Tools - Model Context Protocol",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://modelcontextprotocol.info/docs/concepts/tools/",
+            "title": "Tools - Model Context Protocol （MCP）",
+            "snippet": "Tools"
+          },
+          {
+            "url": "https://modelcontextprotocol.info/specification/",
+            "title": "Specification - Model Context Protocol （MCP）",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx",
+            "title": "modelcontextprotocol/docs/specification/2026-07-28/server/tools.mdx at ...",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/index.mdx",
+            "title": "modelcontextprotocol/docs/specification/2026-07-28/index.mdx ... - GitHub",
+            "snippet": "Model"
+          },
+          {
+            "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+            "title": "The 2026-07-28 Specification | Model Context Protocol Blog",
+            "snippet": "The 2026-07-28 Model"
+          },
+          {
+            "url": "https://thebiglearn.org/articles/en/model-context-protocol-mcp-complete-guide-2026",
+            "title": "Model Context Protocol (MCP) 2026: Complete Production Guide | The Big ...",
+            "snippet": "Artificial intelligence and integration Model"
+          },
+          {
+            "url": "https://aibuzz.blog/model-context-protocol-explained/",
+            "title": "Model Context Protocol (MCP): Specification, Security & Enterprise (2026)",
+            "snippet": "🔌 ..."
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "deepseek-api",
+      "lang": "en",
+      "category": "docs",
+      "query": "DeepSeek API documentation",
+      "official": "api-docs.deepseek.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2103,
+        "results": [
+          {
+            "url": "https://api-docs.deepseek.com/",
+            "title": "Your First API Call | DeepSeek API Docs",
+            "snippet": "Your First API"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/api/deepseek-api/",
+            "title": "DeepSeek API | DeepSeek API Docs",
+            "snippet": "The DeepSeek"
+          },
+          {
+            "url": "https://platform.deepseek.com/docs/api-reference",
+            "title": "DeepSeek Platform",
+            "snippet": "Join DeepSeek"
+          },
+          {
+            "url": "https://deepseek-usa.ai/docs/api/",
+            "title": "DeepSeek API",
+            "snippet": "If you are building software, start with the API"
+          },
+          {
+            "url": "https://deepseekv4pro.com/documents",
+            "title": "DeepSeek API Documentation",
+            "snippet": "DeepSeek's"
+          },
+          {
+            "url": "https://www.deepseek.com/en/platform/",
+            "title": "DeepSeek | API Platform",
+            "snippet": "DeepSeek"
+          },
+          {
+            "url": "https://www.deepseek.com/platform/",
+            "title": "DeepSeek | API 开放平台",
+            "snippet": "深度求索（ DeepSeek"
+          },
+          {
+            "url": "https://deepseek.ai/docs",
+            "title": "DeepSeek API Docs 2026 — Quickstart & Examples",
+            "snippet": "DeepSeek"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "claude-code-mcp",
+      "lang": "en",
+      "category": "docs",
+      "query": "Claude Code MCP configuration",
+      "official": "code.claude.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2472,
+        "results": [
+          {
+            "url": "https://code.claude.com/docs/en/mcp",
+            "title": "Connect Claude Code to tools via MCP - Claude Code Docs",
+            "snippet": "Claude asks about your use case and scaffolds a remote HTTP or local stdio server. Installing MCP servers MCP servers can be configured in several ways depending on your needs: Option 1: Add a remote HTTP server HTTP servers are the recomm…"
+          },
+          {
+            "url": "https://code.claude.com/docs/en/mcp-quickstart",
+            "title": "Connect to MCP servers - Claude Code Docs",
+            "snippet": "1 Add the MCP server Register the server with Claude Code. Run this in your terminal, not inside a `claude` session: you’re configuring the server before starting a conversation. ``` claude mcp add --transport http claude-code-docs https:/…"
+          },
+          {
+            "url": "https://code.claude.com/docs/en/agent-sdk/mcp",
+            "title": "Connect to external tools with MCP - Claude Code Docs",
+            "snippet": "Add an MCP server You can configure MCP servers in code when calling `query()`, or in a `.mcp.json` file loaded via `settingSources`. Add a server in code Pass MCP servers directly in the `mcpServers` option. This example starts a local fi…"
+          },
+          {
+            "url": "https://academy.claude.com/courses/claude-code-101/mcp",
+            "title": "MCP · Claude Code 101 · Claude Academy",
+            "snippet": "MCP servers can be scoped in three ways: 1. Local — only available in ... , just for you. 2. User — available across all your projects. 3. Project — uses a `.mcp.json` file that you check into version control so anyone on the codebase gets…"
+          },
+          {
+            "url": "https://code.claude.com/docs/en/settings-reference",
+            "title": "All settings - Claude Code Docs",
+            "snippet": "key below links to its entry. Scope lists the files it can go in: `User` is `~/.claude/settings.json`, `Project` is `.claude/settings.json`, `Local` is `.claude/settings.local.json`, and `Managed` is what your organization deploys. `Any fi…"
+          },
+          {
+            "url": "https://github.com/anthropics/claude-code/blob/HEAD/plugins/plugin-dev/skills/mcp-integration/SKILL.md",
+            "title": "plugins/plugin-dev/skills/mcp-integration/SKILL.md at HEAD · anthropics/claude-code",
+            "snippet": "\"command\": \"${CLAUDE_PLUGIN_ROOT}/servers/db-server\", \"args\": [\"--config\", \"${CLAUDE_PLUGIN_ROOT ... \"version\": \"1.0.0\", \"mcpServers\": { \"plugin-api\": { \"command\": \"${CLAUDE_PLUGIN_ROOT}/servers/api-server\", \"args\": [\"--port\","
+          },
+          {
+            "url": "https://academy.claude.com/courses/building-with-the-claude-api/enhancements-with-mcp-servers",
+            "title": "Adding MCP servers to Claude Code",
+            "snippet": "MCP server to Claude Code is straightforward. You use the command line to register your server: ``` claude mcp add [server-name] [command-to-start-server] ``` ... , if you have a document processing server that starts with `uv run main.py`…"
+          },
+          {
+            "url": "https://github.com/ericbuess/claude-code-docs/blob/main/docs/mcp.md",
+            "title": "docs/mcp.md at main · ericbuess/claude-code-docs",
+            "snippet": "HTTP servers are the recommended option for connecting to remote MCP servers. This is the most widely supported transport for cloud-based services. ```bash theme={null} # Basic syntax claude mcp add --transport http <name> <url> # Real"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 3
+      }
+    },
+    {
+      "id": "node24-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Node.js 24 发布说明",
+      "official": "nodejs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 1847,
+        "results": [
+          {
+            "url": "https://nodejs.org/en/blog/release/v24.0.0",
+            "title": "Node.js 24.0.0 (Current)",
+            "snippet": "# Node.js 24.0.0 (Current) ## [2025-05-06, Version 24.0.0 (Current), @RafaelGSS and @juanarbol](https://nodejs.org/en/blog/release/v24.0.0#2025-05-06-version-2400-current-rafaelgss-and-juanarbol) We’re excited to announce the release of Node.js 24!"
+          },
+          {
+            "url": "https://nodejs.org/zh-cn",
+            "title": "Node.js — 在任何地方运行 JavaScript",
+            "snippet": "Node.js® is a free, open-source, cross-platform JavaScript runtime environment that lets developers create servers, web apps, …"
+          },
+          {
+            "url": "https://nodejs.org/en/about/previous-releases",
+            "title": "Node.js Releases",
+            "snippet": "Node.js® is a free, open-source, cross-platform JavaScript runtime environment that lets developers create servers, web apps, command line tools"
+          },
+          {
+            "url": "https://nodejs.org/zh-cn/about/previous-releases",
+            "title": "Node.js Releases",
+            "snippet": "Looking for the latest release of a version branch? ; v25, -, 2025年10月15日 ; v24, Krypton, 2025年5月06日 ; v23, -, 2024年10月16日 ; v22, Jod, 2024年4月24日 ..."
+          },
+          {
+            "url": "https://nodesource.com/blog/Node.js-version-24",
+            "title": "Node.js 24 Is Here: What You Need to Know - NodeSource",
+            "snippet": "### Node.js 24 Is Here: What You Need to Know Node.js 24 has officially landed! This release brings some exciting improvements to JavaScript developers, making Node.js faster, more capable, and more aligned with the latest JavaScript standards."
+          },
+          {
+            "url": "https://www.reddit.com/r/node/comments/1k71vnd/whats_new_in_nodejs_24/?tl=zh-hans",
+            "title": "Node.JS 24 有啥新东西 - Reddit",
+            "snippet": "Node.JS 的大版本发布要来了, Node.js v26 今天发布了。只是一些小修复和小幅弃 … 看起来Node.js v24 很快就要在AWS Lambda 上推出。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_44829437/article/details/154421183",
+            "title": "Node.js 24 LTS 正式发布，稳定支持到2028 年原创 - CSDN博客",
+            "snippet": "2025 年10 月28 日，Node.js 项目组发布了v24.11.0 版本。这个版本标志着Node.js 24 正式进入长期支持（LTS）阶段。开发者现在可以在生产环境中放心 ..."
+          },
+          {
+            "url": "https://node.org.cn/",
+            "title": "Node .js — 让 JavaScript 无处不在 - Node .js 运行环境",
+            "snippet": "2026年5月7日 · 让 JavaScript 无处不在 Node.js® 是一个免费、开源、跨平台的 JavaScript 运行时环境，使开发者能够创建服务器、Web 应 …"
+          }
+        ],
+        "failures": [
+          "exa: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "postgres18-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "PostgreSQL 18 发布说明",
+      "official": "postgresql.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2131,
+        "results": [
+          {
+            "url": "https://www.postgresql.org/",
+            "title": "PostgreSQL : The world's most advanced open source database",
+            "snippet": "The PostgreSQL Global Development Group announces that the 1st rc release of PostgreSQL 19 is now available for download. This … 阅读更多"
+          },
+          {
+            "url": "https://www.postgresql.org/download/",
+            "title": "PostgreSQL : Downloads",
+            "snippet": "PostgreSQL is available for download as ready-to-use packages or installers for various platforms, as well as a source code archive if …"
+          },
+          {
+            "url": "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+            "title": "PostgreSQL 教程 | 菜鸟教程",
+            "snippet": "PostgreSQL 教程 PostgreSQL 是一个免费的对象-关系数据库服务器 (ORDBMS)，在灵活的BSD许可证下发行。 PostgreSQL 开发者把它念作 …"
+          },
+          {
+            "url": "https://developer.aliyun.com/article/1752221",
+            "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用一篇搞定 ...",
+            "snippet": "2026年7月31日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …"
+          },
+          {
+            "url": "https://postgresql.ac.cn/docs/current/index.html",
+            "title": "PostgreSQL 18.0 文档",
+            "snippet": "版权所有 © 1996–2025 PostgreSQL 全球开发组 法律声明 目录 前言 1. 什么是 PostgreSQL？ 2. PostgreSQL 简史 3. 约定 4. 更多信息 5. 错 …"
+          },
+          {
+            "url": "https://blog.csdn.net/m0_58648890/article/details/155314594",
+            "title": "Windows 安装 PostgreSQL18 超详细保姆级教程-CSDN博客",
+            "snippet": "2025年11月27日 · 本文详细介绍在Windows 10/11系统上安装PostgreSQL 18的完整流程，涵盖下载、安装、组件选择、pgAdmin配置、中文 …"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2066273753013789584",
+            "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用保姆级 ...",
+            "snippet": "2026年7月30日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …"
+          },
+          {
+            "url": "https://blog.csdn.net/2403_89073657/article/details/148105776",
+            "title": "postgreSQL 安装教程及使用方法（保姆级）-CSDN博客",
+            "snippet": "2025年5月21日 · 本文是PostgreSQL的保姆级教程，介绍了其安装过程、环境变量设置、增删改查操作等。 还给出了psql指令大全，涵盖数据 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "react19-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "React 19 发布说明",
+      "official": "react.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2112,
+        "results": [
+          {
+            "url": "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+            "title": "React 入门 - 学习 Web 开发 | MDN",
+            "snippet": "2026年6月8日 · 本文会引导我们进入一段 React 学习之旅。 我们将逐步了解有关它的背景和用例的一些细节，在自己的电脑上建起基本的 …"
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn",
+            "title": "快速入门 – React 中文文档",
+            "snippet": "使用 Hook 以 use 开头的函数被称为 Hook。 useState 是 React 提供的一个内置 Hook。 你可以在 React API 参考 中找到其他内置的 Hook。 …"
+          },
+          {
+            "url": "https://react.dev/",
+            "title": "React",
+            "snippet": "React is the library for web and native user interfaces. Build user interfaces out of individual pieces called components written in …"
+          },
+          {
+            "url": "https://www.runoob.com/react/react-tutorial.html",
+            "title": "React 教程 | 菜鸟教程",
+            "snippet": "React 教程 React 是一个用于构建用户界面的 JAVASCRIPT 库。 React 主要用于构建 UI，很多人认为 React 是 MVC 中的 V（视图）。 React …"
+          },
+          {
+            "url": "https://react.dev/learn",
+            "title": "Quick Start – React",
+            "snippet": "Quick Start Welcome to the React documentation! This page will give you an introduction to 80% of the React concepts that you will use …"
+          },
+          {
+            "url": "https://www.runoob.com/react/react-intro.html",
+            "title": "React 简介 - 菜鸟教程",
+            "snippet": "React 简介 React 是由 Facebook（现 Meta）开发并于 2013 年开源的 JavaScript 库，专门用于构建用户界面，特别是单页应用程序（SPA） …"
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn/installation",
+            "title": "安装 – React 中文文档",
+            "snippet": "安装 React 从诞生之初就是可被渐进式使用的。 因此你可以选择性地使用 React 特性。 不管你是想体验下 React，用它为简单的 HTML 页面 …"
+          },
+          {
+            "url": "https://blog.csdn.net/nxiaotan/article/details/159783600",
+            "title": "React 新手快速入门学习指南（2026最新版）",
+            "snippet": "2026年4月3日 · React新手快速入门学习指南（2026最新版） 2026年4月 · 从零到实战，掌握2026年最实用的React开发技能 2026年的前端 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 2,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "python314-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Python 3.14 发布说明",
+      "official": "python.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2334,
+        "results": [
+          {
+            "url": "https://docs.python.org/zh-cn/",
+            "title": "Python 3.15.1 文档",
+            "snippet": "1 天前 · Python 开发者指南 有关如何为 Python 做贡献的信息 Python 打包用户指南 与 Python 打包有关的资源 音频/视频讲座 来自社区的播客 …"
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/3/reference/index.html",
+            "title": "Python 语言参考手册 — Python 3.15.1 文档",
+            "snippet": "1 天前 · 本参考手册介绍了本语言的句法与核心语义。 在力求简明扼要的同时，也尽量做到准确、完整。 在其他地方，内置对象类型和函数在 …"
+          },
+          {
+            "url": "https://www.python.org/",
+            "title": "Welcome to Python .org",
+            "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+          },
+          {
+            "url": "https://www.python.org/downloads/",
+            "title": "Download Python | Python .org",
+            "snippet": "Starting with the Python 3.11.0, Python 3.10.7, and Python 3.9.14 releases, CPython release artifacts are signed with Sigstore. See our …"
+          },
+          {
+            "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+            "title": "简介 - Python教程 - 廖雪峰的官方网站",
+            "snippet": "2026年10月6日 · 简介 廖雪峰 资深软件开发工程师，业余马拉松选手。 这是小白的Python新手教程，具有如下特点： 中文，免费，零起点， …"
+          },
+          {
+            "url": "https://pythonlang.cn/",
+            "title": "欢迎来到 Python .org - Python 编程语言",
+            "snippet": "2026年9月29日 · 使用 Python 进行计算非常简单，表达式语法也很直观：运算符 + 、 - 、 * 和 / 的作用符合预期；括号 () 可用于分组。 更多 …"
+          },
+          {
+            "url": "https://www.runoob.com/python/python-tutorial.html",
+            "title": "Python 基础教程 | 菜鸟教程",
+            "snippet": "Python 基础教程 Python 是一种解释型、面向对象、动态数据类型的高级程序设计语言。 Python 由 Guido van Rossum 于 1989 年底发明， …"
+          },
+          {
+            "url": "https://blog.csdn.net/sensen_kiss/article/details/141940274",
+            "title": "Python 安装与环境配置全程详细教学（包含Windows版和 ...",
+            "snippet": "2026年9月20日 · 文章浏览阅读10w+次，点赞1k次，收藏1.7k次。本文详细讲解Windows和Mac平台下Python的下载、安装、环境变量配置及 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "rust190-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Rust 1.90 发布说明",
+      "official": "blog.rust-lang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2016,
+        "results": [
+          {
+            "url": "https://blog.rust-lang.org/2025/09/18/Rust-1.90.0/",
+            "title": "Announcing Rust 1.90.0 - Rust Blog",
+            "snippet": "Official Rust 1.90.0 release notes. ## Language - Split up the `unknown_or_malformed_diagnostic_attributes` lint. This lint has been split up into four finer-grained lints, with `unknown_or_malformed_diagnostic_attributes` now being the lint group that contains these lints: 1. `unknown_diagnostic_attributes`: unknown to the current compiler 2. `misplaced_diagnostic_attributes`: placed on the wrong item 3. `malformed_…"
+          },
+          {
+            "url": "https://rust-lang.org/zh-CN/",
+            "title": "Rust 程序设计语言",
+            "snippet": "1 天前 · 生产环境中的 Rust 全世界已有数百家公司在生产环境中使用 Rust，以达到快速、跨平台、低资源占用的目的。 很多著名且受欢迎的软 …"
+          },
+          {
+            "url": "https://rust-lang.org/",
+            "title": "Rust Programming Language",
+            "snippet": "8 小时之前 · Rust is blazingly fast and memory-efficient: with no runtime or garbage collector, it can power performance-critical …"
+          },
+          {
+            "url": "https://rustcc.cn/",
+            "title": "Rust 语言中文社区-首页",
+            "snippet": "【Rust日报】2026-10-13 Rust 1.100 将在 11 月 12 日发布，建议先测 beta - Rust 新闻/聚合 Mike Tang 2026-10-13 09:07 【RPI 项目】如果 …"
+          },
+          {
+            "url": "https://www.runoob.com/rust/rust-tutorial.html",
+            "title": "Rust 教程 | 菜鸟教程",
+            "snippet": "Rust 教程 Rust 是由 Mozilla 主导开发的高性能编译型编程语言，遵循“安全、并发、实用”的设计原则。 Rust 语言由 Mozilla 开发，首次发布 …"
+          },
+          {
+            "url": "https://rustwiki.org/zh-CN/book/ch01-00-getting-started.html",
+            "title": "入门指南 - Rust 程序设计语言 中文版",
+            "snippet": "2026年4月16日 · Rust 程序设计语言中文也译为 Rust 权威指南，是 Rust 官方推出的学习 Rust 的必备教程。 Rust Wiki 版的 Rust 程序设计语 …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/Rust%E8%AF%AD%E8%A8%80/9502634",
+            "title": "Rust 语言_百度百科",
+            "snippet": "Rust 是一门系统编程语言，专注于安全，尤其是并发安全，支持函数式和命令式以及泛型等编程范式的多范式语言。 Rust 在语法上和 C++ 类 …"
+          },
+          {
+            "url": "https://www.zhihu.com/question/624623198",
+            "title": "为什么现在吹 Rust 的人这么多？ - 知乎",
+            "snippet": "2023年10月5日 · 我当初学习 java 到上手开始写 CURD，大概花了半天时间，但是 Rust，从我部署中文版本的 Rust 教程，到我开始入手写一 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "npm-package",
+      "lang": "en",
+      "category": "package",
+      "query": "@fffangchenghao/dsh-web-search npm",
+      "official": "npmjs.com",
+      "plugin": {
+        "ok": true,
+        "ms": 2503,
+        "results": [
+          {
+            "url": "https://dpharness.com/plugin/fangchenghao/dsh-web-search",
+            "title": "联网搜索(fangchenghao) 插件安装教程 · DSH plugin: install & compatibility",
+            "snippet": "让模型自行搜索网页并读取正文作答，提供插件中文汉化文档，更新于 2026/10/23，一键获取 dsh 插件安装命令与兼容性报告，支持一键复制插件安装命令、兼容性验证标注、中文汉化文档与插件更新订阅提醒。Install guide & compatibility report for DeepSeek Harness (DSH) plugin."
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search",
+            "title": "@fffangchenghao/dsh-web-search - GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main",
+            "title": "@fffangchenghao/dsh-web-search - GitHub",
+            "snippet": "The latest version and install command live on npm"
+          },
+          {
+            "url": "https://awesome-dsh-plugin.com/p/fangchenghao/dsh-web-search/",
+            "title": "fangchenghao/dsh-web-search — dsh plugin · Tools & Capabilities",
+            "snippet": "Keyless web"
+          },
+          {
+            "url": "https://npm.io/package/dsh-web-search",
+            "title": "dsh-web-search | npm.io",
+            "snippet": "pi- web"
+          },
+          {
+            "url": "https://www.npmjs.com/package/@lemoncat7/dsh-web-search",
+            "title": "@lemoncat7/dsh-web-search - npm",
+            "snippet": "@lemoncat7/dsh- web"
+          },
+          {
+            "url": "https://www.npmjs.com/package/@zzy-fxxxexxxyxxx/dsh-web-search-searxng",
+            "title": "@zzy-fxxxexxxyxxx/dsh-web-search-searxng - npm",
+            "snippet": "You already run SearXNG (for example for another agent on the same host), so the marginal cost of reusing it is zero. Per- search"
+          },
+          {
+            "url": "https://dsh-plugin.org/plugins/haibinwang9/dsh-web-search",
+            "title": "dsh-web-search: Multi-Engine Search Fallback & Web Content Extraction ...",
+            "snippet": "A DSH plugin for DeepSeek Harness that adds multi-engine search"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 6,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "github-repo",
+      "lang": "en",
+      "category": "package",
+      "query": "fangchenghao dsh-web-search GitHub",
+      "official": "github.com",
+      "plugin": {
+        "ok": true,
+        "ms": 1972,
+        "results": [
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search",
+            "title": "GitHub - fangchenghao/dsh-web-search: Key-free web search for DeepSeek ...",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/releases",
+            "title": "Releases · fangchenghao/dsh-web-search - GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main",
+            "title": "GitHub - fangchenghao/dsh-web-search: Key-free web search for DeepSeek ...",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tags",
+            "title": "Tags · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main/docs",
+            "title": "dsh-web-search/docs at main · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://awesome-dsh-plugin.com/p/fangchenghao/dsh-web-search/",
+            "title": "fangchenghao/dsh-web-search — dsh plugin · Tools & Capabilities",
+            "snippet": "Keyless web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/security",
+            "title": "Overview · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "GitHub"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/branches",
+            "title": "Branches · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 2
+      }
+    },
+    {
+      "id": "pypi-requests",
+      "lang": "en",
+      "category": "package",
+      "query": "requests PyPI package",
+      "official": "pypi.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2114,
+        "results": [
+          {
+            "url": "https://pypi.org/project/requests/",
+            "title": "requests · PyPI",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://pypi.org/",
+            "title": "PyPI · The Python Package Index",
+            "snippet": "The Python Package"
+          },
+          {
+            "url": "https://docs.python-requests.org/en/master/index.html",
+            "title": "Requests: HTTP for Humans™ — Requests 2.34.2 documentation",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://pypi-browser.org/package/requests",
+            "title": "requests - PyPI Browser",
+            "snippet": "requests"
+          },
+          {
+            "url": "https://github.com/psf/requests",
+            "title": "GitHub - psf/requests: A simple, yet elegant, HTTP library.",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://www.pepy.tech/projects/requests",
+            "title": "requests · 39.4G downloads on PyPI - pepy.tech",
+            "snippet": "requests"
+          },
+          {
+            "url": "https://docs.python-requests.org/en/stable/user/install/",
+            "title": "Installation of Requests — Requests 2.34.2 documentation",
+            "snippet": "Installation of Requests"
+          },
+          {
+            "url": "https://www.scrapingbee.com/webscraping-questions/requests/is-requests-a-built-in-python-library/",
+            "title": "Is Requests a Built-In Python Library? - ScrapingBee",
+            "snippet": "Requests"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "arxiv-rag",
+      "lang": "en",
+      "category": "research",
+      "query": "retrieval augmented generation survey arXiv",
+      "official": "arxiv.org",
+      "plugin": {
+        "ok": true,
+        "ms": 1962,
+        "results": [
+          {
+            "url": "https://arxiv.org/abs/2502.08826v3",
+            "title": "Ask in Any Modality: A Comprehensive Survey on Multimodal Retrieval-Augmented Generation",
+            "snippet": "Large Language Models (LLMs) suffer from hallucinations and outdated knowledge due to their reliance on static training data. Retrieval-Augmented Generation (RAG) mitigates these issues by integrating external dynamic information for improved factual grounding. With advances in multimodal learning, Multimodal RAG extends this approach by incorporating multiple modalities such as text, images, audi…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2504.08748v1",
+            "title": "A Survey of Multimodal Retrieval-Augmented Generation",
+            "snippet": "Multimodal Retrieval-Augmented Generation (MRAG) enhances large language models (LLMs) by integrating multimodal data (text, images, videos) into retrieval and generation processes, overcoming the limitations of text-only Retrieval-Augmented Generation (RAG). While RAG improves response accuracy by incorporating external textual knowledge, MRAG extends this framework to include multimodal retrieva…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2402.19473v6",
+            "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+            "snippet": "Advancements in model algorithms, the growth of foundational models, and access to high-quality datasets have propelled the evolution of Artificial Intelligence Generated Content (AIGC). Despite its notable successes, AIGC still faces hurdles such as updating knowledge, handling long-tail data, mitigating data leakage, and managing high training and inference costs. Retrieval-Augmented Generation…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2510.15253v3",
+            "title": "Scaling Beyond Context: A Survey of Multimodal Retrieval-Augmented Generation for Document Understanding",
+            "snippet": "Document understanding is critical for applications from financial analysis to scientific discovery. Current approaches, whether OCR-based pipelines feeding Large Language Models (LLMs) or native Multimodal LLMs (MLLMs), face key limitations: the former loses structural detail, while the latter struggles with context modeling. Retrieval-Augmented Generation (RAG) helps ground models in external da…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2312.10997",
+            "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+            "snippet": "Retrieval-Augmented Generation for Large Language Models: A Survey # Retrieval-Augmented Generation for Large Language Models: A Survey Yunfan Gao Affiliation: Shanghai Research Institute for Intelligent Autonomous Systems, Tongji Universi…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2404.10981",
+            "title": "[2404.10981] A Survey on Retrieval-Augmented Text Generation for Large Language Models",
+            "snippet": "[2404.10981] A Survey on Retrieval-Augmented Text Generation for Large Language Models # Title: A Survey on Retrieval-Augmented Text Generation for Large Language Models Authors: Yizheng Huang, Jimmy Huang > Abstract: Retrieval-Augmented G…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2410.12837",
+            "title": "[2410.12837] A Comprehensive Survey of Retrieval-Augmented Generation (RAG): Evolution, Current Landscape and Future Directions",
+            "snippet": "[2410.12837] A Comprehensive Survey of Retrieval-Augmented Generation (RAG): Evolution, Current Landscape and Future Directions [Submitted on 3 Oct 2024] # Title: A Comprehensive Survey of Retrieval-Augmented Generation (RAG): Evolution, C…"
+          },
+          {
+            "url": "https://arxiv.org/abs/2409.14924",
+            "title": "Retrieval Augmented Generation (RAG) and Beyond: A ...",
+            "snippet": "[2409.14924] Retrieval Augmented Generation (RAG) and Beyond: A Comprehensive Survey on How to Make your LLMs use External Data More Wisely [Submitted on 23 Sep 2024] # Title: Retrieval Augmented Generation (RAG) and Beyond: A Comprehensiv…"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 1
+      }
+    },
+    {
+      "id": "stackoverflow-fetch-proxy",
+      "lang": "en",
+      "category": "qa",
+      "query": "Node.js fetch proxy environment variable Stack Overflow",
+      "official": "stackoverflow.com",
+      "plugin": {
+        "ok": true,
+        "ms": 1964,
+        "results": [
+          {
+            "url": "https://nodejs.org/learn/http/enterprise-network-configuration",
+            "title": "Enterprise Network Configuration | Node.js Learn",
+            "snippet": "This guide covers how to configure Node.js"
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/microsoft-cloud/dev/dev-proxy/how-to/use-dev-proxy-with-nodejs",
+            "title": "Use Dev Proxy with Node.js applications - Dev Proxy",
+            "snippet": "It allows you to specify the proxy"
+          },
+          {
+            "url": "https://stackoverflow.com/questions/37688508/make-node-js-use-http-proxy-https-proxy-and-no-proxy-environment-variables",
+            "title": "http - Make Node.js use http_proxy, https_proxy and no_proxy ...",
+            "snippet": "Unfortunately, the Node.js"
+          },
+          {
+            "url": "https://stackoverflow.com/questions/72306101/make-a-request-in-native-fetch-with-proxy-in-nodejs-18",
+            "title": "Make a request in native Fetch with Proxy in NodeJS 18",
+            "snippet": "In version 18 of Node"
+          },
+          {
+            "url": "https://proxy302.com/guides/nodejs-proxy-setup/",
+            "title": "Node.js Proxy Setup: Environment Variables, fetch, axios and SOCKS5",
+            "snippet": "Use an HTTP or SOCKS5 proxy"
+          },
+          {
+            "url": "https://tools.cooconsbit.com/en/articles/nodejs-fetch-ignores-https-proxy-en",
+            "title": "Node.js Built-in Fetch Doesn't Use HTTPS_PROXY: The Second Pitfall When ...",
+            "snippet": "curl works with proxy"
+          },
+          {
+            "url": "https://quanticdata.io/blog/node-fetch-proxy-setup/",
+            "title": "Node Fetch Proxy Agent: node-fetch and fetch | QuanticData",
+            "snippet": "Node fetch"
+          },
+          {
+            "url": "https://proxyforge.io/blog/nodejs-proxy",
+            "title": "Node.js proxy setup for fetch, undici and axios · ProxyForge",
+            "snippet": "A Node.js"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 3,
+        "uniqueDomains": 7
+      }
+    }
+  ],
+  "summary": {
+    "plugin": {
+      "queries": 30,
+      "answered": 30,
+      "answerRate": 1,
+      "officialHits": 30,
+      "officialRate": 1,
+      "meanUniqueDomains": 5.47,
+      "latencyMs": {
+        "mean": 2263,
+        "p50": 2112,
+        "p95": 2997
+      },
+      "failures": [
+        {
+          "id": "node24",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "node24",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "go125",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "go125",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "typescript59",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "typescript59",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "kubernetes134",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "kubernetes134",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "playwright-locator",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "playwright-locator",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-install",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-install",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "pip-install",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "pip-install",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "pip-install",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "docker-compose",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "docker-compose",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-actions-cache",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-actions-cache",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "mdn-fetch",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "mdn-fetch",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "fastapi-query",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "fastapi-query",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "nextjs-app-router",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "nextjs-app-router",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "vite-config",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "vite-config",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "mcp-tools",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "mcp-tools",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "deepseek-api",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "deepseek-api",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "claude-code-mcp",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "claude-code-mcp",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "node24-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "node24-zh",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-package",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-package",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-repo",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-repo",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "pypi-requests",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "pypi-requests",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "arxiv-rag",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "arxiv-rag",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "stackoverflow-fetch-proxy",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "stackoverflow-fetch-proxy",
+          "failure": "exa: aborted once enough results had arrived"
+        }
+      ]
+    }
+  },
+  "providers": {
+    "plugin": {
+      "label": "dsh-web-search"
+    }
+  }
+}

@@ -33,6 +33,7 @@ import { createFetchProvider } from '../lib/fetch.js';
 import { searchVerticals } from '../lib/verticals.js';
 import { createResearchDefinition, formatResearchValue } from '../lib/research.js';
 import { mergeOfficial, officialLookup } from '../lib/official-sources.js';
+import { arxivLookup, mergeArxiv } from '../lib/arxiv.js';
 import { wrapUntrustedContent } from '../lib/untrusted.js';
 
 const PACKAGE = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
@@ -179,8 +180,13 @@ async function callTool(name, args) {
       timeoutMs: Math.min(timeoutMs, 2_500),
       ...(proxy === undefined ? {} : { proxy }),
     });
+    const arxiv = arxivLookup(query, {
+      limit: 4,
+      timeoutMs: Math.min(timeoutMs, 3_500),
+      ...(proxy === undefined ? {} : { proxy }),
+    });
     const outcome = await search(query, undefined, searchOptions(limit, timeoutMs));
-    const sources = mergeOfficial(outcome.sources, await official);
+    const sources = mergeArxiv(mergeOfficial(outcome.sources, await official), await arxiv);
     return formatSources(query, sources.slice(0, limit), { failures: outcome.failures });
   }
   if (name === 'fetch') {

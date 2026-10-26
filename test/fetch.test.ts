@@ -52,6 +52,22 @@ test('a direct success never touches the tunnel', async () => {
   assert.deepEqual(calls, ['direct']);
 });
 
+test('an arXiv PDF is read through the HTML full-text view', async () => {
+  const seen: string[] = [];
+  const provider = createFetchProvider({ renderJs: 'off' }, {
+    direct: (url) => {
+      seen.push(url);
+      return Promise.resolve(ok(url, '<html><body><main><h1>Paper</h1><p>The abstract and full text.</p></main></body></html>'));
+    },
+    tunnel: () => Promise.reject(new Error('unused')),
+    extract: () => Promise.reject(new Error('unused')),
+    detectProxy: () => Promise.resolve('http://127.0.0.1:7890'),
+  });
+  const result = await provider.fetch({ url: 'https://arxiv.org/pdf/2506.06962' });
+  assert.deepEqual(seen, ['https://arxiv.org/html/2506.06962']);
+  assert.match(result.body.content, /Paper/);
+});
+
 test('a direct failure escalates to the tunnel', async () => {
   const { calls, deps } = ladder({ direct: 'fail', tunnel: 'ok' });
   const provider = createFetchProvider({ renderJs: 'off' }, deps);

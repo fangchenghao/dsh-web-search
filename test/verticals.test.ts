@@ -17,6 +17,7 @@ import {
   MAX_VERTICAL_LIMIT,
   VERTICALS,
   VERTICAL_IDS,
+  arxivSearchQuery,
   parseArxiv,
   parseCrates,
   parseGithub,
@@ -313,6 +314,17 @@ test('build URLs encode the query and carry the requested limit', () => {
   assert.equal(MAX_VERTICAL_LIMIT, 20);
 });
 
+test('arXiv queries use explicit boolean terms and preserve field syntax', () => {
+  assert.equal(
+    arxivSearchQuery('retrieval augmented generation survey'),
+    'all:"retrieval augmented generation" AND all:survey',
+  );
+  assert.equal(arxivSearchQuery('large language model'), 'all:large AND all:language AND all:model');
+  assert.equal(arxivSearchQuery('latest papers on RAG'), 'all:RAG');
+  assert.equal(arxivSearchQuery('all:electron'), 'all:electron');
+  assert.equal(arxivSearchQuery(''), 'all:');
+});
+
 test('a time window switches arXiv to submitted-date order', async () => {
   const calls: string[] = [];
   await searchVerticals('large language model', {
@@ -321,7 +333,7 @@ test('a time window switches arXiv to submitted-date order', async () => {
     fetch: routed({ 'export.arxiv.org': { body: await fixture(CASES.arxiv.normal) } }, calls),
   });
   assert.equal(calls.length, 1);
-  assert.match(calls[0] ?? '', /search_query=all:%22large%20language%20model%22/);
+  assert.match(calls[0] ?? '', /search_query=all%3A%22large%20language%20model%22/);
   assert.match(calls[0] ?? '', /sortBy=submittedDate/);
   assert.match(calls[0] ?? '', /sortOrder=descending/);
 });

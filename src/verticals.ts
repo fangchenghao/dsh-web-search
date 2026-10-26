@@ -425,6 +425,42 @@ export function parsePypi(payload: string, _url: string, limit = MAX_VERTICAL_LI
   return source === undefined ? [] : [source];
 }
 
+/** Paper-filler words that add noise to arXiv's `all:` search. */
+const ARXIV_FILLER = new Set([
+  'a', 'about', 'an', 'and', 'are', 'find', 'for', 'from', 'in', 'is', 'latest',
+  'literature', 'newest', 'of', 'on', 'or', 'paper', 'papers', 'preprint',
+  'preprints', 'recent', 'research', 'review', 'reviews', 'search', 'the', 'to',
+  'with',
+]);
+
+/**
+ * Turn a human query into an arXiv `search_query`.
+ *
+ * `all:retrieval augmented generation survey` is interpreted loosely and can
+ * rank an image-generation paper above actual surveys. arXiv's API honours
+ * explicit boolean operators, so a survey query becomes a quoted topic phrase
+ * plus `all:survey`; other multi-word queries become ANDed terms. A query that
+ * already contains field syntax or booleans is passed through unchanged.
+ *
+ * @param query - the human query.
+ * @returns a value for the `search_query` parameter.
+ */
+export function arxivSearchQuery(query: string): string {
+  const trimmed = query.trim();
+  if (trimmed.length === 0) return 'all:';
+  if (/^(?:all|abs|au|cat|co|id|jr|rn|ti):/iu.test(trimmed) || /\b(?:AND|OR|ANDNOT)\b/u.test(trimmed) || trimmed.includes('"')) {
+    return trimmed;
+  }
+  const words = trimmed.split(/\s+/u).filter((word) => word.length > 0);
+  const survey = words.some((word) => /^(?:survey|surveys|综述)$/iu.test(word));
+  const terms = words.filter((word) => !ARXIV_FILLER.has(word.toLowerCase()) && !/^(?:survey|surveys|综述)$/iu.test(word));
+  if (survey && terms.length > 0) {
+    return `all:"${terms.join(' ')}" AND all:survey`;
+  }
+  const usable = terms.length > 0 ? terms : words;
+  return usable.map((term) => `all:${term}`).join(' AND ');
+}
+
 /**
  * Parse the arXiv Atom feed.
  * @param payload - `export.arxiv.org/api/query` XML.
@@ -1373,7 +1409,7 @@ export const VERTICALS: readonly VerticalSpec[] = [
     accept: 'application/atom+xml',
     defaultOn: true,
     build: (query, limit) =>
-      `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=${limit}`,
+      `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(arxivSearchQuery(query))}&start=0&max_results=${limit}`,
     parse: parseArxiv,
   },
   {
@@ -1800,7 +1836,7 @@ export async function searchVerticals(
       try {
         const built = spec.build(trimmed, limit);
         const url = spec.id === 'arxiv' && options.timeRange !== undefined && options.timeRange !== 'off'
-          ? `${built.replace(/search_query=all:([^&]*)/u, 'search_query=all:%22$1%22')}&sortBy=submittedDate&sortOrder=descending`
+          ? `${built.replace(/search_query=[^&]*/u, `search_query=${encodeURIComponent(`all:"${trimmed}"`)}`)}&sortBy=submittedDate&sortOrder=descending`
           : built;
         const payload = await fetchPayload(spec, url, options, timeoutMs);
         const sources = spec.parse(payload, url, limit);

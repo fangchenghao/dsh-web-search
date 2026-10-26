@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.23.0
+
+### Added
+- **Explicit arXiv research queries.** `web_search` and `search_many` route a
+  query that names arXiv with paper/survey intent to the arXiv Atom API, in
+  parallel with the ordinary fan-out. The lookup is capped at 3.5 s, never
+  replaces ordinary rows when it fails, and returns stable `arxiv.org/abs/`
+  URLs. `arXiv:1706.03762` resolves the paper by id.
+- **Boolean arXiv queries.** A survey query becomes a quoted topic phrase plus
+  `all:survey`; other multi-word queries become ANDed terms. This fixes the
+  image-generation paper that used to rank above actual RAG surveys for
+  `retrieval augmented generation survey arXiv`. Explicit field syntax and
+  boolean expressions are passed through unchanged.
+- **arXiv PDFs are readable.** A `/pdf/<id>` URL is transparently read through
+  arXiv's HTML full-text view instead of failing as binary, including versioned
+  URLs and old-style archive identifiers. Plain arXiv abstract pages now parse
+  correctly when the whole document is wrapped in a container whose class is
+  named `footer` (`div.flex-wrap-footer` on the live site).
+
+### Fixed
+- **Empty arXiv abstract pages.** The pruning pass no longer drops a wrapper
+  that contains a `<main>` or `<article>` merely because its class mentions
+  `footer`; site chrome inside the wrapper is still removed by its own tag and
+  attributes.
+
+### Documentation
+- **Research path documented.** The README and Chinese README explain the arXiv
+  routing/PDF behavior and update the test count to 687 across 56 files. The
+  public 30-query follow-up now records 30/30 official hits, mean 2263 ms and
+  p95 2997 ms; the older 0.22.0 follow-up remains checked in as historical
+  evidence.
+
+**Test suite: 687 tests across 56 files** (686 pass, 1 skipped).
+
 ## 0.22.0
 
 ### Changed

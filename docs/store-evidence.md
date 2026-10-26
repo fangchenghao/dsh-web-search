@@ -23,7 +23,7 @@ Only `0.2.1-rc.2` is declared, because that is the version actually exercised.
 ## Environment
 
 - macOS (arm64), DeepSeek Harness **0.2.1-rc.2** (`dsh --version`), Node 22.18+.
-- Runtime artifacts: `lib/` is committed to this repository (82 files, 932 KiB),
+- Runtime artifacts: `lib/` is committed to this repository (86 files, 952 KiB),
   so the fixed commit's tree contains `lib/index.js` and `lib/index.d.ts`.
 - Disposable profile for the destructive steps: a fresh `DSH_HOME` created with
   `mktemp -d`; the real `~/.dsh` was never written to. Bundled pnpm 11.28.5.
