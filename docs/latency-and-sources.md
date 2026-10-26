@@ -140,7 +140,7 @@ variable upstream latency, and the new official lookup adds work to release
 queries; the 5 s cap improves the p95 but does not make the average as fast as
 the original clean network window. The remaining official miss is the arXiv
 query, unrelated to the three issues above. Raw data:
-[`results-2026-10-26-plugin-after.json`](../bench/compare30/results-2026-10-26-plugin-after.json).
+[`results-2026-10-26-plugin-after.json`](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json).
 
 The five-query table is the targeted result for the reported Chinese tail; the
 30-query table is the honest full-run result, including the regression in mean.

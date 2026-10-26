@@ -127,7 +127,7 @@ The original clean sweep above is kept unchanged as the baseline. A later
 plugin-only run after the tail-tolerant early release, a 3 s CJK deadline and
 the Rust official-release lookup is also checked in:
 
-- [plugin-only follow-up](../bench/compare30/results-2026-10-26-plugin-after.json)
+- [plugin-only follow-up](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/compare30/results-2026-10-26-plugin-after.json)
 - [latency and sources note](latency-and-sources.md)
 
 The five reported Chinese release queries went from 3502–3506 ms each to
