@@ -13,6 +13,12 @@ dsh plugin --profile defaults add @fffangchenghao/dsh-web-search@latest
 Use your profile name instead of `defaults` if you run a named profile. Restart
 DeepSeek Harness once after installation. No API key is required.
 
+On Windows the command is identical in PowerShell; the plugin has no native
+addon and needs only Node 22.18+. If `dsh` is not on `PATH`, use the CLI from
+the DSH installation directory or install the npm package from Settings. The
+plugin reads the Windows system proxy from Internet Settings automatically;
+for a PAC-only proxy, set `proxy` or `DSH_WEB_SEARCH_PROXY` explicitly.
+
 Verify in **Settings → Plugins → Web Search**:
 
 - the engine health section can run a one-probe-per-engine test;

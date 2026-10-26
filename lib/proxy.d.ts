@@ -101,7 +101,7 @@ export declare function proxyFromSystem(): Promise<string | undefined>;
  * Decide which proxy to use, if any.
  *
  * Order: an explicit plugin setting, the cached decision, the environment, then
- * the macOS system proxy. The system proxy is only honoured when its port
+ * the system proxy (macOS `scutil`, Windows Internet Settings). The system proxy is only honoured when its port
  * accepts a connection, so turning the tunnel off degrades to a direct request
  * instead of breaking search. The decision is cached for a minute.
  *

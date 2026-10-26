@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-687%20tests-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/tests-690%20tests-brightgreen" alt="测试">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -26,7 +26,8 @@
 - **一个包，两种运行时。** DSH 里是原生插件和唯一的 `web_tools` 入口；Claude Code、Codex 等 MCP 客户端通过零依赖的 stdio server 使用同一套免密钥搜索，提供 `search`、`fetch`、`research`、`domain_search`。见 [跨 Agent MCP](docs/cross-agent.md)。
 - **公开测量，也公开输的地方。** 30 条中英查询对比记录可用性、延迟、独立域名、官方域名命中与每一条失败；对比对象是免 key Firecrawl 和匿名 Exa。这里 Exa 更快，本插件返回的独立域名更多；两条对比路径都未使用 key。方法和原始结果在 [docs/comparison.md](docs/comparison.md)；Exa 架构差异、中文 3 秒预算和 Rust 官方源见 [延迟与官方源](docs/latency-and-sources.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；arXiv 的 PDF 链接是有意保留的例外，会改读 HTML 全文；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
-- **56 个测试文件、687 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **Windows 是一等宿主。** 纯 ESM，没有原生扩展或安装脚本；会自动读取 Windows 的 Internet 设置代理，完整测试套件也在 `windows-latest` CI 上跑通。安装见[Windows 小节](#windows)。
+- **56 个测试文件、690 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -43,7 +44,7 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 | 免 key 路径 | 8 个引擎，全部免 key | ~30 个免费/付费引擎链 | 默认 5 个（seam、Exa、DDG、Bing、Jina） | Firecrawl + Keenable 免 key 默认 | 1 个 AnySearch 匿名 API |
 | 专门数据源 | 34 个（默认开 8 个） | 41 个 | 平台注册表，不是垂直源目录 | 网页 + X，无垂直源目录 | AnySearch 的垂直 API |
 | 面向模型的工具 | 1 个（`web_tools`，8 个 action）+ 4 个 MCP 工具 | ~10 个 | 2 个（`web_index` / `web_call`，20 个动作） | 原生搜索/抓取 + skill | 5 个 |
-| 测试 | 56 文件 / 687 用例，本地实测 | `package.json` 无测试脚本 | 774 单元 + 94 bench，自报 | 配了 Vitest，未公布数量 | 配了 Vitest，未公布数量 |
+| 测试 | 56 文件 / 690 用例，本地实测 | `package.json` 无测试脚本 | 774 单元 + 94 bench，自报 | 配了 Vitest，未公布数量 | 配了 Vitest，未公布数量 |
 | GitHub stars | 0 | 620 | 77 | 836 | 663 |
 | npm 近一月下载 | 1,087 | 52,436 | 6,420 | 43,151 | 9,251 |
 | npm 解包大小 | 1.2 MB | 0.70 MB | 3.05 MB | 0.51 MB | 0.27 MB |
@@ -53,11 +54,11 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 - **功能深度：中上。** `dsh-free-search` 引擎和垂直源更多；
   `dsh-web-search-pro` 的证据/排序管线和平台后端更深；`modsearch` 的跨宿主
   能力更强。
-- **工程质量与可验证性：接近第一梯队。** 687 个本地测试、可重放的排序基准、
+- **工程质量与可验证性：接近第一梯队。** 690 个本地测试、可重放的排序基准、
   明确的安全边界、只有 1 个运行时依赖，同时体积远小于 Playwright 重型方案。
 - **免 key + 官方源纠错：最强卖点。** Chrome、PostgreSQL、AI Act 的官方路径
   和 34 个垂直源，不是其他插件普遍具备的。
-- **采用度与成熟度：这个样本里的后段。** 公开 npm 已是 0.23.0，与这棵树一致；但 GitHub 仓库创建 4 天、0 stars，
+- **采用度与成熟度：这个样本里的后段。** 公开 npm 已是 0.24.0，与这棵树一致；但 GitHub 仓库创建 4 天、0 stars，
   还缺少独立采用。
 - **工具面的经济性：现在有竞争力。** 0.20.x 只暴露一个 `web_tools` + 8 个
   action，接近 `dsh-web-search-pro` 的 2 工具 + 20 动作；旧的八个工具名保留为
@@ -459,6 +460,22 @@ profile 更新器。插件本身从不 fork/exec `pnpm`；手动按钮只是请 
 ```sh
 dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
 ```
+
+### Windows
+
+插件没有原生扩展，Node 22.18 以上即可。PowerShell 里的安装命令完全一样：
+
+```powershell
+dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
+```
+
+如果 `dsh` 不在 `PATH`，用 DSH 安装目录里的 CLI 执行同一条命令，或者在
+Settings 的插件管理器里安装这个 npm 包。安装后重启一次 DSH。
+
+插件会读取 Windows「Internet 设置」里的系统代理（Clash 等客户端写入的
+`ProxyEnable` / `ProxyServer`），也会回退到 `HTTPS_PROXY` / `HTTP_PROXY` /
+`DSH_WEB_SEARCH_PROXY`。只提供 PAC 的代理不会被执行，请显式填写 `proxy`
+设置。缓存位置是 `%USERPROFILE%\.dsh\cache\dsh-web-search\cache.json`。
 
 下面是从源码 checkout 开发的路径。
 

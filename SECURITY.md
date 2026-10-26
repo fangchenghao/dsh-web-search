@@ -40,6 +40,8 @@ Outbound TCP/HTTPS only, plus one local system query described below.
 | `api.anysearch.com` | optional: search and page extraction, **only when an AnySearch key is configured** |
 | your configured proxy | HTTP `CONNECT` tunnel for the hosts above |
 
+On Windows the system proxy is read locally from `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`; that registry read is not network traffic.
+
 `web_fetch` and `read_page` reach **any** HTTP(S) URL the model asks for; that is
 their purpose. `engine_test` sends its probe query to the engines it tests, just
 like a normal search; `advanced_search` is an ordinary search with a per-call
@@ -61,14 +63,17 @@ rungs failed. Nothing else is transmitted.
 
 ## Processes
 
-The plugin spawns exactly one helper process:
+The plugin spawns at most one system-proxy helper, selected by OS:
 
 - `/usr/sbin/scutil --proxy` — macOS only, when `useProxy` is on, no explicit
-  proxy is configured, and the system proxy has to be discovered. The argv is
-  fixed (no shell, no interpolation, no model- or user-controlled arguments),
-  stdout is parsed locally with fixed regexes, stderr is discarded, and the
-  probe is capped at 2 s before the child is killed. It reads nothing but the
-  system proxy settings.
+  proxy is configured, and the system proxy has to be discovered.
+- `%SystemRoot%\System32\reg.exe query HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings` — Windows only under the same conditions.
+  The absolute path avoids a hijacked `PATH`; the key and value names are fixed.
+
+Both probes use a fixed argv (no shell, no interpolation, no model- or
+user-controlled arguments), parse stdout locally with fixed regexes, discard
+stderr, and are capped at 2 s before the child is killed. They read nothing but
+the system proxy settings.
 
 The optional renderer is a **library**, not a command: when the user installed
 `playwright` or `playwright-core` and enabled `renderJs`, the plugin imports it

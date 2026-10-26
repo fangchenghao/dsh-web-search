@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.24.0
+
+### Added
+- **Windows system-proxy detection.** When no explicit proxy or proxy
+  environment variable is set, the plugin reads `ProxyEnable` / `ProxyServer`
+  from the current user's Windows Internet Settings (`HKCU\...\Internet
+  Settings`) with a fixed, absolute `reg.exe` probe. A bare `host:port` and the
+  `http=...;https=...` map are both accepted; SOCKS-only and PAC-only settings
+  are left alone rather than guessed. macOS `scutil` behavior is unchanged.
+- **Windows CI.** The GitHub Actions matrix now includes `windows-latest`; the
+  install, typecheck, full test suite, build and entry-point checks all pass on
+  Windows, macOS and Ubuntu (Node 24).
+
+### Fixed
+- **Cross-platform test command.** `npm test` now passes a quoted glob to
+  Node's test runner instead of relying on shell expansion, which cmd.exe does
+  not perform.
+- **Windows cache path test.** The cache-path assertion uses the platform
+  temporary directory instead of a hard-coded `/tmp` path.
+
+### Documentation
+- **Windows install notes.** README, Chinese README and the quickstart document
+  the identical PowerShell command, the no-native-addon requirement, automatic
+  system-proxy detection, PAC-only fallback and the `%USERPROFILE%` cache path.
+- **Security boundary updated.** [SECURITY.md](SECURITY.md) now lists the
+  Windows registry probe alongside the macOS `scutil` probe and records its
+  fixed argv, timeout and data access.
+
+**Test suite: 690 tests across 56 files** (689 pass, 1 skipped).
+
 ## 0.23.0
 
 ### Added

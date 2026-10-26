@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/tests-687%20tests-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-690%20tests-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="engines">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -27,7 +27,8 @@
 - **One package, two runtimes.** DSH gets the native plugin and one `web_tools` entry; Claude Code, Codex and other MCP clients get the same keyless search through a dependency-free stdio server with `search`, `fetch`, `research` and `domain_search`. See [Cross-agent MCP](docs/cross-agent.md).
 - **Measured in public, including the losses.** A 30-query bilingual comparison records availability, latency, unique domains, official-domain presence and every failure against keyless Firecrawl and anonymous Exa. The follow-up documents the Exa architecture difference, the 3 s CJK budget and the Rust official-source lookup. Exa is faster here; this plugin returns more distinct domains. Both test arms were keyless. The method and raw results are in [docs/comparison.md](docs/comparison.md) and a [public gist](https://gist.github.com/fangchenghao/3db9838fa98928435c1c2df38202c373).
 - **Fetching admits failure.** Binary documents and empty 200 responses are rejected by name (`SEARCH_UNSUPPORTED`, `SEARCH_EMPTY`) instead of being returned as noise; arXiv PDF links are the deliberate exception and are read through the HTML full-text view; the direct → tunnel → render → extract ladder shares one 25 s budget and stops when there is no time left. The budget is per request — there is a regression test for exactly that.
-- **687 tests across 56 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
+- **Windows is a first-class host.** Pure ESM, no native addon or install script; the system proxy is discovered from Windows Internet Settings, and the full suite runs on a `windows-latest` CI runner. See [Install on Windows](#windows).
+- **690 tests across 56 files**, a committed `lib/`, declared `engines.dsh` / `engines.node`, and a [SECURITY.md](SECURITY.md) that lists every process, host and file the plugin touches.
 - **Bilingual documentation.** This README and [中文说明](README.zh-CN.md) are maintained side by side.
 
 ![Ranking baseline and parameter sweep](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -44,7 +45,7 @@ The web-search corner of the DSH plugin ecosystem is crowded. A fresh snapshot
 | Key-free path | 8 engines, all key-free | ~30-engine free/paid chain | 5 defaults (seam, Exa, DDG, Bing, Jina) | Firecrawl + Keenable keyless defaults | 1 anonymous AnySearch API |
 | Dedicated vertical sources | 34 (8 on by default) | 41 | platform registry, not a vertical catalog | web + X, no vertical catalog | vertical API behind AnySearch |
 | Model-facing tools | 1 (`web_tools`, 8 actions) + 4 MCP tools | ~10 | 2 (`web_index` / `web_call`, 20 actions) | native search/fetch + skill | 5 |
-| Tests | 56 files / 687 cases, locally verified | no test script in `package.json` | 774 unit + 94 bench, self-reported | Vitest configured; count not published | Vitest configured; count not published |
+| Tests | 56 files / 690 cases, locally verified | no test script in `package.json` | 774 unit + 94 bench, self-reported | Vitest configured; count not published | Vitest configured; count not published |
 | GitHub stars | 0 | 620 | 77 | 836 | 663 |
 | npm downloads, last month | 1,087 | 52,436 | 6,420 | 43,151 | 9,251 |
 | npm unpacked size | 1.2 MB | 0.70 MB | 3.05 MB | 0.51 MB | 0.27 MB |
@@ -55,7 +56,7 @@ read is:
 - **Feature depth:** upper-middle. `dsh-free-search` has more engines and
   verticals; `dsh-web-search-pro` has a deeper evidence/ranking pipeline and far
   more platform backends; `modsearch` is the stronger cross-host bridge.
-- **Engineering and verification:** near the top. 687 local tests, a replayable
+- **Engineering and verification:** near the top. 690 local tests, a replayable
   ranking benchmark, declared security boundaries and one runtime dependency
   put it alongside the best-maintained entries, while remaining much smaller
   than the Playwright-heavy option.
@@ -63,7 +64,7 @@ read is:
   Chrome, PostgreSQL and AI Act paths and the 34-source vertical layer are not
   common in the other plugins.
 - **Adoption and maturity:** bottom third of this sample. The public npm release
-  is 0.23.0, matching this tree, but the GitHub repository is four days old
+  is 0.24.0, matching this tree, but the GitHub repository is four days old
   with no stars and little independent adoption.
 - **Tool-surface economy:** now competitive. 0.20.x exposes one `web_tools`
   entry with eight actions, close to `dsh-web-search-pro`'s two tools with 20
@@ -488,6 +489,25 @@ a `link:` if you want the profile updater to manage it:
 ```sh
 dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
 ```
+
+### Windows
+
+The package has no native addon; Node 22.18+ is enough. In PowerShell the
+install command is unchanged:
+
+```powershell
+dsh plugin --profile web add @fffangchenghao/dsh-web-search@latest
+```
+
+If `dsh` is not on `PATH`, run the same command through the DSH installation's
+CLI, or install the npm package from the plugin manager in Settings. Restart
+DSH once after installation.
+
+The plugin reads the Windows system proxy from Internet Settings (the same
+`ProxyEnable` / `ProxyServer` values Clash and other clients set) and falls
+back to `HTTPS_PROXY` / `HTTP_PROXY` / `DSH_WEB_SEARCH_PROXY`. A PAC-only proxy
+is not executed; set the `proxy` setting explicitly for that case. The cache
+lives at `%USERPROFILE%\.dsh\cache\dsh-web-search\cache.json`.
 
 The rest of this section is the source-checkout development path.
 
