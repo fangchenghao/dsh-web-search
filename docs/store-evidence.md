@@ -29,7 +29,7 @@ Only `0.2.1-rc.2` is declared, because that is the version actually exercised.
   `mktemp -d`; the real `~/.dsh` was never written to. Bundled pnpm 11.28.5.
 - **Windows CI:** GitHub Actions `windows-latest`, Node 24. Install, typecheck,
   the full test suite, build and the entry-point import all pass. Run:
-  https://github.com/fangchenghao/dsh-web-search/actions/runs/40354223874
+  https://github.com/fangchenghao/dsh-web-search/actions/runs/40357774607
   (the matrix also runs on macOS and Ubuntu). This is a CI environment, not a
   claim about every Windows terminal or proxy client.
 
