@@ -22,12 +22,24 @@ import type { EngineHealth } from './health.ts';
  * runs as a first choice or only when no primary answered.
  */
 export declare const HOSTS: readonly HostSpec[];
+/**
+ * Whether a tier may release before its soft deadline.
+ *
+ * `limit` and `needed` are intentionally separate: eight rows from one engine
+ * are still a single-engine answer, while eight rows from two engines are a
+ * genuine cross-engine result. Counting every region here is what prevents a
+ * slow lead engine from holding a query open after another region supplied
+ * enough rows.
+ */
+export declare function tierReleaseReady(available: number, contributors: number, limit: number, needed: number): boolean;
 /** Options for {@link search}: the seam's budget plus the plugin's runtime. */
 export interface EngineRunOptions extends SearchOptions {
     /** AnySearch Bearer token; empty or absent means anonymous access. */
     anysearchApiKey?: string;
     /** AnySearch vertical domain, such as `finance` or `finance.us_stock`. */
     anysearchDomain?: string;
+    /** Optional Firecrawl Bearer token; absent keeps the keyless fallback. */
+    firecrawlApiKey?: string;
     /** Ranking knobs, falling back to the documented defaults. */
     rank?: RankOptions;
     /** Failure classes that may trigger the fallback tier; absent means all. */
@@ -95,13 +107,13 @@ export interface SearchTrace {
 /**
  * Apply per-run configuration to an engine definition.
  *
- * Only AnySearch is configurable today: it authenticates with a Bearer token and
- * can be pointed at one of its vertical domains. Returning a copy keeps the
- * exported `HOSTS` catalogue static, so a stale credential can never leak into
- * the next run through a mutated descriptor.
+ * AnySearch can be pointed at one of its vertical domains; both AnySearch and
+ * Firecrawl authenticate with an optional Bearer token. Returning a copy keeps
+ * the exported `HOSTS` catalogue static, so a stale credential can never leak
+ * into the next run through a mutated descriptor.
  * @param host - the engine definition from `HOSTS`.
- * @param options - the run options carrying the credential and domain.
+ * @param options - the run options carrying credentials and the domain.
  * @returns the engine definition to use for this run.
  */
-export declare function resolveHost(host: HostSpec, options: Pick<EngineRunOptions, 'anysearchApiKey' | 'anysearchDomain'>): HostSpec;
+export declare function resolveHost(host: HostSpec, options: Pick<EngineRunOptions, 'anysearchApiKey' | 'anysearchDomain' | 'firecrawlApiKey'>): HostSpec;
 export declare function search(query: string, signal: AbortSignal | undefined, options: EngineRunOptions): Promise<SearchOutcome>;

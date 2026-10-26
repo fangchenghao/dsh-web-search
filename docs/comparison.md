@@ -121,6 +121,22 @@ The script writes a JSON file next to a Markdown report. The three raw files are
 immediately after sweep 1 to test repeatability, which is why Firecrawl's quota
 failed. A single sweep is a snapshot, not a permanent ranking.
 
+## Follow-up after the 0.21.1 baseline
+
+The original clean sweep above is kept unchanged as the baseline. A later
+plugin-only run after the tail-tolerant early release, a 3 s CJK deadline and
+the Rust official-release lookup is also checked in:
+
+- [plugin-only follow-up](../bench/compare30/results-2026-10-26-plugin-after.json)
+- [latency and sources note](latency-and-sources.md)
+
+The five reported Chinese release queries went from 3502–3506 ms each to
+2565–3012 ms, and all five now hit their expected official domain. The full
+30-query follow-up still has one official miss (arXiv) and its mean was
+3768 ms under a slower network window, so this is not presented as a universal
+latency win. Exa remains faster; the follow-up only removes the specific
+AnySearch fan-out wait and the Rust source miss.
+
 ## Bottom line
 
 Use Exa when latency dominates. Use Firecrawl only with a quota/health strategy;

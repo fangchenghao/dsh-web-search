@@ -115,6 +115,10 @@ export const Config = z.object({
     .string()
     .default('')
     .description('只搜某一类专业内容（如 finance 财经、academic 学术、code 代码）。要专查某类才填；日常搜索留空。').volatile(),
+  firecrawlApiKey: z
+    .string()
+    .default('')
+    .description('Firecrawl 通行证（可选）：留空仍可匿名调用兜底源，但匿名配额很紧，连续查询会返回 429；填自己的 key 后 Firecrawl 兜底更稳定。不填不影响主搜索引擎。').volatile(),
   baseCooldownMs: z.natural().default(300000).description('搜索引擎说“你查得太频繁了”后，先歇多久（毫秒）。歇太久会少一个引擎，太短易被再拒；保持 300000（5 分钟）即可。').volatile(),
   maxCooldownMs: z.natural().default(1800000).description('它反复被拒时，最长让它歇多久（毫秒），也就是等待一步步加长的封顶值。一般不用改；保持 1800000（30 分钟）即可。').volatile(),
   domainSources: z
@@ -199,6 +203,8 @@ export interface ResolvedConfig {
   anysearchApiKey: string;
   /** AnySearch vertical domain, or an empty string for the open web. */
   anysearchDomain: string;
+  /** Optional Firecrawl credential for the quota-limited fallback. */
+  firecrawlApiKey: string;
   /** Ranking knobs. */
   rank: RankOptions;
   /** Cache lifetime in milliseconds. */
@@ -280,6 +286,7 @@ export function resolveConfig(config: ConfigInput | undefined, callLimit: number
     fallbackOn: [...settings.fallbackOn],
     anysearchApiKey: settings.anysearchApiKey.trim(),
     anysearchDomain: settings.anysearchDomain.trim(),
+    firecrawlApiKey: settings.firecrawlApiKey.trim(),
     domainSourceIds: domainSources.length > 0 ? domainSources : [...DEFAULT_VERTICAL_IDS],
     domainLimit: settings.domainLimit,
     domainTimeoutMs: settings.domainTimeoutMs,

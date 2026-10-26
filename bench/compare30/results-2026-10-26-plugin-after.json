@@ -1,0 +1,2134 @@
+{
+  "generatedAt": "2026-10-26T06:47:10.082Z",
+  "proxy": "http://127.0.0.1:7890",
+  "limit": 8,
+  "queries": [
+    {
+      "id": "node24",
+      "lang": "en",
+      "category": "release",
+      "query": "Node.js 24 release notes",
+      "official": "nodejs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2662,
+        "results": [
+          {
+            "url": "https://nodejs.org/en/blog/release/v24.0.0",
+            "title": "Node.js — Node.js 24.0.0 (Current)",
+            "snippet": "2025-05-06, Version 24.0.0 (Current), @RafaelGSS and @juanarbol We're excited to announce the release"
+          },
+          {
+            "url": "https://nodejs.org/en/about/previous-releases",
+            "title": "Node.js — Node.js Releases",
+            "snippet": "Major Node.js"
+          },
+          {
+            "url": "https://github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V24.md",
+            "title": "node/doc/changelogs/CHANGELOG_V24.md at main · nodejs/node",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://github.com/nodejs/node/releases",
+            "title": "Releases · nodejs/node - GitHub",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://versionlog.com/nodejs/24/",
+            "title": "Node.js 24 (LTS) - What's New, Support Lifecycle & EOL",
+            "snippet": "Discover what's new in Node.js"
+          },
+          {
+            "url": "https://docs.redhat.com/en/documentation/red_hat_build_of_node.js/24/html-single/release_notes_for_node.js_24/index",
+            "title": "Release Notes for Node.js 24 | Red Hat build of Node.js | 24 | Red Hat ...",
+            "snippet": "Node.js"
+          },
+          {
+            "url": "https://updatify.io/releases/nodejs",
+            "title": "Node.js release notes - Product release notes & changelog tool",
+            "snippet": "Release"
+          },
+          {
+            "url": "https://www.nodechangelog.com/",
+            "title": "Node.js Changelog - Latest Release Notes",
+            "snippet": "A comprehensive summary of Node.js"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "postgres18",
+      "lang": "en",
+      "category": "release",
+      "query": "PostgreSQL 18 release notes",
+      "official": "postgresql.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2843,
+        "results": [
+          {
+            "url": "https://www.postgresql.org/support/versioning/",
+            "title": "PostgreSQL versioning policy: major 18 (18.6), supported",
+            "snippet": "Official PostgreSQL versioning policy: latest major 18; current minor 18.6; status supported; first release September 25, 2025; final release (EOL) November 14, 2030."
+          },
+          {
+            "url": "https://www.postgresql.org/docs/release/",
+            "title": "PostgreSQL: Release Notes",
+            "snippet": "PostgreSQL: Release Notes # Release Notes Below is the complete archive of release notes for every version of PostgreSQL. PostgreSQL 18 - 18.6 - 18.4 - 18.3 - 18.2 - 18.1 - 18.0 PostgreSQL 17 - 17.11 - 17.10 -"
+          },
+          {
+            "url": "https://www.postgresql.org/docs/release/18.0/",
+            "title": "PostgreSQL: Release Notes",
+            "snippet": "PostgreSQL: Release Notes ## PostgreSQL 18.0 | E.6. Release 18 | | | | | | --- | --- | --- | --- | --- | | Prev | Up | Appendix E. Release Notes | Home | Next | ## E.6. Release 18 # E.6.1. Overview E.6.2. Migration to Version 18 E.6.3. Cha…"
+          },
+          {
+            "url": "https://www.postgresql.org/docs/18/release-18.html",
+            "title": "PostgreSQL: Documentation: 18: E.5. Release 18",
+            "snippet": "E.6. Release 18 # Release date: 2025-09-25 ### E.6.1. Overview # PostgreSQL 18 contains many new features and enhancements, including: An asynchronous I/O (AIO) subsystem that can improve performance of sequential scans, bitmap heap scans,…"
+          },
+          {
+            "url": "https://www.postgresql.org/about/news/postgresql-18-released-3142/",
+            "title": "PostgreSQL 18 Released!",
+            "snippet": "PostgreSQL: PostgreSQL 18 Released! # PostgreSQL 18 Released! Posted on 2025-09-25 by PostgreSQL Global Development Group The PostgreSQL Global Development Group today announced the release of PostgreSQL 18, the latest version of the world…"
+          },
+          {
+            "url": "https://www.postgresql.org/about/press/presskit18/en/",
+            "title": "PostgreSQL: PostgreSQL 18 Press Kit",
+            "snippet": "PostgreSQL 18 Released! September 25, 2025 - The PostgreSQL Global Development Group today announced the release of PostgreSQL 18, the latest version of the world's most advanced open source database. PostgreSQL 18 improves performance for…"
+          },
+          {
+            "url": "https://www.postgresql.org/docs/release/18.1/",
+            "title": "PostgreSQL 18.1 Release Notes",
+            "snippet": "E.5. Release 18.1 # E.5.1. Migration to Version 18.1 E.5.2. Changes Release date: 2025-11-13 This release contains a variety of fixes from 18.0. For information about new features in major release 18, see Section E.6."
+          },
+          {
+            "url": "https://www.postgresql.org/docs/release/18.2/",
+            "title": "PostgreSQL 18.2 Release Notes",
+            "snippet": "PostgreSQL: Release Notes ## PostgreSQL 18.2 | E.4. Release 18.2 | | | | | | --- | --- | --- | --- | --- | | Prev | Up | Appendix E. Release Notes | Home | Next | ## E.4. Release 18.2 # E.4.1. Migration to Version 18.2 E.4.2. Changes Relea…"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 1
+      }
+    },
+    {
+      "id": "python314",
+      "lang": "en",
+      "category": "release",
+      "query": "Python 3.14 release notes",
+      "official": "python.org",
+      "plugin": {
+        "ok": true,
+        "ms": 5002,
+        "results": [
+          {
+            "url": "https://docs.python.org/zh-cn/",
+            "title": "Python 3.15.1 文档",
+            "snippet": "1 天前 · Python 开发者指南 有关如何为 Python 做贡献的信息 Python 打包用户指南 与 Python 打包有关的资源 音频/视频讲座 来自社区的播客 …"
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/3/tutorial/index.html",
+            "title": "Python 教程 — Python 3.15.1 文档",
+            "snippet": "1 天前 · 准备好一个 Python 解释器随时上手练习会很有帮助，但所有的示例都是完备自足的，因此本教程也可以离线阅读。 有关标准对象与模 …"
+          },
+          {
+            "url": "https://www.python.org/",
+            "title": "Welcome to Python .org",
+            "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+          },
+          {
+            "url": "https://www.python.org/downloads/",
+            "title": "Download Python | Python .org",
+            "snippet": "Starting with the Python 3.11.0, Python 3.10.7, and Python 3.9.14 releases, CPython release artifacts are signed with Sigstore. See our …"
+          },
+          {
+            "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+            "title": "简介 - Python教程 - 廖雪峰的官方网站",
+            "snippet": "2026年10月6日 · 用Python可以做什么？ 可以做日常任务，比如自动备份你的MP3；可以做网站，很多著名的网站包括YouTube就是Python …"
+          },
+          {
+            "url": "https://www.runoob.com/python/python-tutorial.html",
+            "title": "Python 基础教程 | 菜鸟教程",
+            "snippet": "Python 基础教程 Python 是一种解释型、面向对象、动态数据类型的高级程序设计语言。 Python 由 Guido van Rossum 于 1989 年底发明， …"
+          },
+          {
+            "url": "https://liaoxuefeng.com/books/python/basic/index.html",
+            "title": "Python 基础 - Python 教程 - 廖雪峰的官方网站",
+            "snippet": "2026年10月6日 · Python也不例外。 Python的语法比较简单，采用缩进方式，写出来的代码就像下面的样子： ... 以 # 开头的语句是注释，注 …"
+          },
+          {
+            "url": "https://blog.csdn.net/sensen_kiss/article/details/141940274",
+            "title": "Python 安装与环境配置全程详细教学（包含Windows版和 ...",
+            "snippet": "2026年9月20日 · 文章浏览阅读10w+次，点赞1k次，收藏1.7k次。本文详细讲解Windows和Mac平台下Python的下载、安装、环境变量配置及 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "rust190",
+      "lang": "en",
+      "category": "release",
+      "query": "Rust 1.90 release notes",
+      "official": "blog.rust-lang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2610,
+        "results": [
+          {
+            "url": "https://blog.rust-lang.org/2025/09/18/Rust-1.90.0/",
+            "title": "Announcing Rust 1.90.0 - Rust Blog",
+            "snippet": "Official Rust 1.90.0 release notes. ## Language - Split up the `unknown_or_malformed_diagnostic_attributes` lint. This lint has been split up into four finer-grained lints, with `unknown_or_malformed_diagnostic_attributes` now being the lint group that contains these lints: 1. `unknown_diagnostic_attributes`: unknown to the current compiler 2. `misplaced_diagnostic_attributes`: placed on the wrong item 3. `malformed_…"
+          },
+          {
+            "url": "https://doc.rust-lang.org/stable/releases.html",
+            "title": "Rust Release Notes",
+            "snippet": "Refer to Rust's"
+          },
+          {
+            "url": "https://doc.rust-lang.org/beta/releases.html",
+            "title": "Rust Release Notes",
+            "snippet": "Note"
+          },
+          {
+            "url": "https://social.rust-lang.org/@rust/115226918528405945",
+            "title": "Rust Language: \"Rust 1.90.0 has been released!…\" - Rust Language Mastodon",
+            "snippet": "Rust"
+          },
+          {
+            "url": "https://blog.rust-lang.org/releases/",
+            "title": "The Rust Release Announcements",
+            "snippet": "This is a subset of the main Rust"
+          },
+          {
+            "url": "https://releases.rs/docs/1.90.0/",
+            "title": "1.90.0 | Rust Changelogs - releases.rs",
+            "snippet": "Allow volatile access to non- Rust"
+          },
+          {
+            "url": "https://releases.rs/",
+            "title": "Rust Versions | Rust Changelogs",
+            "snippet": "Rust"
+          },
+          {
+            "url": "https://versionlog.com/rust/1.90/",
+            "title": "Rust 1.90 - What's New, Support Lifecycle & EOL - VersionLog",
+            "snippet": "Discover what's new in Rust"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "go125",
+      "lang": "en",
+      "category": "release",
+      "query": "Go 1.25 release notes",
+      "official": "go.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 4208,
+        "results": [
+          {
+            "url": "https://go.dev/doc/go1.25",
+            "title": "Go 1.25 Release Notes - The Go Programming Language",
+            "snippet": "Go 1.25 Release Notes - The Go Programming Language ## Introduction to Go 1.25 The latest Go release, version 1.25, arrives in August 2025, six months after Go 1.24. Most of its changes are in the implementation of the toolchain, runtime,…"
+          },
+          {
+            "url": "https://go.dev/blog/go1.25",
+            "title": "Go 1.25 is released - The Go Programming Language",
+            "snippet": "Go 1.25 is released - The Go Programming Language # Go 1.25 is released Dmitri Shuralyov, on behalf of the Go team 12 August 2025 Today the Go team is pleased to release Go 1.25. You can find its binary archives and installers on the downl…"
+          },
+          {
+            "url": "https://go.dev/doc/devel/release",
+            "title": "Release History - The Go Programming Language",
+            "snippet": "go1.25.0 (released 2025-08-12) Go 1.25.0 is a major release of Go. Read the Go 1.25 Release Notes for more information. ### Minor revisions go1.25.1 (released 2025-09-03) includes security fixes to the `net/http` package, as well as bug fi…"
+          },
+          {
+            "url": "https://goframe.org/en/release/golang/go1.25",
+            "title": "Go 1.25 (2025-08-12)",
+            "snippet": "Go 1.25 (2025-08-12) Go 1.25 brings significant improvements to the toolchain, runtime, and standard library, while maintaining Go 1 compatibility. ... Go 1.25 introduces no language-level changes affecting Go programs. However, the concep…"
+          },
+          {
+            "url": "https://github.com/golang/go/milestone/364",
+            "title": "Go1.25 · Milestone #364 · golang/go",
+            "snippet": "Go1.25 Closed No due date • Closed Feb 21, 2026 99% complete ## Issues - ### cmd/compile: optimize reflect.TypeOf(x)==reflect.TypeOf(y) compiler/runtime NeedsInvestigation golang/go#70738"
+          },
+          {
+            "url": "https://go.dev/api/go1.25.txt",
+            "title": "- The Go Programming Language",
+            "snippet": "crypto, type MessageSigner interface { Public, Sign, SignMessage } #63405 ... 3 pkg crypto, type MessageSigner interface, Public() PublicKey #63405 4 pkg crypto, type MessageSigner interface, Sign(io"
+          },
+          {
+            "url": "https://fr2.rpmfind.net/linux/RPM/opensuse/16.0/x86_64/go1.25-doc-1.25.0-160000.1.2.x86_64.html",
+            "title": "go1.25-doc-1.25.0-160000.1.2.x86_64 RPM",
+            "snippet": ".25-doc | Distribution: SUSE Linux 16 | | --- | --- | | Version: 1.25.0 | Vendor: SUSE LLC | | Release: 160000.1.2 | Build date: Tue Aug 12 22:50:10 2025 | | Group: Documentation/Other | Build host: reproducible | | Size: 381054 | Source R…"
+          },
+          {
+            "url": "https://go-lang.org.cn/doc/go1.25",
+            "title": "Go 1.25 发行说明 - Go 编程语言 - Go 编程语言",
+            "snippet": "Go 1.25 简介 最新的 Go 版本 1.25 将于 2025 年 8 月 发布，比 Go 1.24 晚六个月。其大部分更改都在工具链、运行时和库的实现中。一如既往，此版本保持了 Go 1 的兼容性承诺。我们预计几乎所有 Go 程序都将继续像以前一样编译和运行。 ## 语言变化 Go 1.25 中没有影响 Go 程序的语言更改。然而，在语言规范中，核心类型的概念已被删除，取而代之的是专门的散文。有关更多信息，请参阅相关的博客文章。"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "typescript59",
+      "lang": "en",
+      "category": "release",
+      "query": "TypeScript 5.9 release notes",
+      "official": "typescriptlang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 5002,
+        "results": [
+          {
+            "url": "https://www.typescriptlang.org/",
+            "title": "TypeScript : JavaScript With Syntax For Types.",
+            "snippet": "3 天之前 · TypeScript is JavaScript with syntax for types. TypeScript is a strongly typed programming language that builds on …"
+          },
+          {
+            "url": "https://www.typescriptlang.org/zh/docs/handbook/typescript-from-scratch.html",
+            "title": "Documentation - 面向编程初学者的 TypeScript",
+            "snippet": "3 天之前 · 程序员可以使用很多很多资源来学习 JavaScript 。 如果你正在编写 TypeScript， 不应该 忽略这些资源。 例如，带有 javascript 标 …"
+          },
+          {
+            "url": "https://www.tslang.cn/",
+            "title": "TypeScript ：带类型的 JavaScript 超集",
+            "snippet": "1 天前 · TypeScript 是 带有类型语法的 JavaScript。 TypeScript 是一门构建在 JavaScript 之上的强类型编程语言，可在任意规模下为你提供 …"
+          },
+          {
+            "url": "https://www.runoob.com/typescript/ts-tutorial.html",
+            "title": "TypeScript 教程 | 菜鸟教程",
+            "snippet": "TypeScript 教程 TypeScript 是 JavaScript 的一个超集，支持 ECMAScript 6 标准（ES6 教程）。 TypeScript 由微软开发的自由和开源的编 …"
+          },
+          {
+            "url": "https://www.tslang.com.cn/zh/docs/handbook/intro.html",
+            "title": "TypeScript 中文文档：Handbook - TypeScript 手册",
+            "snippet": "2026年2月17日 · TypeScript 手册旨在向普通程序员详细解释 TypeScript。 你可以按照左侧导航从上到下阅读手册。 每个章节或页面都能让 …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/typescript/4314718",
+            "title": "typescript _百度百科",
+            "snippet": "2026年3月23日 · TypeScript是微软于2012年10月发布的开源编程语言，它是JavaScript的一个超集，本质上添加了可选的静态类型和基于类 …"
+          },
+          {
+            "url": "https://ts.nodejs.cn/",
+            "title": "TypeScript 中文网",
+            "snippet": "2026年10月8日 · TypeScript 是 具有类型语法的 JavaScript TypeScript 是一种基于 JavaScript 构建的强类型编程语言，可为你提供任何规模 …"
+          },
+          {
+            "url": "https://www.runoob.com/w3cnote/getting-started-with-typescript.html",
+            "title": "TypeScript 入门教程 | 菜鸟教程",
+            "snippet": "更多内容可以参考： TypeScript 教程。 JavaScript 与 TypeScript 的区别 TypeScript 是 JavaScript 的超集，扩展了 JavaScript 的语法，因 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "kubernetes134",
+      "lang": "en",
+      "category": "release",
+      "query": "Kubernetes 1.34 release notes",
+      "official": "kubernetes.io",
+      "plugin": {
+        "ok": true,
+        "ms": 3428,
+        "results": [
+          {
+            "url": "https://kubernetes.io/releases/1.34/",
+            "title": "Kubernetes 1.34",
+            "snippet": "Kubernetes"
+          },
+          {
+            "url": "https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/",
+            "title": "Kubernetes v1.34: Of Wind & Will (O' WaW) | Kubernetes",
+            "snippet": "Editors: Agustina Barbetta, Alejandro Josue Leon Bellido, Graziano Casto, Melony Qin, Dipesh Rawat Similar to previous releases"
+          },
+          {
+            "url": "https://v1-34.docs.kubernetes.io/releases/notes/",
+            "title": "Notes | Kubernetes",
+            "snippet": "Release"
+          },
+          {
+            "url": "https://v1-34.docs.kubernetes.io/releases/",
+            "title": "Releases | Kubernetes",
+            "snippet": "The Kubernetes"
+          },
+          {
+            "url": "https://v1-35.docs.kubernetes.io/releases/1.34/",
+            "title": "Kubernetes 1.34 | Kubernetes",
+            "snippet": "Kubernetes"
+          },
+          {
+            "url": "https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.34.md",
+            "title": "kubernetes/CHANGELOG/CHANGELOG-1.34.md at master · kubernetes ... - GitHub",
+            "snippet": "Changelog since v1.34.10 Changes by Kind Dependency Kubernetes"
+          },
+          {
+            "url": "https://documentation.ubuntu.com/canonical-kubernetes/main/releases/snap/1.34/",
+            "title": "1.34 - Canonical Kubernetes documentation",
+            "snippet": "Canonical Kubernetes"
+          },
+          {
+            "url": "https://relnotes.k8s.io/?releaseVersions=1.34.0",
+            "title": "Kubernetes Release Notes",
+            "snippet": "e2e-test-framework etcd"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "react19",
+      "lang": "en",
+      "category": "release",
+      "query": "React 19 release notes",
+      "official": "react.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2397,
+        "results": [
+          {
+            "url": "https://react.dev/blog/2024/12/05/react-19",
+            "title": "React v19 - React",
+            "snippet": "React"
+          },
+          {
+            "url": "https://react.dev/blog/2026/09/09/react-19-3",
+            "title": "React 19.3 - React",
+            "snippet": "React"
+          },
+          {
+            "url": "https://github.com/react/react/releases",
+            "title": "Releases · react/react - GitHub",
+            "snippet": "Below is a list of all new features, APIs, and bug fixes. Read the React"
+          },
+          {
+            "url": "https://updatify.io/releases/react",
+            "title": "React release notes - Product release notes & changelog tool - Updatify",
+            "snippet": "This release"
+          },
+          {
+            "url": "https://github.com/react/react/blob/main/CHANGELOG.md",
+            "title": "react/CHANGELOG.md at main · react/react · GitHub",
+            "snippet": "The library for web and native user interfaces. Contribute to react"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/reactjs/react-19-new-features-and-updates/",
+            "title": "React 19 : New Features and Updates - GeeksforGeeks",
+            "snippet": "Developers need to review the React"
+          },
+          {
+            "url": "https://versionlog.com/react/19.0/",
+            "title": "React 19.0 - What's New, Support Lifecycle & EOL - VersionLog",
+            "snippet": "Discover what's new in React"
+          },
+          {
+            "url": "https://releasebot.io/updates/meta/react",
+            "title": "React Updates by Meta - September 2026 - Releasebot",
+            "snippet": "Browse a full list of updates made to React"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "playwright-locator",
+      "lang": "en",
+      "category": "docs",
+      "query": "Playwright locator documentation",
+      "official": "playwright.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 4243,
+        "results": [
+          {
+            "url": "https://browserhub.co/en/guides/browser-agent-shadow-dom/",
+            "title": "How browser agents should target controls inside Shadow DOM",
+            "snippet": "Use Playwright locators across open shadow roots, diagnose XPath and slot boundaries, and recognize when a closed root or another agent API limits access."
+          },
+          {
+            "url": "https://github.com/garrytan/gstack",
+            "title": "garrytan/gstack: Use Garry Tan's exact Claude Code setup: ...",
+            "snippet": "Generate missing docs from scratch using the Diataxis framework. Researches the codebase first, then writes reference / how-to / tutorial / explanation docs ..."
+          },
+          {
+            "url": "https://playwright.dev/docs/api/class-locator",
+            "title": "Locator",
+            "snippet": "In a nutshell, locators represent a way to find element(s) on the page at any moment. A locator can be created with the page.locator() method. Learn more about ..."
+          },
+          {
+            "url": "https://testomat.io/blog/playwright-locators-handle-elements-inputs-buttons-dropdown-frames-etc/",
+            "title": "Playwright Locators Guide: Handle Inputs, Buttons & Frames",
+            "snippet": "Master Playwright locators with examples. Learn to use page.locator, chain locators, filter multiple elements, get text, force clicks, ..."
+          },
+          {
+            "url": "https://bugbug.io/blog/testing-frameworks/playwright-locators/",
+            "title": "Playwright Locator - Comprehensive Guide for 2026 - BugBug.io",
+            "snippet": "Playwright Locators provide a precise and flexible way to identify and interact with elements on a web page. They address one of the biggest ..."
+          },
+          {
+            "url": "https://medium.com/@vohrakritika9/mastering-playwright-locators-the-complete-guide-to-writing-reliable-tests-87f1a06c411b",
+            "title": "Mastering Playwright Locators: The Complete Guide to ...",
+            "snippet": "Locators in Playwright are element identifiers that power its auto-waiting, retry-ability, and strict mode. They make sure your tests wait for ..."
+          },
+          {
+            "url": "https://oneuptime.com/blog/post/2026-02-02-playwright-locators/view",
+            "title": "How to Use Playwright Locators",
+            "snippet": "A comprehensive guide to using Playwright locators for reliable end-to-end testing. Learn about built-in locators, filtering strategies, ..."
+          },
+          {
+            "url": "https://www.facebook.com/61573708667339/videos/can-you-do-api-testing-with-playwrightyes-playwright-ships-its-own-api-client-as/1090743743758507/",
+            "title": "API Testing with Playwright: Request Fixture, Cookies & ...",
+            "snippet": "Playwright's locators are described as \"lazy\" and don't immediately search for elements, but rather search after an action has been performed."
+          }
+        ],
+        "failures": [
+          "exa: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 3,
+        "uniqueDomains": 8
+      }
+    },
+    {
+      "id": "npm-install",
+      "lang": "en",
+      "category": "docs",
+      "query": "npm install documentation",
+      "official": "docs.npmjs.com",
+      "plugin": {
+        "ok": true,
+        "ms": 4495,
+        "results": [
+          {
+            "url": "https://nodejs.org/en/download",
+            "title": "Download Node.js®",
+            "snippet": "Download Node.js® Get Node.js® v24.22.1 LTS for Windows using Chocolatey with npm"
+          },
+          {
+            "url": "https://nodejs.org/learn/getting-started/an-introduction-to-the-npm-package-manager",
+            "title": "An introduction to the npm package manager | Node.js Learn",
+            "snippet": "An introduction to the npm"
+          },
+          {
+            "url": "https://www.npmjs.com/",
+            "title": "npm | Home",
+            "snippet": "Get started today for free, or step up to npm"
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v9/commands/npm-install/?v=true",
+            "title": "npm-install - npm Docs",
+            "snippet": "npm"
+          },
+          {
+            "url": "https://docs.npmjs.com/cli/v9/configuring-npm/install/?v=true",
+            "title": "install | npm Docs",
+            "snippet": "Description To publish and install"
+          },
+          {
+            "url": "https://www.npmjs.com/npm-install",
+            "title": "npm-install - npm",
+            "snippet": "GitHub Action for install"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/node-js/npm-install-command/",
+            "title": "npm install command - GeeksforGeeks",
+            "snippet": "The npm"
+          },
+          {
+            "url": "https://github.com/npm/documentation",
+            "title": "GitHub - npm/documentation: Documentation for the npm registry, website ...",
+            "snippet": "The npm"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 4,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "pip-install",
+      "lang": "en",
+      "category": "docs",
+      "query": "pip install documentation",
+      "official": "pip.pypa.io",
+      "plugin": {
+        "ok": true,
+        "ms": 2487,
+        "results": [
+          {
+            "url": "https://docs.python.org/3/installing/index.html",
+            "title": "Installing Python modules — Python 3.15.1 documentation",
+            "snippet": "Learn how to use pip"
+          },
+          {
+            "url": "https://pip.pypa.io/en/stable/cli/pip_install/",
+            "title": "pip install - pip documentation v26.2.2",
+            "snippet": "Install"
+          },
+          {
+            "url": "https://pip.pypa.io/en/stable/installation/",
+            "title": "Installation - pip documentation v26.2.2",
+            "snippet": "Learn how to install"
+          },
+          {
+            "url": "https://pypi.org/project/pip/",
+            "title": "pip · PyPI",
+            "snippet": "pip"
+          },
+          {
+            "url": "https://python.land/virtual-environments/installing-packages-with-pip",
+            "title": "Pip Install: How To Install and Remove Python Packages",
+            "snippet": "Use Python pip"
+          },
+          {
+            "url": "https://pip-python3.readthedocs.io/en/latest/reference/pip_install.html",
+            "title": "pip install — pip 10.0.0.dev0 documentation - Read the Docs",
+            "snippet": "As of v6.1.0, pip"
+          },
+          {
+            "url": "https://note.nkmk.me/en/python-pip-install-requirements/",
+            "title": "How to Install Python Packages with pip and requirements.txt",
+            "snippet": "This article explains how to install"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/installation-guide/how-to-install-pip-on-windows/",
+            "title": "How to Install PIP on Windows - GeeksforGeeks",
+            "snippet": "How to install"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 2,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "docker-compose",
+      "lang": "en",
+      "category": "docs",
+      "query": "Docker Compose documentation",
+      "official": "docs.docker.com",
+      "plugin": {
+        "ok": true,
+        "ms": 5003,
+        "results": [
+          {
+            "url": "https://docs.docker.com/desktop/setup/install/windows-install/",
+            "title": "Install Docker Desktop on Windows",
+            "snippet": "3 天之前 · Docker only supports Docker Desktop on Windows for those versions of Windows that are still within Microsoft’s servicing …"
+          },
+          {
+            "url": "https://www.docker.com/products/docker-desktop/",
+            "title": "Docker Desktop: The #1 Containerization Tool for Developers | Docker",
+            "snippet": "Docker Desktop is collaborative containerization software for developers. Get started and download Docker Desktop today on Mac, …"
+          },
+          {
+            "url": "https://www.docker.com/",
+            "title": "Docker | Secure Sandboxes for AI Agents",
+            "snippet": "Run AI agents and containers safely, anywhere. Docker gives builders trusted sandboxes, governance, and a secure supply chain for … 阅读更多"
+          },
+          {
+            "url": "https://www.runoob.com/docker/docker-tutorial.html",
+            "title": "Docker 教程 | 菜鸟教程",
+            "snippet": "Docker 教程 Docker 是一个开源的应用容器引擎，基于 Go 语言 并遵从 Apache2.0 协议开源。 Docker 可以让开发者打包他们的应用以及依 …"
+          },
+          {
+            "url": "https://github.com/docker",
+            "title": "Docker - GitHub",
+            "snippet": "Docker helps developers build, share, run, and verify applications anywhere — without tedious environment configuration or …"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/1892960016316748037",
+            "title": "Docker 入门教程（非常详细）从零基础入门到精通，看完这 ...",
+            "snippet": "2026年2月3日 · Docker入门教程（非常详细）从零基础入门到精通，看完这一篇就够了一、Docker概述1.1 Docker 为什么出现？ 个人理解： …"
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/devops/introduction-to-docker/",
+            "title": "What is Docker ? - GeeksforGeeks",
+            "snippet": "2026年4月23日 · The Docker client talks with the docker daemon which helps in building, running, and distributing the docker …"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_52286364/article/details/150379121",
+            "title": "Windows 环境下安装 Docker 的详细教程（超详细图文）",
+            "snippet": "2025年8月14日 · 1. 前言 Docker 是一个开源的应用容器引擎，可以让开发者将应用及其依赖打包到一个可移植的镜像中，然后在任意环境中 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: no results",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "github-actions-cache",
+      "lang": "en",
+      "category": "docs",
+      "query": "GitHub Actions cache documentation",
+      "official": "docs.github.com",
+      "plugin": {
+        "ok": true,
+        "ms": 4787,
+        "results": [
+          {
+            "url": "https://docs.docker.com/build/cache/backends/gha/",
+            "title": "GitHub Actions cache | Docker Docs",
+            "snippet": "The GitHub"
+          },
+          {
+            "url": "https://docs.docker.com/build/ci/github-actions/cache/",
+            "title": "Cache management with GitHub Actions | Docker Docs",
+            "snippet": "Configure build cache"
+          },
+          {
+            "url": "https://github.com/actions/cache",
+            "title": "GitHub - actions/cache: Cache dependencies and build outputs in GitHub ...",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+            "title": "Dependency caching reference - GitHub Docs",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manage-caches",
+            "title": "Managing caches - GitHub Docs",
+            "snippet": "In the cache"
+          },
+          {
+            "url": "https://github.com/marketplace/actions/cache",
+            "title": "Cache · Actions · GitHub Marketplace · GitHub",
+            "snippet": "A cache"
+          },
+          {
+            "url": "https://github.blog/changelog/2026-09-10-control-github-actions-cache-access-with-cache-mode/",
+            "title": "Control GitHub Actions cache access with cache-mode",
+            "snippet": "Control GitHub"
+          },
+          {
+            "url": "https://namespace.so/docs/solutions/github-actions/caching",
+            "title": "Caching in GitHub Actions - Namespace Documentation",
+            "snippet": "Cache"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 4,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "mdn-fetch",
+      "lang": "en",
+      "category": "docs",
+      "query": "MDN Fetch API documentation",
+      "official": "developer.mozilla.org",
+      "plugin": {
+        "ok": true,
+        "ms": 4207,
+        "results": [
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+            "title": "Using the Fetch API - Web APIs | MDN - MDN Web Docs",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+            "title": "Fetch API - Web APIs | MDN - MDN Web Docs",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API.html",
+            "title": "Fetch API - Web APIs | MDN - devdoc.net",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://www.devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch.html",
+            "title": "Using Fetch - Web APIs | MDN - devdoc.net",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://www.w3schools.com/js/js_api_fetch.asp",
+            "title": "JavaScript Fetch API - W3Schools",
+            "snippet": "The Fetch"
+          },
+          {
+            "url": "https://mdn2.netlify.app/en-us/docs/web/api/fetch/",
+            "title": "fetch () - Web APIs | MDN",
+            "snippet": "The global fetch"
+          },
+          {
+            "url": "https://github.com/mdn/content/blob/main/files/en-us/web/api/fetch_api/using_fetch/index.md",
+            "title": "content/files/en-us/web/api/fetch_api/using_fetch/index.md at ... - GitHub",
+            "snippet": "The official source for MDN"
+          },
+          {
+            "url": "https://mdn.org.cn/en-US/docs/Web/API/Fetch_API",
+            "title": "Fetch API - Web APIs | MDN - MDN 文档",
+            "snippet": "The Fetch"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "fastapi-query",
+      "lang": "en",
+      "category": "docs",
+      "query": "FastAPI query parameters documentation",
+      "official": "fastapi.tiangolo.com",
+      "plugin": {
+        "ok": true,
+        "ms": 4300,
+        "results": [
+          {
+            "url": "https://docs.nvidia.com/nemo/agent-toolkit/1.9/extend/adding-a-retriever.html",
+            "title": "Adding a Retriever Provider — NVIDIA NeMo Agent Toolkit ...",
+            "snippet": "Configuration for a Retriever provider. The parameters will depend on the particular provider. These are examples."
+          },
+          {
+            "url": "https://open-meteo.com/en/docs/historical-weather-api",
+            "title": "️ Historical Weather API",
+            "snippet": "All URL parameters are listed below: Additional optional URL parameters will be added. For API stability, no required parameters will be added in the future."
+          },
+          {
+            "url": "https://superset.apache.org/user-docs/using-superset/embedding/",
+            "title": "Embedding Superset",
+            "snippet": "This is unreleased documentation for Superset Next version. The following URL parameters can be passed through the urlParams option in dashboardUiConfig"
+          },
+          {
+            "url": "https://fastapi.tiangolo.com/tutorial/query-params/",
+            "title": "Query Parameters",
+            "snippet": "When you declare other function parameters that are not part of the path parameters, they are automatically interpreted as \"query\" parameters."
+          },
+          {
+            "url": "https://stackoverflow.com/questions/64364499/set-description-for-query-parameter-in-swagger-doc-using-pydantic-model-fastapi",
+            "title": "Set description for query parameter in swagger doc using ...",
+            "snippet": "In the recent versions of FastAPI, and hence, be able to set the description (and other arguments) use this example from official FastAPI ..."
+          },
+          {
+            "url": "https://www.geeksforgeeks.org/python/fastapi-query-parameters/",
+            "title": "FastAPI - Query Parameters",
+            "snippet": "In this article, we will learn about FastAPI Query Parameters, what are query parameters, what they do in FastAPI, and how to use them."
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=ZLfty-9dbSc",
+            "title": "FastAPI Tutorial 5 - Query Parameters",
+            "snippet": "In this video I will go over how to use query parameters in FastAPI. API Tutorial 5 - Query Parameters. Query Parameters for Filtering BugBytes ..."
+          },
+          {
+            "url": "https://ericmjl.github.io/blog/2023/9/17/how-to-extract-query-params-from-fastapi/",
+            "title": "How to extract query params from FastAPI",
+            "snippet": "In this blog post, I learned how to extract query parameters from FastAPI. I discovered how to access key-value pairs from a GET request ..."
+          }
+        ],
+        "failures": [
+          "exa: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 4,
+        "uniqueDomains": 8
+      }
+    },
+    {
+      "id": "nextjs-app-router",
+      "lang": "en",
+      "category": "docs",
+      "query": "Next.js App Router documentation",
+      "official": "nextjs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 5003,
+        "results": [
+          {
+            "url": "https://www.nextdirect.com/cn/zh",
+            "title": "Next 官网：在线时尚、童装和家居用品",
+            "snippet": "Shop the latest women's, men's and children's fashion plus homeware, beauty and more. Next day delivery and free returns available. …"
+          },
+          {
+            "url": "https://www.nextjs.cn/",
+            "title": "Next .js - React 应用开发框架 | Next .js中文网",
+            "snippet": "2025年12月23日 · 这是一个用于 生产环境的 React 框架 Next.js 为您提供生产环境所需的所有功能以及最佳的开发体验： 包括静态及服务器 …"
+          },
+          {
+            "url": "https://www.next.co.uk/",
+            "title": "Next Official Site: Online Fashion, Kids Clothes & Homeware",
+            "snippet": "Discover the latest in women's, men's & children's fashion plus homeware, beauty, designer brands & more. Next day delivery & free …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/next/1719528",
+            "title": "next （英国服装品牌）_百度百科",
+            "snippet": "2020年1月25日 · Next，是1982年2月在英国建立起来的本土服装品牌。 2020年4月，在“2020全球最有价值的50个服饰品牌”排行榜中排名 …"
+          },
+          {
+            "url": "https://next.itellyou.cn/",
+            "title": "NEXT , ITELLYOU",
+            "snippet": "NEXT, ITELLYOU 提供可靠的原版软件 十八年的专注和积累，初心未改，打造下一个里程碑。 * 并不是人人都能接受和使用原版软件，请充分 …"
+          },
+          {
+            "url": "https://nextjs.org/",
+            "title": "Next.js by Vercel - The React Framework",
+            "snippet": "“ It’s just a pity we didn’t go sooner. Next.js and Vercel make our developers happier, make us go to market quicker, and let us move …"
+          },
+          {
+            "url": "https://www.runoob.com/nextjs/nextjs-tutorial.html",
+            "title": "Next .js 教程 | 菜鸟教程",
+            "snippet": "Next.js 不仅适合个人开发者快速搭建项目，也适合大型团队构建复杂的全栈应用。 Next.js 的入门门槛较低，它基于 React 构建，而 React 是 …"
+          },
+          {
+            "url": "http://next-store.cn/",
+            "title": "NEXT",
+            "snippet": "2022年7月29日 · 版权所有 © 广州乐驰智能科技有限公司"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 6,
+        "uniqueDomains": 8
+      }
+    },
+    {
+      "id": "vite-config",
+      "lang": "en",
+      "category": "docs",
+      "query": "Vite config documentation",
+      "official": "vite.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 2662,
+        "results": [
+          {
+            "url": "https://vite.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://v3.vite.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://vite.dev/guide/",
+            "title": "Getting Started | Vite",
+            "snippet": "The Config"
+          },
+          {
+            "url": "https://v2.vitejs.dev/config/",
+            "title": "Configuring Vite | Vite",
+            "snippet": "Configuring Vite"
+          },
+          {
+            "url": "https://docs.vite.org/vite-basics/network/configuration/",
+            "title": "Node Configurations - Vite Documentation",
+            "snippet": "Node Configurations This section introduces how to manually configure a node on your machine. However, if you just want to develop locally, it's recommended you get Visual Studio Code Solidity++ Extension which includes a local development node. Node When downloading the latest release of go- vite"
+          },
+          {
+            "url": "https://vitest.dev/guide/",
+            "title": "Getting Started | Guide | Vitest",
+            "snippet": "Vitest reads your vite.config"
+          },
+          {
+            "url": "https://github.com/vitejs/vite/blob/main/docs/config/index.md",
+            "title": "vite/docs/config/index.md at main · vitejs/vite · GitHub",
+            "snippet": "Next generation frontend tooling. It's fast! Contribute to vitejs/ vite"
+          },
+          {
+            "url": "https://vitepress.dev/reference/site-config",
+            "title": "Site Config - VitePress",
+            "snippet": "Complete reference of VitePress site configuration options including app-level settings, theming, and build options."
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "mcp-tools",
+      "lang": "en",
+      "category": "docs",
+      "query": "Model Context Protocol tools specification",
+      "official": "modelcontextprotocol.io",
+      "plugin": {
+        "ok": true,
+        "ms": 4931,
+        "results": [
+          {
+            "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+            "title": "Tools - Model Context Protocol",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://modelcontextprotocol.info/docs/concepts/tools/",
+            "title": "Tools - Model Context Protocol （MCP）",
+            "snippet": "Tools"
+          },
+          {
+            "url": "https://modelcontextprotocol.info/specification/",
+            "title": "Specification - Model Context Protocol （MCP）",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/index.mdx",
+            "title": "modelcontextprotocol/docs/specification/2026-07-28/index.mdx ... - GitHub",
+            "snippet": "Model"
+          },
+          {
+            "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx",
+            "title": "modelcontextprotocol/docs/specification/2026-07-28/server/tools.mdx at ...",
+            "snippet": "The Model"
+          },
+          {
+            "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+            "title": "The 2026-07-28 Specification | Model Context Protocol Blog",
+            "snippet": "The 2026-07-28 Model"
+          },
+          {
+            "url": "https://thebiglearn.org/articles/en/model-context-protocol-mcp-complete-guide-2026",
+            "title": "Model Context Protocol (MCP) 2026: Complete Production Guide | The Big ...",
+            "snippet": "Artificial intelligence and integration Model"
+          },
+          {
+            "url": "https://aibuzz.blog/model-context-protocol-explained/",
+            "title": "Model Context Protocol (MCP): Specification, Security & Enterprise (2026)",
+            "snippet": "🔌 ..."
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "deepseek-api",
+      "lang": "en",
+      "category": "docs",
+      "query": "DeepSeek API documentation",
+      "official": "api-docs.deepseek.com",
+      "plugin": {
+        "ok": true,
+        "ms": 3905,
+        "results": [
+          {
+            "url": "https://api-docs.deepseek.com/",
+            "title": "Your First API Call | DeepSeek API Docs",
+            "snippet": "Your First API Call | DeepSeek API Docs # Your First API Call The DeepSeek API uses an API format compatible with OpenAI/Anthropic. By modifying the configuration, you can use the OpenAI/Anthropic SDK or softwares compatible with the OpenA…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/api/create-chat-completion",
+            "title": "Chat Completions API | DeepSeek API Docs",
+            "snippet": "Chat Completions API | DeepSeek API Docs # Chat Completions API POST ## /chat/completions Creates a model response for the given chat conversation. ## Request​ Body required messages object[] required Possible values: `>= 1` A list of mess…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/guides/responses_api",
+            "title": "Using the Responses API | DeepSeek API Docs",
+            "snippet": "On this page # Using the Responses API To meet the demand for Codex, our API now supports the Responses API format, with the`base_url` being`https://api.deepseek.com`. With a simple configuration, you can use DeepSeek models in Codex. ## I…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/api/create-response",
+            "title": "Responses API | DeepSeek API Docs",
+            "snippet": "Responses API | DeepSeek API Docs # Responses API POST ## /responses Creates a model response in the OpenAI Responses API format. The API is stateless: responses and conversations are not stored on the server. For multi-turn conversations,…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/zh-cn/api_samples/chat_curl",
+            "title": "chat_curl | DeepSeek API Docs",
+            "snippet": "chat_curl | DeepSeek API Docs ```bash curl https://api.deepseek.com/chat/completions \\ -H \"Content-Type: application/json\" \\ -H \"Authorization: Bearer ${DEEPSEEK_API_KEY}\" \\ -d '{ \"model\": \"deepseek-v4-pro\", \"messages\": [ {\"role\": \"system\"…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/zh-cn/api/create-chat-completion",
+            "title": "Chat Completions API | DeepSeek API Docs",
+            "snippet": "Chat Completions API | DeepSeek API Docs # Chat Completions API ``` POST /chat/completions ``` 根据输入的上下文，来让模型补全对话内容。 ## Request​ - application/json ### Body required messages object[] required Possible values:`>= 1` 对话的消息列表。 Array [ oneOf c…"
+          },
+          {
+            "url": "https://api-docs.deepseek.com/zh-cn/api/create-completion",
+            "title": "FIM 补全 API（Beta） | DeepSeek API Docs",
+            "snippet": "FIM 补全 API（Beta） | DeepSeek API Docs # FIM 补全 API（Beta） ``` POST /completions ``` FIM (Fill In the Middle) 补全 API。用户需要设置`base_url=\"https://api.deepseek.com/beta\"`来使用此功能。 ## Request​ - application/json ### Body required model stringrequired…"
+          },
+          {
+            "url": "https://docs.langchain.com/oss/python/integrations/chat/deepseek",
+            "title": "ChatDeepSeek integration - Docs by LangChain",
+            "snippet": "ChatDeepSeek integration - Docs by LangChain # ChatDeepSeek integration Integrate with the ChatDeepSeek chat model using LangChain Python. This will help you get started with DeepSeek’s hosted chat models. API Reference For detailed docume…"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 2
+      }
+    },
+    {
+      "id": "claude-code-mcp",
+      "lang": "en",
+      "category": "docs",
+      "query": "Claude Code MCP configuration",
+      "official": "code.claude.com",
+      "plugin": {
+        "ok": true,
+        "ms": 5004,
+        "results": [
+          {
+            "url": "https://support.claude.com/zh-CN/articles/10065433-%E5%AE%89%E8%A3%85-claude-desktop",
+            "title": "安装 Claude Desktop | Anthropic Help Center",
+            "snippet": "3 天之前 · Claude Cowork Claude Cowork 可用于所有付费计划（专业版、Max、团队、企业版），使用 macOS、Windows 和 Linux（测试 …"
+          },
+          {
+            "url": "https://claude.com/",
+            "title": "Claude",
+            "snippet": "What is Claude and how does it work? Claude is an artificial intelligence, trained by Anthropic using Constitutional AI to be safe, …"
+          },
+          {
+            "url": "https://claude.ai/",
+            "title": "Sign in - Claude",
+            "snippet": "Products Claude Claude Code @Claude Claude Science Claude Security Download app Pricing Log in Capabilities Artifacts Design …"
+          },
+          {
+            "url": "https://claude.com/download",
+            "title": "Download Claude | Claude by Anthropic",
+            "snippet": "Claude in Chrome is included as a connector and is ready to use when you enable it. Turn it on in any conversation and Claude can …"
+          },
+          {
+            "url": "https://www.claude-chinese.com/claude/claude-ultimate-beginners-guide-2026.html",
+            "title": "Claude 终极新手指南，包含国内使用方法（2026年最新）",
+            "snippet": "2026年7月20日 · Claude 终极新手指南，包含国内使用方法（2026年最新） Claude 是 Anthropic 推出的 AI 助手，擅长写作、长文总结、代 …"
+          },
+          {
+            "url": "https://www.deekhub.com/ai-tools/claude-tutorial",
+            "title": "Claude 使用教程：2026 国内访问、注册与核心功能完全指南",
+            "snippet": "2026年8月3日 · 2026 Claude 使用教程：讲清国内如何访问 Claude、邮箱注册登录，以及 Projects、Artifacts、超长上下文等核心功能怎么 …"
+          },
+          {
+            "url": "https://platform.claude.com/login",
+            "title": "Sign in | Claude Platform - Anthropic",
+            "snippet": "Build on the Claude Platform Create agents and applications with frontier Claude models and managed agent infrastructure."
+          },
+          {
+            "url": "https://code.claude.com/docs/zh-CN/desktop-quickstart",
+            "title": "开始使用桌面应用 - Claude Code Docs",
+            "snippet": "桌面应用为您提供具有图形界面的 Claude Code。 您可以要求 Claude 处理计算机上文件夹中的代码，并查看其更改，而无需使用终端。 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 8,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "node24-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Node.js 24 发布说明",
+      "official": "nodejs.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2815,
+        "results": [
+          {
+            "url": "https://nodejs.org/zh-cn",
+            "title": "Node.js — 在任何地方运行 JavaScript",
+            "snippet": "Node.js® is a free, open-source, cross-platform JavaScript runtime environment that lets developers create servers, web apps, … 阅读更多"
+          },
+          {
+            "url": "https://nodejs.cn/",
+            "title": "Node .js 中文网",
+            "snippet": "6 小时之前 · Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。 Node.js 使用了一个事件驱动、非阻塞式 I/O 的模型，使其轻量又 …"
+          },
+          {
+            "url": "https://node.org.cn/",
+            "title": "Node .js — 让 JavaScript 无处不在 - Node .js 运行环境",
+            "snippet": "2026年5月7日 · 让 JavaScript 无处不在 Node.js® 是一个免费、开源、跨平台的 JavaScript 运行时环境，使开发者能够创建服务器、Web 应 …"
+          },
+          {
+            "url": "https://www.runoob.com/nodejs/nodejs-tutorial.html",
+            "title": "Node.js 教程 | 菜鸟教程",
+            "snippet": "Node.js 教程 简单的说 Node.js 就是运行在服务端的 JavaScript。 Node.js 是一个基于 Chrome JavaScript 运行时建立的一个平台。 Node.js …"
+          },
+          {
+            "url": "https://blog.csdn.net/xhmico/article/details/159132633",
+            "title": "Node .js 与 npm 的安装与配置（详细教程）_npm安装-CSDN博客",
+            "snippet": "2026年7月7日 · 前言 Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行时，它让开发者能够使用 JavaScript 编写服务器端代码。 …"
+          },
+          {
+            "url": "https://nodejs.cn/en/download/current",
+            "title": "Node .js 中文网 — 下载 Node .js",
+            "snippet": "2026年9月1日 · 了解有关 Node.js 版本 的更多信息，包括发布时间表和 LTS 状态。 了解如何 验证 已签名的 SHASUMS。 正在寻找 Node.js …"
+          },
+          {
+            "url": "https://www.runoob.com/nodejs/nodejs-install-setup.html",
+            "title": "Node.js 安装配置 | 菜鸟教程",
+            "snippet": "Node.js 安装配置 本章节我们将向大家介绍在 Windows、Linux 和 macOS 上安装 Node.js 的方法。 Node.js 安装包及源码下载地址 …"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2073699569158861437",
+            "title": "Node .js 下载安装及环境变量配置完全指南（2026 最新版）",
+            "snippet": "2026年8月20日 · 从零开始，手把手带你完成 Node.js 的下载、安装、npm 全局路径配置、环境变量设置，并扩展镜像加速、常见问题等实战 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "postgres18-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "PostgreSQL 18 发布说明",
+      "official": "postgresql.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2085,
+        "results": [
+          {
+            "url": "https://www.postgresql.org/",
+            "title": "PostgreSQL : The world's most advanced open source database",
+            "snippet": "The PostgreSQL Global Development Group announces that the 1st rc release of PostgreSQL 19 is now available for download. This …"
+          },
+          {
+            "url": "https://www.postgresql.org/download/",
+            "title": "PostgreSQL : Downloads",
+            "snippet": "PostgreSQL is available for download as ready-to-use packages or installers for various platforms, as well as a source code archive if …"
+          },
+          {
+            "url": "https://www.runoob.com/postgresql/postgresql-tutorial.html",
+            "title": "PostgreSQL 教程 | 菜鸟教程",
+            "snippet": "PostgreSQL 教程 PostgreSQL 是一个免费的对象-关系数据库服务器 (ORDBMS)，在灵活的BSD许可证下发行。 PostgreSQL 开发者把它念作 …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/PostgreSQL/530240",
+            "title": "PostgreSQL _百度百科",
+            "snippet": "PostgreSQL支持大部分的SQL标准并且提供了很多其他现代特性，如复杂查询、外键、触发器、视图、事务完整性、多版本并发控制等。 同 …"
+          },
+          {
+            "url": "https://postgresql.ac.cn/docs/current/index.html",
+            "title": "PostgreSQL 18.0 文档",
+            "snippet": "2025年9月25日 · 什么是 PostgreSQL？ 2. PostgreSQL 简史 3. 约定 4. 更多信息 5. 错误报告指南 I. 教程 1. 入门 2. The SQL 语言 3. 高级特 …"
+          },
+          {
+            "url": "https://developer.aliyun.com/article/1752221",
+            "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用一篇搞定 ...",
+            "snippet": "2026年7月31日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …"
+          },
+          {
+            "url": "https://blog.csdn.net/m0_58648890/article/details/155314594",
+            "title": "Windows 安装 PostgreSQL18 超详细保姆级教程-CSDN博客",
+            "snippet": "2025年11月27日 · 本文详细介绍在Windows 10/11系统上安装PostgreSQL 18的完整流程，涵盖下载、安装、组件选择、pgAdmin配置、中文 …"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2066273753013789584",
+            "title": "【2026最新】 PostgreSQL 下载、安装、数据库使用保姆级 ...",
+            "snippet": "2026年7月30日 · 本文系统讲解 PostgreSQL 的下载、安装和使用过程，全程实测，确保大家不会踩坑，文章里提供的 PostgreSQL 资源包全 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "react19-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "React 19 发布说明",
+      "official": "react.dev",
+      "plugin": {
+        "ok": true,
+        "ms": 3003,
+        "results": [
+          {
+            "url": "https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Frameworks_libraries/React_getting_started",
+            "title": "React 入门 - 学习 Web 开发 | MDN",
+            "snippet": "2026年6月8日 · 本文会引导我们进入一段 React 学习之旅。 我们将逐步了解有关它的背景和用例的一些细节，在自己的电脑上建起基本的 …"
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn",
+            "title": "快速入门 – React 中文文档",
+            "snippet": "使用 Hook 以 use 开头的函数被称为 Hook。 useState 是 React 提供的一个内置 Hook。 你可以在 React API 参考 中找到其他内置的 Hook。 …"
+          },
+          {
+            "url": "https://react.dev/",
+            "title": "React",
+            "snippet": "React is the library for web and native user interfaces. Build user interfaces out of individual pieces called components written in …"
+          },
+          {
+            "url": "https://www.runoob.com/react/react-tutorial.html",
+            "title": "React 教程 | 菜鸟教程",
+            "snippet": "React 教程 React 是一个用于构建用户界面的 JAVASCRIPT 库。 React 主要用于构建 UI，很多人认为 React 是 MVC 中的 V（视图）。 React …"
+          },
+          {
+            "url": "https://react.dev/learn",
+            "title": "Quick Start – React",
+            "snippet": "Quick Start Welcome to the React documentation! This page will give you an introduction to 80% of the React concepts that you will use …"
+          },
+          {
+            "url": "https://www.runoob.com/react/react-intro.html",
+            "title": "React 简介 - 菜鸟教程",
+            "snippet": "React 简介 React 是由 Facebook（现 Meta）开发并于 2013 年开源的 JavaScript 库，专门用于构建用户界面，特别是单页应用程序（SPA） …"
+          },
+          {
+            "url": "https://zh-hans.react.dev/learn/installation",
+            "title": "安装 – React 中文文档",
+            "snippet": "安装 React 从诞生之初就是可被渐进式使用的。 因此你可以选择性地使用 React 特性。 不管你是想体验下 React，用它为简单的 HTML 页面 …"
+          },
+          {
+            "url": "https://blog.csdn.net/nxiaotan/article/details/159783600",
+            "title": "React 新手快速入门学习指南（2026最新版）",
+            "snippet": "2026年4月3日 · React新手快速入门学习指南（2026最新版） 2026年4月 · 从零到实战，掌握2026年最实用的React开发技能 2026年的前端 …"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "ddg-html: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 2,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "python314-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Python 3.14 发布说明",
+      "official": "python.org",
+      "plugin": {
+        "ok": true,
+        "ms": 3003,
+        "results": [
+          {
+            "url": "https://docs.python.org/zh-cn/",
+            "title": "Python 3.15.1 文档",
+            "snippet": "1 天前 · Python 开发者指南 有关如何为 Python 做贡献的信息 Python 打包用户指南 与 Python 打包有关的资源 音频/视频讲座 来自社区的播客 …"
+          },
+          {
+            "url": "https://docs.python.org/zh-cn/3/tutorial/index.html",
+            "title": "Python 教程 — Python 3.15.1 文档",
+            "snippet": "1 天前 · 准备好一个 Python 解释器随时上手练习会很有帮助，但所有的示例都是完备自足的，因此本教程也可以离线阅读。 有关标准对象与模 …"
+          },
+          {
+            "url": "https://www.python.org/",
+            "title": "Welcome to Python .org",
+            "snippet": "The mission of the Python Software Foundation is to promote, protect, and advance the Python programming language, and to support …"
+          },
+          {
+            "url": "https://www.python.org/downloads/",
+            "title": "Download Python | Python .org",
+            "snippet": "Starting with the Python 3.11.0, Python 3.10.7, and Python 3.9.14 releases, CPython release artifacts are signed with Sigstore. See our …"
+          },
+          {
+            "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+            "title": "简介 - Python教程 - 廖雪峰的官方网站",
+            "snippet": "2026年10月6日 · 用Python可以做什么？ 可以做日常任务，比如自动备份你的MP3；可以做网站，很多著名的网站包括YouTube就是Python …"
+          },
+          {
+            "url": "https://www.runoob.com/python/python-tutorial.html",
+            "title": "Python 基础教程 | 菜鸟教程",
+            "snippet": "Python 基础教程 Python 是一种解释型、面向对象、动态数据类型的高级程序设计语言。 Python 由 Guido van Rossum 于 1989 年底发明， …"
+          },
+          {
+            "url": "https://liaoxuefeng.com/books/python/basic/index.html",
+            "title": "Python 基础 - Python 教程 - 廖雪峰的官方网站",
+            "snippet": "2026年10月6日 · Python也不例外。 Python的语法比较简单，采用缩进方式，写出来的代码就像下面的样子： ... 以 # 开头的语句是注释，注 …"
+          },
+          {
+            "url": "https://blog.csdn.net/sensen_kiss/article/details/141940274",
+            "title": "Python 安装与环境配置全程详细教学（包含Windows版和 ...",
+            "snippet": "2026年9月20日 · 文章浏览阅读10w+次，点赞1k次，收藏1.7k次。本文详细讲解Windows和Mac平台下Python的下载、安装、环境变量配置及 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "rust190-zh",
+      "lang": "zh",
+      "category": "release",
+      "query": "Rust 1.90 发布说明",
+      "official": "blog.rust-lang.org",
+      "plugin": {
+        "ok": true,
+        "ms": 2979,
+        "results": [
+          {
+            "url": "https://blog.rust-lang.org/2025/09/18/Rust-1.90.0/",
+            "title": "Announcing Rust 1.90.0 - Rust Blog",
+            "snippet": "Official Rust 1.90.0 release notes. ## Language - Split up the `unknown_or_malformed_diagnostic_attributes` lint. This lint has been split up into four finer-grained lints, with `unknown_or_malformed_diagnostic_attributes` now being the lint group that contains these lints: 1. `unknown_diagnostic_attributes`: unknown to the current compiler 2. `misplaced_diagnostic_attributes`: placed on the wrong item 3. `malformed_…"
+          },
+          {
+            "url": "https://rust-lang.org/zh-CN/",
+            "title": "Rust 程序设计语言",
+            "snippet": "1 天前 · 生产环境中的 Rust 全世界已有数百家公司在生产环境中使用 Rust，以达到快速、跨平台、低资源占用的目的。 很多著名且受欢迎的软 …"
+          },
+          {
+            "url": "https://rust-lang.org/",
+            "title": "Rust Programming Language",
+            "snippet": "1 天前 · Rust is blazingly fast and memory-efficient: with no runtime or garbage collector, it can power performance-critical services, run …"
+          },
+          {
+            "url": "https://rustcc.cn/",
+            "title": "Rust 语言中文社区-首页",
+            "snippet": "【Rust日报】2026-10-13 Rust 1.100 将在 11 月 12 日发布，建议先测 beta - Rust 新闻/聚合 Mike Tang 2026-10-13 09:07 【RPI 项目】如果 …"
+          },
+          {
+            "url": "https://www.runoob.com/rust/rust-tutorial.html",
+            "title": "Rust 教程 | 菜鸟教程",
+            "snippet": "Rust 教程 Rust 是由 Mozilla 主导开发的高性能编译型编程语言，遵循“安全、并发、实用”的设计原则。 Rust 语言由 Mozilla 开发，首次发布 …"
+          },
+          {
+            "url": "https://rustwiki.org/zh-CN/book/ch01-00-getting-started.html",
+            "title": "入门指南 - Rust 程序设计语言 中文版",
+            "snippet": "2026年4月16日 · Rust 程序设计语言中文也译为 Rust 权威指南，是 Rust 官方推出的学习 Rust 的必备教程。 Rust Wiki 版的 Rust 程序设计语 …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/Rust%E8%AF%AD%E8%A8%80/9502634",
+            "title": "Rust 语言_百度百科",
+            "snippet": "Rust 是一门系统编程语言，专注于安全，尤其是并发安全，支持函数式和命令式以及泛型等编程范式的多范式语言。 Rust 在语法上和 C++ 类 …"
+          },
+          {
+            "url": "https://ruststats.cc/zh",
+            "title": "Rust Tracker — RustStats：玩家数据、K/D 与游戏时长",
+            "snippet": "通过 SteamID64、好友代码或资料链接查看 Rust 数据：时长、K/D、封禁与成就。"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 7
+      }
+    },
+    {
+      "id": "npm-package",
+      "lang": "en",
+      "category": "package",
+      "query": "@fffangchenghao/dsh-web-search npm",
+      "official": "npmjs.com",
+      "plugin": {
+        "ok": true,
+        "ms": 4000,
+        "results": [
+          {
+            "url": "https://www.npmjs.com/package/@fffangchenghao/dsh-web-search",
+            "title": "@fffangchenghao/dsh-web-search@0.21.1",
+            "snippet": "DSH bundle: key-free web search, page fetch and one web_tools action tool for verticals, platforms and cited research; eight engines fused with RRF, 34 vertical sources, official-source checks, a replayable benchmark and a dependency-free MCP server."
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search",
+            "title": "@fffangchenghao/dsh-web-search - GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main",
+            "title": "@fffangchenghao/dsh-web-search - GitHub",
+            "snippet": "The latest version and install command live on npm"
+          },
+          {
+            "url": "https://awesome-dsh-plugin.com/p/fangchenghao/dsh-web-search/",
+            "title": "fangchenghao/dsh-web-search — dsh plugin · Tools & Capabilities",
+            "snippet": "Keyless web"
+          },
+          {
+            "url": "https://www.npmjs.com/package/@lemoncat7/dsh-web-search",
+            "title": "@lemoncat7/dsh-web-search - npm",
+            "snippet": "@lemoncat7/dsh- web"
+          },
+          {
+            "url": "https://www.npmjs.com/package/@gausszhou/dsh-web-search-local",
+            "title": "@gausszhou/dsh-web-search-local - npm",
+            "snippet": "Keyless multi-engine web"
+          },
+          {
+            "url": "https://npm.io/package/dsh-web-search",
+            "title": "dsh-web-search | npm.io",
+            "snippet": "pi- web"
+          },
+          {
+            "url": "https://awesome-dsh-plugin.com/zh/p/fangchenghao/dsh-web-search/",
+            "title": "fangchenghao/dsh-web-search — dsh 插件 · 工具与能力",
+            "snippet": "免密钥的网页搜索：融合八个引擎、经代理梯队抓取正文，另有八个覆盖包、论文与问答的垂直来源。——dsh- web"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 4
+      }
+    },
+    {
+      "id": "github-repo",
+      "lang": "en",
+      "category": "package",
+      "query": "fangchenghao dsh-web-search GitHub",
+      "official": "github.com",
+      "plugin": {
+        "ok": true,
+        "ms": 4666,
+        "results": [
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search",
+            "title": "GitHub - fangchenghao/dsh-web-search: Key-free web search for DeepSeek ...",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main",
+            "title": "GitHub - fangchenghao/dsh-web-search: Key-free web search for DeepSeek ...",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/releases",
+            "title": "Releases · fangchenghao/dsh-web-search - GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tags",
+            "title": "Tags · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/tree/main/docs",
+            "title": "dsh-web-search/docs at main · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          },
+          {
+            "url": "https://awesome-dsh-plugin.com/p/fangchenghao/dsh-web-search/",
+            "title": "fangchenghao/dsh-web-search — dsh plugin · Tools & Capabilities",
+            "snippet": "Keyless web"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/security",
+            "title": "Overview · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "GitHub"
+          },
+          {
+            "url": "https://github.com/fangchenghao/dsh-web-search/branches",
+            "title": "Branches · fangchenghao/dsh-web-search · GitHub",
+            "snippet": "Key-free web"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 2
+      }
+    },
+    {
+      "id": "pypi-requests",
+      "lang": "en",
+      "category": "package",
+      "query": "requests PyPI package",
+      "official": "pypi.org",
+      "plugin": {
+        "ok": true,
+        "ms": 3278,
+        "results": [
+          {
+            "url": "https://pypi.org/project/requests/",
+            "title": "requests · PyPI",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://pypi.org/",
+            "title": "PyPI · The Python Package Index",
+            "snippet": "The Python Package"
+          },
+          {
+            "url": "https://docs.python-requests.org/en/master/index.html",
+            "title": "Requests: HTTP for Humans™ — Requests 2.34.2 documentation",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://pypi-browser.org/package/requests",
+            "title": "requests - PyPI Browser",
+            "snippet": "requests"
+          },
+          {
+            "url": "https://github.com/psf/requests",
+            "title": "GitHub - psf/requests: A simple, yet elegant, HTTP library.",
+            "snippet": "Requests"
+          },
+          {
+            "url": "https://www.pepy.tech/projects/requests",
+            "title": "requests · 39.4G downloads on PyPI - pepy.tech",
+            "snippet": "requests"
+          },
+          {
+            "url": "https://docs.python-requests.org/en/stable/user/install/",
+            "title": "Installation of Requests — Requests 2.34.2 documentation",
+            "snippet": "Installation of Requests"
+          },
+          {
+            "url": "https://pypi.org/project/requests-ccwienk/",
+            "title": "requests-ccwienk · PyPI",
+            "snippet": "PyPI"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 1,
+        "uniqueDomains": 5
+      }
+    },
+    {
+      "id": "arxiv-rag",
+      "lang": "en",
+      "category": "research",
+      "query": "retrieval augmented generation survey arXiv",
+      "official": "arxiv.org",
+      "plugin": {
+        "ok": true,
+        "ms": 5002,
+        "results": [
+          {
+            "url": "https://dictionary.cambridge.org/zhs/%E8%AF%8D%E5%85%B8/%E8%8B%B1%E8%AF%AD-%E6%B1%89%E8%AF%AD-%E7%AE%80%E4%BD%93/retrieval",
+            "title": "RETRIEVAL 中文 (简体)翻译：剑桥词典 - Cambridge Dictionary",
+            "snippet": "Lexical retrieval is an essential process in both oral and written language production and an important aspect of fluency."
+          },
+          {
+            "url": "https://global.bing.com/dict/search?q=retrieval&FORM=BDVSP6&cc=cn",
+            "title": "retrieval - 搜索 词典",
+            "snippet": "必应词典为您提供retrieval的释义，美 [rɪˈtriv (ə)l]，英 [rɪˈtriːv (ə)l]，n. 取回；索回；数据检索； 网络释义： 恢复；提取；补偿；"
+          },
+          {
+            "url": "https://www.iciba.com/word?w=retrieval",
+            "title": "retrieval 是什么意思_ retrieval 的翻译_音标_读音_用法_例句 ...",
+            "snippet": "爱词霸权威在线词典,为您提供retrieval的中文意思,retrieval的用法讲解,retrieval的读音,retrieval的同义词,retrieval的反义词,retrieval的例句等 …"
+          },
+          {
+            "url": "https://baike.baidu.com/item/retrieval/53095249",
+            "title": "retrieval _百度百科",
+            "snippet": "What is in question is not the retrieval of an absolute, fixed or \"true\" meaning that can be read off and checked for accuracy, or some …"
+          },
+          {
+            "url": "https://dict.eudic.net/dicts/en/retrieval",
+            "title": "欧路词典|英汉-汉英词典 retrieval 是什么意思_ retrieval 的中文 ...",
+            "snippet": "『欧路词典』为您提供retrieval的用法讲解，告诉您准确全面的retrieval的中文意思，retrieval的读音，retrieval的同义词，retrieval的反义 …"
+          },
+          {
+            "url": "https://dictionary.cambridge.org/zhs/%E8%AF%8D%E5%85%B8/%E8%8B%B1%E8%AF%AD/retrieval",
+            "title": "RETRIEVAL 在剑桥英语词典中的解释及翻译 - Cambridge Dictionary",
+            "snippet": "The conceptualization of \"reading\" as an active process of sign-making, and not just information retrieval, supports both creative and …"
+          },
+          {
+            "url": "https://www.iciba.com/word?w=Retrieval-",
+            "title": "Retrieval -是什么意思_ Retrieval -的翻译_音标_读音_用法_例句 ...",
+            "snippet": "爱词霸权威在线词典,为您提供Retrieval-的中文意思,Retrieval-的用法讲解,Retrieval-的读音,Retrieval-的同义词,Retrieval-的反义词,Retrieval- …"
+          },
+          {
+            "url": "https://www.collinsdictionary.com/zh/dictionary/english/retrieval",
+            "title": "RETRIEVAL 释义 | 柯林斯英语词典 - Collins Online Dictionary",
+            "snippet": "The retrieval of information from a computer is the process of getting it back. ...electronic storage and retrieval systems. 2. 不可数名词 …"
+          }
+        ],
+        "failures": [
+          "anysearch: still running at deadline",
+          "exa: still running at deadline",
+          "ddg-html: still running at deadline"
+        ],
+        "route": "proxy",
+        "officialHit": false,
+        "officialRank": null,
+        "uniqueDomains": 6
+      }
+    },
+    {
+      "id": "stackoverflow-fetch-proxy",
+      "lang": "en",
+      "category": "qa",
+      "query": "Node.js fetch proxy environment variable Stack Overflow",
+      "official": "stackoverflow.com",
+      "plugin": {
+        "ok": true,
+        "ms": 3024,
+        "results": [
+          {
+            "url": "https://nodejs.org/learn/http/enterprise-network-configuration",
+            "title": "Enterprise Network Configuration | Node.js Learn",
+            "snippet": "This guide covers how to configure Node.js"
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/microsoft-cloud/dev/dev-proxy/how-to/use-dev-proxy-with-nodejs",
+            "title": "Use Dev Proxy with Node.js applications - Dev Proxy",
+            "snippet": "It allows you to specify the proxy"
+          },
+          {
+            "url": "https://stackoverflow.com/questions/37688508/make-node-js-use-http-proxy-https-proxy-and-no-proxy-environment-variables",
+            "title": "http - Make Node.js use http_proxy, https_proxy and no_proxy ...",
+            "snippet": "Unfortunately, the Node.js"
+          },
+          {
+            "url": "https://stackoverflow.com/questions/72306101/make-a-request-in-native-fetch-with-proxy-in-nodejs-18",
+            "title": "Make a request in native Fetch with Proxy in NodeJS 18",
+            "snippet": "In version 18 of Node"
+          },
+          {
+            "url": "https://tools.cooconsbit.com/en/articles/nodejs-fetch-ignores-https-proxy-en",
+            "title": "Node.js Built-in Fetch Doesn't Use HTTPS_PROXY: The Second Pitfall When ...",
+            "snippet": "curl works with proxy"
+          },
+          {
+            "url": "https://medium.com/@proxiesthatwork/how-to-use-proxies-in-node-js-fetch-guide-a1d2c9453c7a",
+            "title": "How to Use Proxies in Node.js (Fetch Guide) - Medium",
+            "snippet": "Learn how to use proxies with Node.js"
+          },
+          {
+            "url": "https://quanticdata.io/blog/node-fetch-proxy-setup/",
+            "title": "Node Fetch Proxy Agent: node-fetch and fetch | QuanticData",
+            "snippet": "Node fetch"
+          },
+          {
+            "url": "https://proxynet.io/blog/nodejs-proxy",
+            "title": "Using a Proxy in Node.js: Axios and node-fetch | Proxynet",
+            "snippet": "In this article we cover the three basic ways to set a proxy"
+          }
+        ],
+        "failures": [
+          "anysearch: aborted once enough results had arrived",
+          "exa: aborted once enough results had arrived"
+        ],
+        "route": "proxy",
+        "officialHit": true,
+        "officialRank": 3,
+        "uniqueDomains": 7
+      }
+    }
+  ],
+  "summary": {
+    "plugin": {
+      "queries": 30,
+      "answered": 30,
+      "answerRate": 1,
+      "officialHits": 29,
+      "officialRate": 0.9666666666666667,
+      "meanUniqueDomains": 5.67,
+      "latencyMs": {
+        "mean": 3768,
+        "p50": 4000,
+        "p95": 5003
+      },
+      "failures": [
+        {
+          "id": "node24",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "node24",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "python314",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "python314",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "rust190",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "go125",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "go125",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "typescript59",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "typescript59",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "typescript59",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "kubernetes134",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "kubernetes134",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "playwright-locator",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "playwright-locator",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-install",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-install",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "pip-install",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "pip-install",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "docker-compose",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "docker-compose",
+          "failure": "exa: no results"
+        },
+        {
+          "id": "docker-compose",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "github-actions-cache",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-actions-cache",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "mdn-fetch",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "mdn-fetch",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "fastapi-query",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "fastapi-query",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "nextjs-app-router",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "nextjs-app-router",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "nextjs-app-router",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "vite-config",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "vite-config",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "mcp-tools",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "mcp-tools",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "deepseek-api",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "deepseek-api",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "claude-code-mcp",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "claude-code-mcp",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "claude-code-mcp",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "node24-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "node24-zh",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "postgres18-zh",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "react19-zh",
+          "failure": "ddg-html: aborted once enough results had arrived"
+        },
+        {
+          "id": "python314-zh",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "python314-zh",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "python314-zh",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "rust190-zh",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "rust190-zh",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-package",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "npm-package",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-repo",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "github-repo",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "pypi-requests",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "pypi-requests",
+          "failure": "exa: aborted once enough results had arrived"
+        },
+        {
+          "id": "arxiv-rag",
+          "failure": "anysearch: still running at deadline"
+        },
+        {
+          "id": "arxiv-rag",
+          "failure": "exa: still running at deadline"
+        },
+        {
+          "id": "arxiv-rag",
+          "failure": "ddg-html: still running at deadline"
+        },
+        {
+          "id": "stackoverflow-fetch-proxy",
+          "failure": "anysearch: aborted once enough results had arrived"
+        },
+        {
+          "id": "stackoverflow-fetch-proxy",
+          "failure": "exa: aborted once enough results had arrived"
+        }
+      ]
+    }
+  },
+  "providers": {
+    "plugin": {
+      "label": "dsh-web-search"
+    }
+  }
+}

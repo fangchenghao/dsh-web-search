@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-668%20passing-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/tests-680%20tests-brightgreen" alt="测试">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -19,11 +19,13 @@
 ## 为什么选这个
 
 - **不要 API key，八个引擎。** AnySearch、必应中国、DuckDuckGo HTML、必应国际、DuckDuckGo Lite、360 搜索直接抓取；Exa 走它的免密钥 MCP 通道加入主引擎，Firecrawl 的搜索 API 作为实测后的兜底。装好就能用。
+- **官方发布事实优先。** PostgreSQL、Rust 和显式 npm 包查询会并行做一次窄查询；`Rust 1.90 发布说明` 的第 1 条是 Rust Blog 官方公告。查询上限 2.5 秒，失败就保留普通结果。
+- **尾部有预算，配额不粉饰。** 交互搜索在两个独立引擎返回后提前释放，拉丁文查询 5 秒、中文查询 3 秒封顶。Firecrawl 仍是兜底；需要稳定配额可以配 `firecrawlApiKey`，但免 key 的服务端配额不是客户端能修好的。
 - **排序是量出来的，不是写出来的。** 跨引擎 RRF 融合，叠加权威度与时效加权；20 条离线基准 + 81 组参数扫描，是这类插件里少数同时公开指标、逐条输出和置信区间的。方法见 [排序是怎么做的](docs/rrf-ranking.md)。
 - **一个包，两种运行时。** DSH 里是原生插件和唯一的 `web_tools` 入口；Claude Code、Codex 等 MCP 客户端通过零依赖的 stdio server 使用同一套免密钥搜索，提供 `search`、`fetch`、`research`、`domain_search`。见 [跨 Agent MCP](docs/cross-agent.md)。
-- **公开测量，也公开输的地方。** 30 条中英查询对比记录可用性、延迟、独立域名、官方域名命中与每一条失败；对比对象是免 key Firecrawl 和匿名 Exa。这里 Exa 更快，本插件返回的独立域名更多；两条对比路径都未使用 key。方法和原始结果在 [docs/comparison.md](docs/comparison.md)。
+- **公开测量，也公开输的地方。** 30 条中英查询对比记录可用性、延迟、独立域名、官方域名命中与每一条失败；对比对象是免 key Firecrawl 和匿名 Exa。这里 Exa 更快，本插件返回的独立域名更多；两条对比路径都未使用 key。方法和原始结果在 [docs/comparison.md](docs/comparison.md)；Exa 架构差异、中文 3 秒预算和 Rust 官方源见 [延迟与官方源](docs/latency-and-sources.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
-- **52 个测试文件、668 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **55 个测试文件、680 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -40,7 +42,7 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 | 免 key 路径 | 8 个引擎，全部免 key | ~30 个免费/付费引擎链 | 默认 5 个（seam、Exa、DDG、Bing、Jina） | Firecrawl + Keenable 免 key 默认 | 1 个 AnySearch 匿名 API |
 | 专门数据源 | 34 个（默认开 8 个） | 41 个 | 平台注册表，不是垂直源目录 | 网页 + X，无垂直源目录 | AnySearch 的垂直 API |
 | 面向模型的工具 | 1 个（`web_tools`，8 个 action）+ 4 个 MCP 工具 | ~10 个 | 2 个（`web_index` / `web_call`，20 个动作） | 原生搜索/抓取 + skill | 5 个 |
-| 测试 | 52 文件 / 668 用例，本地实测 | `package.json` 无测试脚本 | 774 单元 + 94 bench，自报 | 配了 Vitest，未公布数量 | 配了 Vitest，未公布数量 |
+| 测试 | 55 文件 / 680 用例，本地实测 | `package.json` 无测试脚本 | 774 单元 + 94 bench，自报 | 配了 Vitest，未公布数量 | 配了 Vitest，未公布数量 |
 | GitHub stars | 0 | 620 | 77 | 836 | 663 |
 | npm 近一月下载 | 1,087 | 52,436 | 6,420 | 43,151 | 9,251 |
 | npm 解包大小 | 1.2 MB | 0.70 MB | 3.05 MB | 0.51 MB | 0.27 MB |
@@ -50,11 +52,11 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 - **功能深度：中上。** `dsh-free-search` 引擎和垂直源更多；
   `dsh-web-search-pro` 的证据/排序管线和平台后端更深；`modsearch` 的跨宿主
   能力更强。
-- **工程质量与可验证性：接近第一梯队。** 668 个本地测试、可重放的排序基准、
+- **工程质量与可验证性：接近第一梯队。** 680 个本地测试、可重放的排序基准、
   明确的安全边界、只有 1 个运行时依赖，同时体积远小于 Playwright 重型方案。
 - **免 key + 官方源纠错：最强卖点。** Chrome、PostgreSQL、AI Act 的官方路径
   和 34 个垂直源，不是其他插件普遍具备的。
-- **采用度与成熟度：这个样本里的后段。** 公开 npm 已是 0.21.1，与这棵树一致；但 GitHub 仓库创建 4 天、0 stars，
+- **采用度与成熟度：这个样本里的后段。** 公开 npm 已是 0.22.0，与这棵树一致；但 GitHub 仓库创建 4 天、0 stars，
   还缺少独立采用。
 - **工具面的经济性：现在有竞争力。** 0.20.x 只暴露一个 `web_tools` + 8 个
   action，接近 `dsh-web-search-pro` 的 2 工具 + 20 动作；旧的八个工具名保留为
@@ -267,8 +269,8 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
    *技术补充：查询含 CJK 字符时 `lead = cn`，纯 ASCII 时 `lead = global`；非主导区只在主导区凑不够条数时才追加。`src/relevance.ts` 把中文查询切成二字 bigram（ASCII 单词权重翻倍），要求与标题、摘要或 URL 至少两个权重单位的重合；英文查询原样放行。对整串匹配型引擎还会用核心词补问一次（`src/variants.ts`），但只在原答案没有任何一条能通过相关性门槛时才补问——短查询正常工作时不付这次请求和延迟：「东数西算 八个国家枢纽节点 定位」会补问「东数西算」，「如何配置 postgres 逻辑复制」会补问「postgres 逻辑复制」。实测第一条查询：`cn.bing` 原来返回十条词典/公司页，现在能贡献发改委和 gov.cn 文章，融合结果八条全部相关。*
 
 6. **快慢可以选。**
-   默认 `auto`：英文最多等 6 秒、中文最多等 3.5 秒；`fast` 谁先回就用谁；`all` 等所有引擎，最多 10 秒。
-   *技术补充：`wait` 三值，软截止分别是 `auto` 6000/3500 ms、`fast` 3500 ms、`all` 10000 ms；单引擎硬超时默认 `timeoutMs: 15000`。*
+   默认 `auto`：英文最多等 5 秒、中文最多等 3 秒；`fast` 谁先回就用谁；`all` 等所有引擎，最多 10 秒。
+   *技术补充：`wait` 三值，软截止分别是 `auto` 5000/3000 ms、`fast` 3500 ms、`all` 10000 ms；单引擎硬超时默认 `timeoutMs: 15000`。*
 
 7. **同一个问题不重复打扰搜索引擎。**
    十分钟内问同一个问题，直接用上次的结果，几乎瞬间返回。
@@ -526,6 +528,7 @@ pnpm install
     proxy: ""            # 留空自动探测
     anysearchApiKey: ""  # 留空表示匿名访问
     anysearchDomain: ""  # 或 finance / academic / security / legal / code
+    firecrawlApiKey: ""  # 可选；免 key 兜底配额很紧
     timeRange: off       # off / day / week / month / year
     renderJs: auto       # auto / always / off
     renderTimeoutMs: 15000
@@ -574,6 +577,7 @@ pnpm install
 | 代理（中转站） | `proxy` | 空（自动探测） | 如 `http://127.0.0.1:7890`；留空先读环境变量再读系统代理 |
 | AnySearch 通行证 | `anysearchApiKey` | 空（匿名） | 可选项。只发给 `api.anysearch.com`，用于提高额度、解锁正文抽取。可以用逗号分隔填多个 key，插件轮流使用；某个被限流或拒绝会自动休息 |
 | 专业领域 | `anysearchDomain` | 空（通用） | 常见取值 `finance` / `academic` / `security` / `legal` / `code`，可带子域如 `finance.us_stock` |
+| Firecrawl 通行证 | `firecrawlApiKey` | 空（匿名） | 可选项，只影响兜底梯队；匿名端点共享配额很紧，连续扫描可能返回 `429` |
 | 屏蔽网站 | `blockedDomains` | 空（不屏蔽） | 永远不要出现在结果里的网站，逗号分隔；子域名会一起屏蔽。在融合之后和缓存命中时都会过滤，所以被屏蔽的行不会从缓存里回来 |
 | 安全搜索 | `safeSearch` | `off` | `off` 保持引擎默认；`moderate` / `strict` 会以 Bing `adlt`、DuckDuckGo `kp` 转发，其它引擎忽略 |
 | 哪些失败可回退 | `fallbackOn` | 六类全开 | 允许切备用引擎的失败类别：`quota`、`auth`、`bot-wall`、`transient`、`invalid-response`、`unknown`。留空表示任何失败都不回退；被跳过的回退会写进结果的 `note` |

@@ -17,6 +17,7 @@
  * Environment:
  *   DSH_WEB_SEARCH_PROXY / HTTPS_PROXY / HTTP_PROXY  optional tunnel
  *   ANYSEARCH_API_KEY                                 optional AnySearch key
+ *   FIRECRAWL_API_KEY                                 optional Firecrawl key
  *   DSH_WEB_SEARCH_MCP_LIMIT                          default result limit (8)
  *
  * The server writes protocol messages to stdout and diagnostics to stderr.
@@ -31,6 +32,7 @@ import { search } from '../lib/engines.js';
 import { createFetchProvider } from '../lib/fetch.js';
 import { searchVerticals } from '../lib/verticals.js';
 import { createResearchDefinition, formatResearchValue } from '../lib/research.js';
+import { mergeOfficial, officialLookup } from '../lib/official-sources.js';
 import { wrapUntrustedContent } from '../lib/untrusted.js';
 
 const PACKAGE = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
@@ -44,6 +46,7 @@ const MAX_TEXT = 80_000;
 const env = process.env;
 const proxy = env.DSH_WEB_SEARCH_PROXY ?? env.HTTPS_PROXY ?? env.HTTP_PROXY ?? undefined;
 const anysearchApiKey = env.ANYSEARCH_API_KEY ?? env.DSH_WEB_SEARCH_ANYSEARCH_KEY ?? '';
+const firecrawlApiKey = env.FIRECRAWL_API_KEY ?? env.DSH_WEB_SEARCH_FIRECRAWL_KEY ?? '';
 const defaultLimit = (() => {
   const raw = Number(env.DSH_WEB_SEARCH_MCP_LIMIT);
   return Number.isInteger(raw) && raw > 0 ? Math.min(raw, MAX_LIMIT) : DEFAULT_LIMIT;
@@ -85,6 +88,7 @@ function searchOptions(limit, timeoutMs) {
     wait: 'auto',
     ...(proxy === undefined ? {} : { proxy }),
     ...(anysearchApiKey.length === 0 ? {} : { anysearchApiKey }),
+    ...(firecrawlApiKey.length === 0 ? {} : { firecrawlApiKey }),
   };
 }
 
@@ -171,8 +175,13 @@ async function callTool(name, args) {
     if (query.length === 0) throw new Error('search requires a non-empty query');
     const limit = intArg(args.limit, defaultLimit, 1, MAX_LIMIT);
     const timeoutMs = intArg(args.timeoutMs, 12_000, 1_000, 30_000);
+    const official = officialLookup(query, {
+      timeoutMs: Math.min(timeoutMs, 2_500),
+      ...(proxy === undefined ? {} : { proxy }),
+    });
     const outcome = await search(query, undefined, searchOptions(limit, timeoutMs));
-    return formatSources(query, outcome.sources, { failures: outcome.failures });
+    const sources = mergeOfficial(outcome.sources, await official);
+    return formatSources(query, sources.slice(0, limit), { failures: outcome.failures });
   }
   if (name === 'fetch') {
     const url = typeof args.url === 'string' ? args.url.trim() : '';

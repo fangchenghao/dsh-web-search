@@ -10,10 +10,12 @@
  * Usage:
  *   DSH_WEB_SEARCH_PROXY=http://127.0.0.1:7890 node bench/compare30.mjs
  *   node bench/compare30.mjs --out bench/compare30/results-2026-10-26.json
+ *   node bench/compare30.mjs --only plugin --out bench/compare30/plugin-after.json
  *
  * Environment:
  *   DSH_WEB_SEARCH_PROXY  optional tunnel for all three providers
  *   ANYSEARCH_API_KEY     optional for the plugin arm
+ *   FIRECRAWL_API_KEY     optional; absent measures the keyless Firecrawl path
  *
  * @module bench/compare30
  */
@@ -21,6 +23,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { search } from '../src/engines.ts';
+import { mergeOfficial, officialLookup } from '../src/official-sources.ts';
 import { parseExaMcp } from '../src/parsers.ts';
 import { proxyGet } from '../src/proxy.ts';
 
@@ -28,6 +31,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_QUERIES = join(ROOT, 'bench', 'compare30', 'queries.json');
 const DEFAULT_OUT = join(ROOT, 'bench', 'compare30', 'results.json');
 const PROXY = process.env.DSH_WEB_SEARCH_PROXY ?? process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY ?? undefined;
+const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY ?? '';
 const LIMIT = 8;
 const TIMEOUT_MS = 15_000;
 const SLEEP_MS = (() => {
@@ -39,15 +43,17 @@ const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise,
 
 /** Parse `--flag value` and `--flag=value`. */
 function args() {
-  const out = { queries: DEFAULT_QUERIES, out: DEFAULT_OUT };
+  const out = { queries: DEFAULT_QUERIES, out: DEFAULT_OUT, only: undefined, reportOnly: false };
   for (let index = 2; index < process.argv.length; index += 1) {
     const arg = process.argv[index];
+    if (arg === '--report-only') { out.reportOnly = true; continue; }
     const [key, inline] = arg.split('=', 2);
     const value = inline ?? process.argv[index + 1];
     if (value === undefined) throw new Error(`missing value for ${key}`);
     if (inline === undefined) index += 1;
     if (key === '--queries') out.queries = resolve(value);
     else if (key === '--out') out.out = resolve(value);
+    else if (key === '--only') out.only = value.split(',').map((item) => item.trim()).filter(Boolean);
     else throw new Error(`unknown option ${key}`);
   }
   return out;
@@ -118,16 +124,22 @@ async function postWithFallback(url, body, headers = {}) {
 async function runPlugin(query) {
   const started = Date.now();
   try {
+    const official = officialLookup(query, {
+      timeoutMs: Math.min(TIMEOUT_MS, 2_500),
+      ...(PROXY === undefined ? {} : { proxy: PROXY }),
+    });
     const outcome = await search(query, undefined, {
       limit: LIMIT,
       timeoutMs: TIMEOUT_MS,
       ...(PROXY === undefined ? {} : { proxy: PROXY }),
       ...(process.env.ANYSEARCH_API_KEY === undefined ? {} : { anysearchApiKey: process.env.ANYSEARCH_API_KEY }),
+      ...(process.env.FIRECRAWL_API_KEY === undefined ? {} : { firecrawlApiKey: process.env.FIRECRAWL_API_KEY }),
     });
+    const sources = mergeOfficial(outcome.sources, await official);
     return {
-      ok: outcome.sources.length > 0,
+      ok: sources.length > 0,
       ms: Date.now() - started,
-      results: outcome.sources.slice(0, LIMIT).map((source) => ({ url: source.url, title: source.title, snippet: source.snippet })),
+      results: sources.slice(0, LIMIT).map((source) => ({ url: source.url, title: source.title, snippet: source.snippet })),
       failures: outcome.failures,
       route: outcome.proxy === undefined ? 'direct' : 'proxy',
     };
@@ -139,7 +151,11 @@ async function runPlugin(query) {
 /** Run the Firecrawl keyless arm. */
 async function runFirecrawl(query) {
   const started = Date.now();
-  const response = await postWithFallback('https://api.firecrawl.dev/v1/search', { query, limit: 10 });
+  const response = await postWithFallback(
+    'https://api.firecrawl.dev/v1/search',
+    { query, limit: 10 },
+    FIRECRAWL_API_KEY.length === 0 ? {} : { authorization: `Bearer ${FIRECRAWL_API_KEY}` },
+  );
   if (!response.ok) return { ok: false, ms: Date.now() - started, results: [], failures: [response.error ?? `HTTP ${response.status}`], attempts: response.attempts };
   try {
     const parsed = JSON.parse(response.text);
@@ -201,7 +217,8 @@ function aggregate(arm) {
 
 /** Format a Markdown report. */
 function report(data) {
-  const providers = ['plugin', 'firecrawl', 'exa'];
+  const providers = Object.keys(data.providers);
+  const includePlugin = providers.includes('plugin');
   const lines = [
     '# 30-query keyless comparison',
     '',
@@ -210,11 +227,11 @@ function report(data) {
     '## Method',
     '',
     '- Same 30 queries, same top-8 budget, same machine and network route.',
-    '- Plugin arm: `search()` with the current ranker, no cache, 15 s timeout.',
-    '- Firecrawl arm: `POST https://api.firecrawl.dev/v1/search` keyless tier, direct then the configured tunnel.',
-    '- Exa arm: anonymous MCP `web_search_exa`, direct then the configured tunnel.',
+    ...(includePlugin ? ['- Plugin arm: `search()` plus the narrow official release lookup, no cache, 15 s timeout.'] : []),
+    ...(providers.includes('firecrawl') ? ['- Firecrawl arm: `POST https://api.firecrawl.dev/v1/search` keyless tier unless `FIRECRAWL_API_KEY` is set, direct then the configured tunnel.'] : []),
+    ...(providers.includes('exa') ? ['- Exa arm: anonymous MCP `web_search_exa`, direct then the configured tunnel.'] : []),
     '- Metrics are availability, latency, unique domains and whether a known official domain appears. They are not a human relevance grade; failures are listed below.',
-    '- No API keys were used. Firecrawl/Exa can rate-limit or block by IP; that is part of the recorded result.',
+    ...(providers.includes('firecrawl') || providers.includes('exa') ? ['- Keyless Firecrawl/Exa can rate-limit or block by IP; that is part of the recorded result.'] : []),
     '',
     '## Summary',
     '',
@@ -225,13 +242,14 @@ function report(data) {
     const value = data.summary[key];
     lines.push(`| ${data.providers[key].label} | ${value.answered}/${value.queries} | ${value.officialHits}/${value.queries} | ${value.meanUniqueDomains ?? '—'} | ${value.latencyMs.mean ?? '—'} | ${value.latencyMs.p50 ?? '—'} | ${value.latencyMs.p95 ?? '—'} |`);
   }
-  lines.push('', '## Per query', '', '| Query | Category | Plugin | Firecrawl | Exa | Plugin official |', '| --- | --- | --- | --- | --- | --- |');
+  const columns = providers.map((key) => data.providers[key].label);
+  lines.push('', '## Per query', '', `| Query | Category | ${columns.join(' | ')} |${includePlugin ? ' Plugin official |' : ''}`, `| --- | --- | ${columns.map(() => '---').join(' | ')} |${includePlugin ? ' --- |' : ''}`);
   for (const row of data.queries) {
     const cell = (key) => {
       const item = row[key];
       return item === undefined ? '—' : item.ok ? `${item.results.length} rows / ${item.ms}ms` : `FAIL: ${(item.failures[0] ?? 'no rows').slice(0, 80)}`;
     };
-    lines.push(`| ${row.query.replace(/\|/gu, '\\|')} | ${row.category} | ${cell('plugin')} | ${cell('firecrawl')} | ${cell('exa')} | ${row.plugin.officialHit ? 'yes' : 'no'} |`);
+    lines.push(`| ${row.query.replace(/\|/gu, '\\|')} | ${row.category} | ${providers.map(cell).join(' | ')} |${includePlugin ? ` ${row.plugin.officialHit ? 'yes' : 'no'} |` : ''}`);
   }
   lines.push('', '## Failures and caveats', '');
   for (const key of providers) {
@@ -246,14 +264,25 @@ function report(data) {
 }
 
 const options = args();
+if (options.reportOnly) {
+  const data = JSON.parse(await readFile(options.out, 'utf8'));
+  await writeFile(options.out.replace(/\.json$/u, '.md'), report(data));
+  console.log(`rewrote ${options.out.replace(/\.json$/u, '.md')}`);
+  process.exit(0);
+}
 const queries = JSON.parse(await readFile(options.queries, 'utf8'));
 if (!Array.isArray(queries)) throw new Error('queries must be a JSON array');
 const startedAt = new Date().toISOString();
-const providers = {
+const availableProviders = {
   plugin: { label: 'dsh-web-search', runner: runPlugin },
-  firecrawl: { label: 'Firecrawl keyless', runner: runFirecrawl },
+  firecrawl: { label: FIRECRAWL_API_KEY.length === 0 ? 'Firecrawl keyless' : 'Firecrawl keyed', runner: runFirecrawl },
   exa: { label: 'Exa anonymous', runner: runExa },
 };
+const selected = options.only ?? Object.keys(availableProviders);
+for (const key of selected) {
+  if (availableProviders[key] === undefined) throw new Error(`unknown provider ${JSON.stringify(key)}; use plugin, firecrawl or exa`);
+}
+const providers = Object.fromEntries(selected.map((key) => [key, availableProviders[key]]));
 const data = { generatedAt: startedAt, proxy: PROXY ?? null, limit: LIMIT, queries: [], summary: {}, providers: Object.fromEntries(Object.entries(providers).map(([key, value]) => [key, { label: value.label }])) };
 for (const [index, query] of queries.entries()) {
   const row = { id: query.id, lang: query.lang, category: query.category, query: query.query, official: query.official };

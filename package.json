@@ -1,7 +1,7 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.21.1",
-  "description": "DSH bundle: key-free web search, page fetch and one web_tools action tool for verticals, platforms and cited research; eight engines fused with RRF, 34 vertical sources, official-source checks, a replayable benchmark and a dependency-free MCP server.",
+  "version": "0.22.0",
+  "description": "DSH bundle: key-free web search, page fetch and one web_tools action tool for verticals, platforms and cited research; eight engines fused with RRF, 34 vertical sources, official release facts, a replayable benchmark, an optional Firecrawl key and a dependency-free MCP server.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -32,7 +32,8 @@
     "docs/quickstart.md",
     "docs/cross-agent.md",
     "docs/comparison.md",
-    "docs/images/web-tools-demo.svg"
+    "docs/images/web-tools-demo.svg",
+    "docs/latency-and-sources.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

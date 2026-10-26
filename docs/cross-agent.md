@@ -59,6 +59,7 @@ it as data: a page can contain instructions, but they are not commands.
 | --- | --- |
 | `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `HTTP_PROXY` | Optional tunnel used when a direct request fails |
 | `ANYSEARCH_API_KEY` | Optional AnySearch key; the keyless path works without it |
+| `FIRECRAWL_API_KEY` | Optional Firecrawl key for a stable fallback; absent uses the quota-limited keyless path |
 | `DSH_WEB_SEARCH_MCP_LIMIT` | Default result limit (1–20, default 8) |
 
 The MCP server never reads DSH profile files and never installs anything. It

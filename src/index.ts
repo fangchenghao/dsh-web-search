@@ -34,7 +34,7 @@ import { registerAdvancedSearchTool, undatedWindowNote } from './advanced-search
 import type { AdvancedSearchOutcome, AdvancedSearchRegistryLike, AdvancedSearchRunner } from './advanced-search.ts';
 import { searchVerticals } from './verticals.ts';
 import { routePackageQuery } from './query-router.ts';
-import { fetchPostgresSupport, isPostgresVersionQuery } from './official-support.ts';
+import { mergeOfficial, officialLookup } from './official-sources.ts';
 import {
   chromeFeedNote,
   chromeWindow,
@@ -223,6 +223,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       rank: resolved.rank,
       ...(resolved.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: resolved.anysearchApiKey }),
       ...(resolved.anysearchDomain.length === 0 ? {} : { anysearchDomain: resolved.anysearchDomain }),
+      ...(resolved.firecrawlApiKey.length === 0 ? {} : { firecrawlApiKey: resolved.firecrawlApiKey }),
       cache,
       health,
       ...(signal === undefined ? {} : { signal }),
@@ -316,6 +317,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
       ...(live.anysearchApiKey.length === 0 ? {} : { anysearchApiKey: live.anysearchApiKey }),
       ...(live.anysearchDomain.length === 0 ? {} : { anysearchDomain: live.anysearchDomain }),
+      ...(live.firecrawlApiKey.length === 0 ? {} : { firecrawlApiKey: live.firecrawlApiKey }),
       hostIds: [engine],
     });
   };
@@ -334,27 +336,26 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       const asked = typeof request.maxResults === 'number' && Number.isInteger(request.maxResults) && request.maxResults > 0
         ? request.maxResults
         : undefined;
+      const live = resolveConfig(section, undefined);
+      // Start an official lookup before the fan-out and await it afterwards.
+      // It then costs max(search, lookup), not search + lookup, which matters
+      // for a version query where the first result should be authoritative but
+      // the ordinary engines still need to fill the remaining rows.
+      const official = officialLookup(query, {
+        timeoutMs: Math.min(live.timeoutMs, 2_500),
+        ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
+        ...(signal === undefined ? {} : { signal }),
+      });
       const outcome = await runQuery(query, asked, signal);
-      // A version/EOL question about PostgreSQL is better answered by the
-      // project's own support table than by whatever an engine ranks first.
+      // A version/EOL question about PostgreSQL or Rust is better answered by
+      // the project's own release facts than by whatever an engine ranks first.
       // The lookup is query-scoped and failure-tolerant; it never replaces the
       // ordinary rows when the page is unavailable.
-      let sources = outcome.sources;
-      if (isPostgresVersionQuery(query)) {
-        const live = resolveConfig(section, undefined);
-        const official = await fetchPostgresSupport({
-          timeoutMs: Math.min(live.timeoutMs, 8_000),
-          ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
-          ...(signal === undefined ? {} : { signal }),
-        });
-        if (official !== undefined) {
-          sources = [official, ...sources.filter((source) => source.url !== official.url)];
-        }
-      }
+      const sources = mergeOfficial(outcome.sources, await official);
       if (sources.length === 0) {
         throw new Error(`no search engine returned results for ${JSON.stringify(query)} (${outcome.failures.join('; ')})`);
       }
-      const cap = Math.min(asked ?? resolveConfig(section, undefined).limit, resolveConfig(section, undefined).limit);
+      const cap = Math.min(asked ?? live.limit, live.limit);
       return { sources: sources.slice(0, cap), truncated: outcome.truncated || sources.length > cap };
     },
   });

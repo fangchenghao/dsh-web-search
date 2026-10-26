@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.22.0
+
+### Changed
+- **Tail-tolerant tier release.** A tier no longer waits for a contributor
+  from the leading region. It releases when the result budget is filled and any
+  two independent engines have returned rows. Interactive deadlines are 5 s for
+  Latin-script queries and 3 s for CJK queries; `wait: 'all'` remains the
+  completeness escape hatch.
+- **Official release facts start in parallel.** `officialLookup()` now covers
+  PostgreSQL, Rust and explicitly npm-scoped package queries. The Rust resolver
+  maps the GitHub release timestamp to the canonical
+  `blog.rust-lang.org/YYYY/MM/DD/Rust-X.Y.Z/` page, tries the API directly
+  before the tunnel, and is capped at 2.5 s. `Rust 1.90 发布说明` now returns the
+  official announcement at rank 1.
+- **Optional Firecrawl key.** `firecrawlApiKey` / `FIRECRAWL_API_KEY` gives
+  users a repeatable Firecrawl fallback. Keyless Firecrawl remains the default
+  and its quota behavior is still recorded honestly; a client cannot repair a
+  server-side keyless quota.
+- **Replayable follow-up measurement.** `bench/compare30.mjs` can run one arm
+  with `--only plugin`, enriches the plugin arm with the official lookup, and
+  records an optional Firecrawl key. The 30-query follow-up and the five-query
+  Chinese latency table are checked in under `bench/compare30/` and
+  `docs/latency-and-sources.md`.
+
+### Documentation
+- **Exa architecture and papers.** `docs/latency-and-sources.md` explains why a
+  hosted semantic index can answer around 1 s, what tail-tolerant release
+  borrows from Dean & Barroso, and why this plugin does not need a vector
+  database to fix these specific failures. It links Exa's engineering posts,
+  The Tail at Scale, HNSW, Matryoshka representation learning and ColBERT.
+
+**Test suite: 680 tests across 55 files** (679 pass, 1 skipped).
+
 ## 0.21.1
 
 ### Documentation

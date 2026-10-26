@@ -112,7 +112,7 @@ test('the settings gate sees volatile fields, so the namespace is served', () =>
     'anysearchApiKey', 'anysearchDomain', 'authorityBoost', 'authorityDomains', 'baseCooldownMs',
     'blockedDomains', 'cacheEntries', 'cacheFile', 'cachePersist', 'cacheTtlMs',
     'domainLimit', 'domainSources', 'domainTimeoutMs', 'fallbackOn',
-    'fetchFormat', 'fetchMaxLength', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
+    'fetchFormat', 'fetchMaxLength', 'firecrawlApiKey', 'freshnessBoost', 'freshnessDays', 'hosts', 'limit',
     'maxCooldownMs', 'proxy', 'renderJs', 'renderTimeoutMs', 'rrfConstant', 'safeSearch', 'timeRange', 'timeoutMs', 'toolSurface', 'wait',
   ]);
 });

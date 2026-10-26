@@ -97,6 +97,7 @@ declare const _default: typeof apply & {
         cacheFile: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         anysearchApiKey: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         anysearchDomain: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
+        firecrawlApiKey: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         baseCooldownMs: import("@deepseek-ai/schemastery").default<number, number, "volatile-defined">;
         maxCooldownMs: import("@deepseek-ai/schemastery").default<number, number, "volatile-defined">;
         domainSources: import("@deepseek-ai/schemastery").default<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;
@@ -128,6 +129,7 @@ declare const _default: typeof apply & {
         cacheFile: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         anysearchApiKey: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         anysearchDomain: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
+        firecrawlApiKey: import("@deepseek-ai/schemastery").default<string, string, "volatile-defined">;
         baseCooldownMs: import("@deepseek-ai/schemastery").default<number, number, "volatile-defined">;
         maxCooldownMs: import("@deepseek-ai/schemastery").default<number, number, "volatile-defined">;
         domainSources: import("@deepseek-ai/schemastery").default<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;

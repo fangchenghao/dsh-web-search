@@ -54,8 +54,10 @@ touch the network; `proxy` never parses a result page.
    - every engine settled;
    - every engine of the leading region settled (success *or* failure), so a
      failed engine cannot hold the tier open until the deadline;
-   - `available() >= limit` sources from at least `needed` contributors;
-   - the soft deadline (`auto`: 6 s ASCII / 3.5 s CJK, `fast`: 3.5 s, `all`: 10 s).
+   - `available() >= limit` sources from at least `needed` contributors across
+     **all** regions (two for `auto`), so one slow lead engine cannot keep a
+     complete cross-engine answer waiting;
+   - the soft deadline (`auto`: 5 s ASCII / 3 s CJK, `fast`: 3.5 s, `all`: 10 s).
 
    Engines still running at release are aborted and reported as
    `aborted once enough results had arrived` or `still running at deadline`.

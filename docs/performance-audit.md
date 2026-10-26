@@ -4,6 +4,11 @@ This audit covers the 0.21.x tree: the test suite, the offline ranking
 benchmark, a live 30-query comparison and the new MCP path. It records the
 failures as well as the wins.
 
+> Historical snapshot. The 0.22.0 changes and their measurements are in
+> [latency-and-sources.md](latency-and-sources.md); the raw follow-up is
+> `bench/compare30/results-2026-10-26-plugin-after.json`. Numbers below are
+> deliberately left as measured on 0.21.x.
+
 ## Test suite
 
 ```

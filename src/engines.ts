@@ -206,7 +206,10 @@ function ddgWindow(timeRange: TimeRange | undefined): string {
 
 /** Soft deadline per wait policy, in milliseconds. */
 const SOFT_DEADLINE: Record<WaitPolicy, (ascii: boolean) => number> = {
-  auto: (ascii) => (ascii ? 6000 : 3500),
+  // Auto is the interactive path: cap a slow fan-out leg instead of letting
+  // the caller absorb the slowest engine. `all` keeps the completeness escape
+  // hatch for callers that explicitly want every engine.
+  auto: (ascii) => (ascii ? 5000 : 3000),
   all: () => 10000,
   fast: () => 3500,
 };
@@ -278,6 +281,19 @@ function allowsFallback(details: readonly EngineFailure[], fallbackOn: readonly 
   if (fallbackOn === undefined) return true;
   const allowed = new Set(fallbackOn);
   return details.every((detail) => allowed.has(detail.kind));
+}
+
+/**
+ * Whether a tier may release before its soft deadline.
+ *
+ * `limit` and `needed` are intentionally separate: eight rows from one engine
+ * are still a single-engine answer, while eight rows from two engines are a
+ * genuine cross-engine result. Counting every region here is what prevents a
+ * slow lead engine from holding a query open after another region supplied
+ * enough rows.
+ */
+export function tierReleaseReady(available: number, contributors: number, limit: number, needed: number): boolean {
+  return available >= limit && contributors >= needed;
 }
 
 /** Tuning for one tier run. */
@@ -388,8 +404,14 @@ async function runTier(
   const answered = () => outcomes.filter((outcome) => outcome instanceof SearchError || outcome !== undefined);
   const available = () =>
     outcomes.reduce((total, outcome) => total + (outcome instanceof SearchError || outcome === undefined ? 0 : outcome.sources.length), 0);
+  // A contributor is any engine that returned rows, not only an engine in the
+  // leading region. The lead still decides ordering and the `leadSettled`
+  // shortcut; it must not also veto an early release when a healthy global
+  // engine has already supplied useful rows. This is the fan-out tail issue:
+  // a slow AnySearch request should not hold the whole Chinese query open
+  // after CN Bing and a global engine have enough rows between them.
   const contributors = () =>
-    outcomes.filter((outcome, index) => counters(hosts[index] as HostSpec) && !(outcome instanceof SearchError) && outcome !== undefined && outcome.sources.length > 0).length;
+    outcomes.filter((outcome) => !(outcome instanceof SearchError) && outcome !== undefined && outcome.sources.length > 0).length;
   const leadTotal = hosts.filter(counters).length || hosts.length;
   const needed = Math.min(limits.needed, leadTotal);
   // Nothing more can arrive from the leading region once every one of its
@@ -397,7 +419,9 @@ async function runTier(
   // the soft deadline.
   const leadSettled = () => outcomes.filter((outcome, index) => counters(hosts[index] as HostSpec) && outcome !== undefined).length >= leadTotal;
   const done = () =>
-    answered().length === hosts.length || leadSettled() || (available() >= limits.limit && contributors() >= needed);
+    answered().length === hosts.length ||
+    leadSettled() ||
+    tierReleaseReady(available(), contributors(), limits.limit, needed);
 
   let releasedEarly = false;
   let closed = false;
@@ -473,6 +497,8 @@ export interface EngineRunOptions extends SearchOptions {
   anysearchApiKey?: string;
   /** AnySearch vertical domain, such as `finance` or `finance.us_stock`. */
   anysearchDomain?: string;
+  /** Optional Firecrawl Bearer token; absent keeps the keyless fallback. */
+  firecrawlApiKey?: string;
   /** Ranking knobs, falling back to the documented defaults. */
   rank?: RankOptions;
   /** Failure classes that may trigger the fallback tier; absent means all. */
@@ -542,15 +568,22 @@ export interface SearchTrace {
 /**
  * Apply per-run configuration to an engine definition.
  *
- * Only AnySearch is configurable today: it authenticates with a Bearer token and
- * can be pointed at one of its vertical domains. Returning a copy keeps the
- * exported `HOSTS` catalogue static, so a stale credential can never leak into
- * the next run through a mutated descriptor.
+ * AnySearch can be pointed at one of its vertical domains; both AnySearch and
+ * Firecrawl authenticate with an optional Bearer token. Returning a copy keeps
+ * the exported `HOSTS` catalogue static, so a stale credential can never leak
+ * into the next run through a mutated descriptor.
  * @param host - the engine definition from `HOSTS`.
- * @param options - the run options carrying the credential and domain.
+ * @param options - the run options carrying credentials and the domain.
  * @returns the engine definition to use for this run.
  */
-export function resolveHost(host: HostSpec, options: Pick<EngineRunOptions, 'anysearchApiKey' | 'anysearchDomain'>): HostSpec {
+export function resolveHost(
+  host: HostSpec,
+  options: Pick<EngineRunOptions, 'anysearchApiKey' | 'anysearchDomain' | 'firecrawlApiKey'>,
+): HostSpec {
+  if (host.id === 'firecrawl') {
+    const firecrawlKey = (options.firecrawlApiKey ?? '').trim();
+    return firecrawlKey.length === 0 ? host : { ...host, headers: { authorization: `Bearer ${firecrawlKey}` } };
+  }
   if (host.id !== 'anysearch') return host;
   const key = (options.anysearchApiKey ?? '').trim();
   const domain = (options.anysearchDomain ?? '').trim();
@@ -589,7 +622,13 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   const allow = options.hostIds !== undefined && options.hostIds.length > 0 ? new Set(options.hostIds) : undefined;
   const hosts = HOSTS.filter((host) => allow === undefined || allow.has(host.id))
     .filter((host) => host.viaProxy !== true || proxy !== undefined)
-    .map((host) => resolveHost(host, options.anysearchDomain === undefined ? {} : { anysearchDomain: options.anysearchDomain }));
+    .map((host) =>
+      resolveHost(host, {
+        ...(options.anysearchApiKey === undefined ? {} : { anysearchApiKey: options.anysearchApiKey }),
+        ...(options.anysearchDomain === undefined ? {} : { anysearchDomain: options.anysearchDomain }),
+        ...(options.firecrawlApiKey === undefined ? {} : { firecrawlApiKey: options.firecrawlApiKey }),
+      }),
+    );
 
   // Skip engines that are cooling down, but never end up with no engine at all:
   // a throttled engine is still better than no search.
@@ -612,9 +651,13 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
 
   const ascii = !CJK.test(query);
   const lead: Region = ascii ? 'global' : 'cn';
-  const wanted = usable.filter((host) => leadsQuery(host, lead)).length;
   const softMs = options.softMs ?? SOFT_DEADLINE[wait](ascii);
-  const needed = wait === 'all' ? usable.length : wait === 'fast' ? 1 : wanted > 0 ? wanted : Math.min(2, usable.length);
+  // `auto` is a latency policy, not a completeness policy: two independent
+  // contributors are enough to make fusion meaningful. Waiting for every lead
+  // engine made one slow AnySearch leg hold an otherwise complete answer open
+  // for the full soft deadline. `all` still asks for every engine, and `fast`
+  // keeps its first-answer behavior.
+  const needed = wait === 'all' ? usable.length : wait === 'fast' ? 1 : Math.min(2, usable.length);
   const limits: TierLimits = { limit, softMs, needed, lead: wait === 'all' ? 'all' : lead, timeRange };
   // Ranking does not drop rows; the engine layer does. `timeRange` is passed
   // into the rank options only so undated rows are scored lower while a window

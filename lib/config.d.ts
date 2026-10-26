@@ -48,6 +48,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     cacheFile: z<string, string, "volatile-defined">;
     anysearchApiKey: z<string, string, "volatile-defined">;
     anysearchDomain: z<string, string, "volatile-defined">;
+    firecrawlApiKey: z<string, string, "volatile-defined">;
     baseCooldownMs: z<number, number, "volatile-defined">;
     maxCooldownMs: z<number, number, "volatile-defined">;
     domainSources: z<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;
@@ -79,6 +80,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     cacheFile: z<string, string, "volatile-defined">;
     anysearchApiKey: z<string, string, "volatile-defined">;
     anysearchDomain: z<string, string, "volatile-defined">;
+    firecrawlApiKey: z<string, string, "volatile-defined">;
     baseCooldownMs: z<number, number, "volatile-defined">;
     maxCooldownMs: z<number, number, "volatile-defined">;
     domainSources: z<NoInfer<string | string[]>, NoInfer<string | string[]>, "volatile-defined">;
@@ -139,6 +141,8 @@ export interface ResolvedConfig {
     anysearchApiKey: string;
     /** AnySearch vertical domain, or an empty string for the open web. */
     anysearchDomain: string;
+    /** Optional Firecrawl credential for the quota-limited fallback. */
+    firecrawlApiKey: string;
     /** Ranking knobs. */
     rank: RankOptions;
     /** Cache lifetime in milliseconds. */
