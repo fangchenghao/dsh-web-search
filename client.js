@@ -74,14 +74,14 @@
           var ENTRY = 'web-search-bing';
           var PACKAGE_NAME = 'dsh-web-search-bing';
           /** Keep in step with package.json; compared with the npm registry. */
-          var VERSION = '0.24.0';
+          var VERSION = '0.24.1';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 
           // English copy. Every label the page renders lives here.
           var en = {
-            title: 'Web search (Bing)',
-            description: 'Edit the key-free search provider: engine allow-list, wait policy, proxy, result budget, ranking, cache, cooldowns and dedicated sources. Model tools: web_search, web_fetch and one unified web_tools action tool (legacy eight-name mode is opt-in).',
+            title: 'Web Search',
+            description: 'Key-free search, page fetch and research: eight engines fused with RRF, 34 dedicated sources, fetch ladder, proxy, cache and cooldown settings.',
             jumpTo: 'Jump to',
             latest: 'Latest on npm',
             upToDate: 'up to date',
@@ -191,7 +191,7 @@
 
           // Simplified Chinese copy.
           var zh = {
-            title: '网页搜索（Bing）',
+            title: '网页搜索',
             jumpTo: '跳到',
             latest: 'npm 最新版',
             autoUpdateHint: '定时自动更新需要 profile 更新器（dsh-autoupdater）；「安装更新」按钮不依赖它：它会请 Host 插件管理器安装 npm 包，装完需重启。link:/file: 安装会被拒绝。',
@@ -205,7 +205,7 @@
             updateUnavailable: '当前部署没有内置插件管理器；请用 profile 的包管理器更新。',
             upToDate: '已是最新',
             updateAvailable: '有新版本',
-            description: '编辑免密钥搜索提供方：引擎白名单、等待策略、代理、结果上限、排序、缓存、冷却与专用检索源。模型工具：web_search、web_fetch，以及一个统一的 web_tools action 工具（旧版八个工具名可选）。',
+            description: '免密钥的搜索、抓取与研究：8 个引擎 RRF 融合、34 个专用源、抓取梯队、代理、缓存与冷却设置。',
             'group.engines': '引擎与传输',
             'group.ranking': '结果与排序',
             'group.fetch': '抓取',

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.24.1
+
+Documentation and metadata patch; no search or fetch behavior changed.
+
+### Fixed
+- **README and docs no longer imply macOS-only proxy discovery.** The English
+  and Chinese READMEs, architecture note, and troubleshooting guide now describe
+  macOS `scutil` and Windows Internet Settings as the two system-proxy sources,
+  with PowerShell checks for environment variables, registry values and port
+  reachability.
+- **The test commands match the cross-platform script.** Docs use `npm test`
+  instead of an unquoted shell glob; CI documentation now names Ubuntu, macOS
+  and Windows.
+- **The troubleshooting guide no longer says `lib/` is gitignored.** It is
+  committed, and the guide now says so.
+- **The "no version is hard-coded" claim was removed.** The ecosystem table is
+  explicitly a dated snapshot, not a live leaderboard.
+- **README links point at files that exist in the npm package.** The package now
+  ships `docs/architecture.md`, `docs/engines.md`, `docs/plugin-settings-form.md`
+  and `docs/troubleshooting.md`; the benchmark link goes to GitHub instead.
+- **Package metadata and Settings copy were refreshed.** The npm description
+  names Windows/macOS proxy support; keywords include `windows`, `keyless`,
+  `arxiv` and `web-fetch`; the Settings title/description now names eight
+  engines and 34 sources instead of Bing/AnySearch.
+
+**Test suite: 690 tests across 56 files** (689 pass, 1 skipped); this patch does
+not change runtime code.
+
 ## 0.24.0
 
 ### Added

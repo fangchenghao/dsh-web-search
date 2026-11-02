@@ -36,7 +36,7 @@
 
 ## 它在同类里的位置
 
-DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-25 的快照
+DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-25 的历史快照
 （stars 和 npm 下载量是采用度信号，不是质量分数）：
 
 | | 本插件 | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [dsh-web-search-pro](https://github.com/anweat/dsh-web-search-pro) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
@@ -58,8 +58,7 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
   明确的安全边界、只有 1 个运行时依赖，同时体积远小于 Playwright 重型方案。
 - **免 key + 官方源纠错：最强卖点。** Chrome、PostgreSQL、AI Act 的官方路径
   和 34 个垂直源，不是其他插件普遍具备的。
-- **采用度与成熟度：这个样本里的后段。** 公开 npm 已是 0.24.0，与这棵树一致；但 GitHub 仓库创建 4 天、0 stars，
-  还缺少独立采用。
+- **采用度与成熟度：这个样本里的后段。** 2026-10-25 快照时 GitHub 仓库刚创建 4 天、0 stars，还缺少独立采用；当前 npm 版本是 0.24.1。
 - **工具面的经济性：现在有竞争力。** 0.20.x 只暴露一个 `web_tools` + 8 个
   action，接近 `dsh-web-search-pro` 的 2 工具 + 20 动作；旧的八个工具名保留为
   可选兼容模式。
@@ -69,7 +68,7 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 搜索 + 垂直查询 + 研究包 + 官方源纠错」的轻量选项。它不是最流行的，也不该
 自称最大。
 
-> 最新版本与安装命令以 [npm 上的 latest](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search) 为准（这里不写死版本号，免得文档和发布不同步）。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
+> 最新版本与安装命令以 [npm 上的 latest](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search) 为准；上面的对比表是历史快照，不是实时排行榜。下面先讲「它跟我有什么关系」，技术细节放在后面的附录。
 
 ## 一句话说明
 
@@ -300,7 +299,7 @@ Harness 里有个叫 `web` 的**服务**，它自己不会搜索，只负责「�
 
 13. **受限网络下也能用。**
     梯子开着并且设为系统代理时，不用配置任何东西；关掉梯子会自动退回直连，不会因此报错。
-    *技术补充：代理来源依次是配置里的 `proxy`、环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`、macOS 的 `scutil --proxy`；只支持 HTTP 代理（`CONNECT`），不支持 `socks5://`。*
+    *技术补充：代理来源依次是配置里的 `proxy`、环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`、操作系统系统代理（macOS 的 `scutil`、Windows 的 Internet 设置）；只支持 HTTP 代理（`CONNECT`），不支持 `socks5://`。*
 
 14. **所有设置都能在界面上改，不用编辑文件。**
     设置页有 30 个控件，分六组；保存后下一次搜索就生效；只有 `cachePersist` / `cacheFile`（决定缓存接线）和 `toolSurface`（工具注册表在挂载时构建）要重载插件。
@@ -558,7 +557,7 @@ pnpm install
 
 ### 第四步：完全重启
 
-改完代码或 profile 配置后，**完全退出 DSH 再打开**（macOS 上不是只关窗口，要从菜单退出，或按 `Cmd+Q`）。原因是模块在每个进程里只求值一次，热改文件不会被已运行的进程看见。
+改完代码或 profile 配置后，**完全退出 DSH 再打开**（macOS 按 `Cmd+Q`；Windows 从托盘或菜单退出，不能只关窗口）。原因是模块在每个进程里只求值一次，热改文件不会被已运行的进程看见。
 
 设置页里大部分值不需要重启，例外情况见下一节。
 
@@ -1006,9 +1005,9 @@ read_page 调用
 
 ### 代理
 
-Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`——除非进程启动时带了 `NODE_USE_ENV_PROXY=1`，而这个开关在进程跑起来之后打不开。所以需要代理时，插件自己连：发 `CONNECT`、对 `https:` 目标做 TLS 升级、手写请求、自己解析 `Content-Length` / chunked / gzip / deflate / brotli，最多跟 4 次跳转。`307`/`308` 保留方法和请求体，其他 `3xx` 把 `POST` 降级成无 body 的 `GET`。
+Node 的全局 `fetch` 既不读操作系统系统代理（macOS 的 `scutil`、Windows 的 Internet 设置），也不读 `HTTPS_PROXY`——除非进程启动时带了 `NODE_USE_ENV_PROXY=1`，而这个开关在进程跑起来之后打不开。所以需要代理时，插件自己连：发 `CONNECT`、对 `https:` 目标做 TLS 升级、手写请求、自己解析 `Content-Length` / chunked / gzip / deflate / brotli，最多跟 4 次跳转。`307`/`308` 保留方法和请求体，其他 `3xx` 把 `POST` 降级成无 body 的 `GET`。
 
-代理来源顺序：配置里的 `proxy` → 环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`（大小写都认）→ macOS `scutil --proxy`（带 400 ms TCP 探测，结果缓存 60 秒）。只支持 HTTP 代理；`socks5://` 请换成客户端的 HTTP/mixed 端口。代理只作用于本插件，应用其他流量走原来的路。
+代理来源顺序：配置里的 `proxy` → 环境变量 `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`（大小写都认）→ 操作系统系统代理（macOS `scutil --proxy` / Windows Internet 设置，带 400 ms TCP 探测，结果缓存 60 秒）。只支持 HTTP 代理；`socks5://` 请换成客户端的 HTTP/mixed 端口。代理只作用于本插件，应用其他流量走原来的路。
 
 ### 已知限制
 
@@ -1072,16 +1071,24 @@ Node 的全局 `fetch` 既不读 macOS 系统代理，也不读 `HTTPS_PROXY`—
 ### 开发与测试
 
 ```sh
-node --test test/*.test.ts     # 全部离线测试（联网用例默认跳过）
+npm test                        # 全部离线测试（联网用例默认跳过）
 node --test test/proxy.test.ts # 单个文件
 npm run typecheck              # tsc --noEmit
 npm run build                  # 编译 src/ 到 lib/
 npm run check                  # typecheck + 测试
 ```
 
-测试默认全程离线、全部通过；唯一需要联网的分段验证默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含默认八个与 26 个按需源的真实响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过，联网验证时用 `READ_PAGE_LIVE=1 node --test test/read-page.test.ts` 运行。
+测试默认全程离线、全部通过；唯一需要联网的分段验证默认跳过（`READ_PAGE_LIVE=1` 时才跑）：解析器测试回放 `test/fixtures/` 里抓下来的真实响应（含默认八个与 26 个按需源的真实响应），传输测试不开 socket，代理测试只验 `parseProxy`、`proxyFromEnv` 和纯函数式的响应分帧，时间窗测试用注入的 `now` 固定日期；新增的几组覆盖 Markdown 正文提取（`markdown.test.ts`）、批量查询（`search-many.test.ts`）、分段续读（`read-page.test.ts`）、硬盘快照（`cache-persist.test.ts`）、可选 JS 渲染（`render-js.test.ts`）和基准计分/重放（`bench-metrics.test.ts`、`bench-replay.test.ts`）。其中 `read-page.test.ts` 有一条真实联网用例默认跳过；联网验证时：
 
-CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu 与 macOS 上跑 `npm ci`、`npm run typecheck`、`npm test`、`npm run build`，并检查构建确实产出了 `lib/index.js` 和 `lib/index.d.ts`，且 `apply` 与 `Config` 都可导入。
+```sh
+# macOS / Linux
+READ_PAGE_LIVE=1 node --test test/read-page.test.ts
+
+# Windows PowerShell
+$env:READ_PAGE_LIVE=1; node --test test/read-page.test.ts
+```
+
+CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu、macOS 与 Windows 上跑 `npm ci`、`npm run typecheck`、`npm test`、`npm run build`，并检查构建确实产出了 `lib/index.js` 和 `lib/index.d.ts`，且 `apply` 与 `Config` 都可导入。
 
 改完 `src/*.ts` 记得构建并重启，否则跑的还是 `lib/` 里的旧代码。
 
@@ -1092,7 +1099,7 @@ CI（`.github/workflows/ci.yml`）在 Node 24 的 Ubuntu 与 macOS 上跑 `npm c
 - [docs/architecture.md](docs/architecture.md)：模块划分和从 `web` 服务到来源列表的数据流。
 - [docs/engines.md](docs/engines.md)：每个引擎的请求形状、解析怪癖与实测结论。
 - [docs/troubleshooting.md](docs/troubleshooting.md)：没有结果、代理没探测到、提供方没被选中、冷却卡住。
-- [bench/README.md](bench/README.md)：20 条查询的检索基准怎么录制夹具、怎么计分、怎么比较版本。
+- [bench/README.md](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/README.md)：20 条查询的检索基准怎么录制夹具、怎么计分、怎么比较版本。
 - [README.md](README.md)：英文版，与中文版逐节对应。
 
 MIT © 2026 fangchenghao，见 [LICENSE](LICENSE)。

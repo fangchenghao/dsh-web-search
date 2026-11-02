@@ -37,7 +37,7 @@ The benchmark is offline and deterministic: 20 recorded queries, precision/recal
 
 ## Where it stands
 
-The web-search corner of the DSH plugin ecosystem is crowded. A fresh snapshot
+The web-search corner of the DSH plugin ecosystem is crowded. A dated snapshot
 (2026-10-25; stars and npm downloads are adoption signals, not quality scores):
 
 | | this plugin | [dsh-free-search](https://github.com/DDDMUC/dsh-free-search) | [dsh-web-search-pro](https://github.com/anweat/dsh-web-search-pro) | [modsearch](https://github.com/liustack/modsearch) | [anysearch-dsh](https://github.com/anysearch-team/anysearch-dsh) |
@@ -63,9 +63,9 @@ read is:
 - **Key-free + official-source correctness:** its strongest niche. The official
   Chrome, PostgreSQL and AI Act paths and the 34-source vertical layer are not
   common in the other plugins.
-- **Adoption and maturity:** bottom third of this sample. The public npm release
-  is 0.24.0, matching this tree, but the GitHub repository is four days old
-  with no stars and little independent adoption.
+- **Adoption and maturity:** bottom third of this sample. At the 2026-10-25
+  snapshot the repository was four days old, had no stars and little
+  independent adoption; the current npm release is 0.24.1.
 - **Tool-surface economy:** now competitive. 0.20.x exposes one `web_tools`
   entry with eight actions, close to `dsh-web-search-pro`'s two tools with 20
   actions; the legacy eight-name surface remains opt-in for old prompts.
@@ -77,7 +77,7 @@ is the compact, fully key-free option for search plus vertical lookup, research
 packs and official-source correction. It is not the most popular, and it should
 not claim to be the largest.
 
-> The latest version and install command live on [npm](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search); no version number is hard-coded here, so the docs cannot drift from the release. What follows starts with what this means for you; the technical detail is collected in the appendix.
+> The latest version and install command live on [npm](https://www.npmjs.com/package/@fffangchenghao/dsh-web-search); the comparison table is a dated snapshot, not a live leaderboard. What follows starts with what this means for you; the technical detail is collected in the appendix.
 
 ## In one sentence
 
@@ -308,7 +308,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 13. **It works on a restricted network.**
      With a tunnel running and set as the system proxy, nothing needs configuring. With the tunnel off, it falls back to direct requests instead of failing.
-     *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then macOS `scutil --proxy`; HTTP proxies only (`CONNECT`), not `socks5://`.*
+     *Technical: proxy sources in order — the `proxy` setting, then `DSH_WEB_SEARCH_PROXY` / `HTTPS_PROXY` / `ALL_PROXY` / `HTTP_PROXY`, then the OS system proxy (macOS `scutil`, Windows Internet Settings); HTTP proxies only (`CONNECT`), not `socks5://`.*
 
 14. **Every setting is editable in the UI.**
      Thirty controls in six groups; a save takes effect on the next search, apart from `cachePersist` and `cacheFile` (cache wiring at mount) and `toolSurface` (the tool registry is built at mount).
@@ -590,7 +590,7 @@ Optionally, add a config row:
 
 ### Step 4: restart completely
 
-After changing code or profile config, **quit DSH entirely and open it again** (on macOS, quit from the menu or press `Cmd+Q`; closing the window is not enough). Modules are evaluated once per process, and a running process never sees a file you edited underneath it.
+After changing code or profile config, **quit DSH entirely and open it again** (on macOS press `Cmd+Q`; on Windows quit from the tray or menu; closing the window is not enough). Modules are evaluated once per process, and a running process never sees a file you edited underneath it.
 
 Values saved from the Settings page apply immediately; only `cachePersist` and `cacheFile` need the plugin to reload.
 
@@ -1067,9 +1067,9 @@ Conclusions:
 
 ### Proxy
 
-Node's global `fetch` reads neither the macOS system proxy nor `HTTPS_PROXY` — unless the process started with `NODE_USE_ENV_PROXY=1`, which cannot be switched on from inside a running process. So when a proxy is needed, the plugin speaks to it directly: send `CONNECT`, upgrade with TLS for `https:` targets, write the request by hand, and decode `Content-Length`, chunked, gzip, deflate and brotli, following up to four redirects. `307`/`308` keep the method and body; any other `3xx` downgrades a `POST` to a bodyless `GET`.
+Node's global `fetch` reads neither the OS system proxy (macOS `scutil` / Windows Internet Settings) nor `HTTPS_PROXY` — unless the process started with `NODE_USE_ENV_PROXY=1`, which cannot be switched on from inside a running process. So when a proxy is needed, the plugin speaks to it directly: send `CONNECT`, upgrade with TLS for `https:` targets, write the request by hand, and decode `Content-Length`, chunked, gzip, deflate and brotli, following up to four redirects. `307`/`308` keep the method and body; any other `3xx` downgrades a `POST` to a bodyless `GET`.
 
-Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, either casing) → macOS `scutil --proxy`, adopted only if a 400 ms TCP probe connects, and cached for 60 seconds. HTTP proxies only; replace `socks5://` with the client's HTTP/mixed port. Proxying is scoped to this plugin — the rest of the app keeps its ordinary network path.
+Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, either casing) → the OS system proxy (macOS `scutil --proxy` / Windows Internet Settings), adopted only if a 400 ms TCP probe connects, and cached for 60 seconds. HTTP proxies only; replace `socks5://` with the client's HTTP/mixed port. Proxying is scoped to this plugin — the rest of the app keeps its ordinary network path.
 
 ### Known limitations
 
@@ -1133,16 +1133,24 @@ Resolution order: the `proxy` setting → the environment (`DSH_WEB_SEARCH_PROXY
 ### Development and tests
 
 ```sh
-node --test test/*.test.ts     # the whole offline suite (one live case is skipped by default)
+npm test                        # the whole offline suite (one live case is skipped by default)
 node --test test/proxy.test.ts # one file
 npm run typecheck              # tsc --noEmit
 npm run build                  # compile src/ to lib/
 npm run check                  # typecheck + tests
 ```
 
-The suite runs offline by default and passes in full; the one live paging check is skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for the default eight and the 26 opt-in sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with `READ_PAGE_LIVE=1 node --test test/read-page.test.ts`.
+The suite runs offline by default and passes in full; the one live paging check is skipped unless `READ_PAGE_LIVE=1`: parser tests replay captured fixtures from `test/fixtures/` (normal and empty responses for the default eight and the 26 opt-in sources), transport tests open no sockets, proxy tests cover `parseProxy`, `proxyFromEnv` and the pure response framer, time-window tests pin the date with an injected `now`, and the newer suites cover Markdown extraction (`markdown.test.ts`), batch search (`search-many.test.ts`), chunked reading (`read-page.test.ts`), the disk snapshot (`cache-persist.test.ts`), optional JS rendering (`render-js.test.ts`) and benchmark scoring/replay (`bench-metrics.test.ts`, `bench-replay.test.ts`). One live-network test in `read-page.test.ts` is skipped by default; run it with:
 
-CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu and macOS, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
+```sh
+# macOS / Linux
+READ_PAGE_LIVE=1 node --test test/read-page.test.ts
+
+# Windows PowerShell
+$env:READ_PAGE_LIVE=1; node --test test/read-page.test.ts
+```
+
+CI (`.github/workflows/ci.yml`) runs `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on Node 24 for Ubuntu, macOS and Windows, then checks that the build emitted `lib/index.js` and `lib/index.d.ts` and that both `apply` and `Config` import.
 
 After editing `src/*.ts`, build and restart — otherwise you are still running the old code in `lib/`.
 
@@ -1153,7 +1161,7 @@ After editing `src/*.ts`, build and restart — otherwise you are still running 
 - [docs/architecture.md](docs/architecture.md): the module map and the data flow from the `web` service to a source list.
 - [docs/engines.md](docs/engines.md): each engine's request shape, parser quirks and measured results.
 - [docs/troubleshooting.md](docs/troubleshooting.md): no results, proxy not detected, provider not selected, cooldown stuck.
-- [bench/README.md](bench/README.md): how the 20-query retrieval benchmark records fixtures, scores them and compares versions.
+- [bench/README.md](https://github.com/fangchenghao/dsh-web-search/blob/main/bench/README.md): how the 20-query retrieval benchmark records fixtures, scores them and compares versions.
 - [README.zh-CN.md](README.zh-CN.md): the Chinese guide, section for section.
 
 MIT © 2026 fangchenghao. See [LICENSE](LICENSE).

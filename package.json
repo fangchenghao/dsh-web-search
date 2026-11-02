@@ -1,7 +1,7 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.24.0",
-  "description": "DSH bundle: key-free web search, page fetch and one web_tools action tool for verticals, platforms and cited research; eight engines fused with RRF, 34 vertical sources, arXiv research lookups and readable papers, official release facts, a replayable benchmark, an optional Firecrawl key and a dependency-free MCP server.",
+  "version": "0.24.1",
+  "description": "DSH bundle: key-free web search, page fetch and research for DeepSeek Harness; eight engines fused with RRF, 34 vertical sources, arXiv, Windows/macOS system-proxy support and a dependency-free MCP server.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -33,7 +33,11 @@
     "docs/cross-agent.md",
     "docs/comparison.md",
     "docs/images/web-tools-demo.svg",
-    "docs/latency-and-sources.md"
+    "docs/latency-and-sources.md",
+    "docs/plugin-settings-form.md",
+    "docs/troubleshooting.md",
+    "docs/architecture.md",
+    "docs/engines.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -53,7 +57,11 @@
     "anysearch",
     "research",
     "web-tools",
-    "mcp"
+    "mcp",
+    "windows",
+    "keyless",
+    "arxiv",
+    "page-fetch"
   ],
   "license": "MIT",
   "dsh": {

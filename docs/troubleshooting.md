@@ -74,15 +74,15 @@ Expected output: `bing true`. If the import fails with `ERR_MODULE_NOT_FOUND`,
 
 ## `lib/` is missing
 
-`package.json` points `main` and `types` at `lib/`, which a fresh checkout does
-not contain. Build it:
+`package.json` points `main` and `types` at `lib/`. The compiled `lib/` is
+**committed** (DSH STORE scans the fixed Git tree), so a fresh checkout already
+contains it. After changing `src/`, rebuild it:
 
 ```sh
 npm run build
 ```
 
-`lib/` is gitignored; rebuilding is part of using a checkout, and `prepublishOnly`
-runs the same build for a published package.
+`prepublishOnly` runs the same build for a published package.
 
 ## Code changes have no effect
 
@@ -98,14 +98,23 @@ npm run build
 
 ## Proxy is not detected
 
-Resolution order is: explicit `proxy` config → environment → macOS system proxy
-→ direct. The decision is cached for 60 seconds, so a change can take up to a
-minute (or a restart) to be honoured.
+Resolution order is: explicit `proxy` config → environment → the OS system
+proxy (macOS `scutil`, Windows Internet Settings) → direct. The decision is
+cached for 60 seconds, so a change can take up to a minute (or a restart) to be
+honoured.
 
 1. Is a proxy configured at all?
 
+   macOS/Linux:
+
    ```sh
    env | grep -i proxy
+   ```
+
+   Windows PowerShell:
+
+   ```powershell
+   Get-ChildItem Env: | Where-Object Name -match 'proxy'
    ```
 
    `DSH_WEB_SEARCH_PROXY`, `HTTPS_PROXY`, `ALL_PROXY` and `HTTP_PROXY` are read
@@ -114,16 +123,27 @@ minute (or a restart) to be honoured.
    `CONNECT`, so an `https://` proxy would be dialled in cleartext).
    `socks5://` users must point at the client's HTTP/mixed port instead.
 
-2. Is the macOS system proxy set, and is that port actually listening?
+2. Is the system proxy set, and is that port actually listening?
+
+   macOS:
 
    ```sh
    scutil --proxy
    nc -z -G 1 127.0.0.1 7890 && echo reachable || echo refused
    ```
 
+   Windows PowerShell:
+
+   ```powershell
+   Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' |
+     Select-Object ProxyEnable, ProxyServer
+   Test-NetConnection 127.0.0.1 -Port 7890
+   ```
+
    The system proxy is only adopted when the port accepts a TCP connection,
-   within 400 ms. A stale `HTTPSEnable : 1` with nothing listening is ignored on
-   purpose, so the search degrades to a direct request instead of stalling.
+   within 400 ms. A stale `ProxyEnable = 1` / `HTTPSEnable : 1` with nothing
+   listening is ignored on purpose, so the search degrades to a direct request
+   instead of stalling.
 
 3. Is `NO_PROXY` in the way?
 

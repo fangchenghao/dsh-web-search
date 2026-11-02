@@ -138,8 +138,9 @@ hops. `307`/`308` preserve the method and body; any other `3xx` downgrades a
 and URL are returned, which is how the caller can read `Retry-After`.
 
 Proxy selection is explicit config → environment (`DSH_WEB_SEARCH_PROXY`,
-`HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, both casings) → macOS `scutil --proxy`
-gated by a 400 ms TCP probe, cached for 60 seconds. Only `http://` proxies are
+`HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, both casings) → the OS system proxy
+(macOS `scutil --proxy`, Windows Internet Settings) gated by a 400 ms TCP probe,
+cached for 60 seconds. Only `http://` proxies are
 dialled from detection, because the tunnel itself is a plain `CONNECT`; an
 `https://` value elsewhere in the environment is skipped rather than selected.
 
@@ -151,7 +152,8 @@ dialled from detection, because the tunnel itself is a plain `CONNECT`; an
   `lib/index.d.ts`, so a checkout must be built before it can be mounted.
 - Relative imports carry the `.ts` extension and `rewriteRelativeImportExtensions`
   rewrites them on emit; the source is also runnable directly by Node's type
-  stripping, which is how the tests run (`node --test test/*.test.ts`).
+  stripping, which is how the tests run (`npm test`; it passes a quoted glob so
+  cmd.exe works too).
 - `types.ts` is types only, so it emits nothing; every other module emits a
   normal ES module.
 - `index.js`, `engines.js` and `proxy.js` are the pre-rewrite JavaScript

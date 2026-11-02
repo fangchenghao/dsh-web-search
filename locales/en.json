@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Web Search (Bing)",
-    "description": "Edits the key-free Bing and AnySearch provider: engine allow-list, wait policy, proxy, result budget, ranking, cache and cooldown settings."
+    "title": "Web Search",
+    "description": "Key-free search, page fetch and research: eight engines fused with RRF, 34 dedicated sources, fetch ladder, proxy, cache and cooldown settings."
   }
 }

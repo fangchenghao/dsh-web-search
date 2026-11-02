@@ -6,6 +6,8 @@ This note answers three questions from the public 30-query comparison:
 2. Can the AnySearch tail and the Chinese Rust miss be fixed?
 3. Does the fix require a vector database or a different retrieval model?
 
+> **Version note (2026-11-02):** 0.24.0 added Windows system-proxy discovery, and 0.24.1 is a documentation/metadata patch. The search path is unchanged, so these 0.23.0 measurements still describe 0.24.x.
+
 The short answer: Exa is a different architecture, not a faster RRF loop. This
 plugin can borrow tail-tolerance and source-specific facts, but copying Exa's
 semantic index would be a different product. The changes below improve the
