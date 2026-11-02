@@ -65,7 +65,7 @@ read is:
   common in the other plugins.
 - **Adoption and maturity:** bottom third of this sample. At the 2026-10-25
   snapshot the repository was four days old, had no stars and little
-  independent adoption; the current npm release is 0.24.1.
+  independent adoption; the current npm release is 0.24.2.
 - **Tool-surface economy:** now competitive. 0.20.x exposes one `web_tools`
   entry with eight actions, close to `dsh-web-search-pro`'s two tools with 20
   actions; the legacy eight-name surface remains opt-in for old prompts.
@@ -340,7 +340,7 @@ Each line is the plain version first, the technical note second. The technical n
 
 21. **Search quality has a repeatable benchmark.**
     Ranking changes are no longer judged by feel: a fixed set of 20 queries produces the same scores every time.
-    *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Baseline for 0.15.0 (tier-aware replay, so the recorded fallback engines only count when production would run them): P@8 `0.4375`, R@8 `0.7917`, MRR@8 `0.8071`; Chinese `0.4000 / 0.8167 / 0.7976`, English `0.4750 / 0.7667 / 0.8167`. A separate five-query long-Chinese diagnostic (`bench/queries-long.json`, recorded with `--queries ... --fixtures ...`) scores `0.4500 / 1.0000 / 0.7667`, with every query hitting an expected domain; it is kept separate so the 20-query baseline stays comparable. The controlled experiments and known gaps are in the appendix.*
+    *Technical: `bench/` holds 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline, never touches the network, and prints precision@8, recall@8, MRR@8 plus each engine's contribution; `--record` re-records live (1.5 s between queries) to refresh the fixtures; `--json` gives machine-readable output for version comparisons, and past results live in `bench/results/`. Current baseline (re-run on the 0.24.x line; tier-aware replay, so the recorded fallback engines only count when production would run them): P@8 `0.4375`, R@8 `0.7917`, MRR@8 `0.8071`; Chinese `0.4000 / 0.8167 / 0.7976`, English `0.4750 / 0.7667 / 0.8167`. A separate five-query long-Chinese diagnostic (`bench/queries-long.json`, recorded with `--queries ... --fixtures ...`) scores `0.4500 / 1.0000 / 0.7667`, with every query hitting an expected domain; it is kept separate so the 20-query baseline stays comparable. The controlled experiments and known gaps are in the appendix.*
 
 22. **Research, in one call.**
     For "what do the official docs and two other sources actually say about X", `research` runs up to three searches, opens the leading pages through the same fetch ladder, and returns one evidence pack in which every excerpt sits under its URL. A page that will not load is reported by URL and reason instead of aborting the pack; bot challenges and login redirects are rejected rather than quoted as evidence.
@@ -792,7 +792,7 @@ No. `package.json` does not list Playwright, and the plugin never downloads or i
 
 ### How do you know search quality improved?
 
-From the fixed query set in `bench/`, not from intuition. There are 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline and prints P@8 / R@8 / MRR@8. The 0.15.0 baseline (tier-aware replay) is **0.4375 / 0.7917 / 0.8071**; Chinese 0.4000 / 0.8167 / 0.7976, English 0.4750 / 0.7667 / 0.8167. Run it before and after a ranking change and the direction is a number. Twenty queries are not statistical significance; news recall is only 0.467 and the per-query table still prints every miss — the appendix says so.
+From the fixed query set in `bench/`, not from intuition. There are 20 queries (10 Chinese, 10 English), five in each of docs / release / package / news, each annotated with 1–3 expected domains. `node scripts/bench.mjs` replays recorded fixtures offline and prints P@8 / R@8 / MRR@8. The current 20-query baseline (tier-aware replay, protocol introduced in 0.15.0) is **0.4375 / 0.7917 / 0.8071**; Chinese 0.4000 / 0.8167 / 0.7976, English 0.4750 / 0.7667 / 0.8167. Run it before and after a ranking change and the direction is a number. Twenty queries are not statistical significance; news recall is only 0.467 and the per-query table still prints every miss — the appendix says so.
 
 ### Why do the results differ from what I get searching by hand?
 
@@ -1040,7 +1040,7 @@ Measured on `https://docs.python.org/3/library/asyncio-task.html`: starting at `
 
 Metrics: P@8 = matched rows in the top 8 ÷ 8 (fixed denominator; a short list is not excused); R@8 = distinct expected domains found in the top 8 ÷ all expected domains; MRR@8 = the mean reciprocal rank of the first match over 20 queries, with a miss scoring 0. Domain matching is one-way from subdomain to parent: `docs.python.org` matches expected `python.org`, but the reverse does not.
 
-**0.15.0 baseline** (tier-aware replay):
+**Current baseline** (v0.24.x replay; tier-aware protocol introduced in 0.15.0):
 
 | Scope | P@8 | R@8 | MRR@8 |
 | --- | --- | --- | --- |

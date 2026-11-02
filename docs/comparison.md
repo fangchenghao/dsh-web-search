@@ -6,7 +6,7 @@ whether a provider answers at all, how long it takes, how many distinct domains
 it returns, and whether a page on a known official domain appears in the top 8.
 The failures are part of the result.
 
-> **Version note (2026-11-02):** 0.24.0 added Windows system-proxy discovery, and 0.24.1 is a documentation/metadata patch. Neither changes the search, ranking or source-adapter path measured below, so the 0.23.0 numbers remain the latest comparison.
+> **Version note (2026-11-02):** 0.24.0 added Windows system-proxy discovery, and 0.24.1 and 0.24.2 are documentation/metadata patches. These patches do not change the search, ranking or source-adapter path measured below, so the 0.23.0 numbers remain the latest comparison.
 
 ## Method
 

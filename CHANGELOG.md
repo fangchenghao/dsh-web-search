@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.24.2
+
+Documentation and image patch; no runtime behavior changed.
+
+### Fixed
+- **The benchmark chart no longer claims to be v0.15.0.** `docs/images/bench.png`
+  was regenerated from the current offline replay and labelled v0.24.x. The
+  numbers are unchanged (P@8 0.4375, R@8 0.7917, MRR@8 0.8071) because the
+  ranking path did not change; the chart now says so without presenting an old
+  release as the current one.
+- **Baseline labels now say "current" everywhere.** README, Chinese README and
+  `docs/rrf-ranking.md` still explain that the tier-aware replay protocol was
+  introduced in 0.15.0, but no longer call the current baseline a "0.15.0
+  baseline".
+- **The chart has an editable source.** `docs/images/bench.svg` is checked in
+  next to the PNG. Both files are shipped in the npm package so the relative
+  image link in `docs/rrf-ranking.md` resolves there too.
+
+**Test suite: 690 tests across 56 files** (689 pass, 1 skipped).
+
 ## 0.24.1
 
 Documentation and metadata patch; no search or fetch behavior changed.

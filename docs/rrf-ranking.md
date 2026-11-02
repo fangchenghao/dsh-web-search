@@ -77,7 +77,7 @@ comparable across commits; `--record` is the only mode that touches the network.
 
 ![Baseline and sweep](images/bench.png)
 
-Baseline (v0.15.0, 20 queries, k=8, tier-aware replay):
+Baseline (current v0.24.x replay, 20 queries, k=8; tier-aware protocol introduced in 0.15.0):
 
 | metric | overall | Chinese | English |
 |---|---:|---:|---:|

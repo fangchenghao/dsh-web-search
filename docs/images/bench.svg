@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Ranking quality, measured offline: baseline and parameter sweep</title>
+  <desc id="desc">Baseline precision, recall and MRR at 8 for the current 0.24.x replay over 20 fixed queries, plus the 81-configuration marginal sweep.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1120"/><stop offset="0.55" stop-color="#0d1626"/><stop offset="1" stop-color="#0a1322"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122138"/><stop offset="1" stop-color="#0d1829"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+      .title { fill: #f4f7fb; font-size: 38px; font-weight: 700; letter-spacing: -0.6px; }
+      .sub { fill: #8ea3bf; font-size: 17px; }
+      .h2 { fill: #f4f7fb; font-size: 24px; font-weight: 700; }
+      .h3 { fill: #9db1cc; font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
+      .muted { fill: #8195b0; font-size: 14px; }
+      .tiny { fill: #6f839d; font-size: 12.5px; }
+      .val { fill: #dbe8f8; font-size: 17px; font-weight: 600; }
+      .axis { fill: #8ba0bb; font-size: 15px; font-weight: 600; }
+      .blue { fill: #11243d; stroke: #5b8def; }
+      .green { fill: #112a2a; stroke: #37c996; }
+      .orange { fill: #2b2418; stroke: #f0a43a; }
+    </style>
+  </defs>
+  <rect width="1400" height="760" fill="url(#bg)"/>
+  <text x="60" y="62" class="sans title">Ranking quality, measured offline</text>
+  <text x="60" y="98" class="sans sub">20 fixed queries, tier-aware replay of recorded fixtures; no network.  v0.24.x.</text>
+  <rect x="60" y="135" width="600" height="565" rx="16" fill="url(#card)" stroke="#294563" stroke-width="1.5"/>
+  <rect x="700" y="135" width="640" height="565" rx="16" fill="url(#card)" stroke="#294563" stroke-width="1.5"/>
+  <text x="90" y="184" class="sans h2">Baseline (v0.24.x replay)</text>
+  <text x="730" y="184" class="sans h2">Parameter sweep: marginal MRR@8</text>
+  <text x="730" y="211" class="sans muted">81 configurations, paired bootstrap vs defaults</text>
+  <rect x="190" y="465.6" width="82" height="144.4" rx="5" fill="none" stroke="#5b8def" stroke-width="2.5" class="blue" opacity="0.95"/>
+  <text x="231" y="495.6" text-anchor="middle" class="sans val" fill="#5b8def">0.4375</text>
+  <text x="231" y="652" text-anchor="middle" class="sans axis">P@8</text>
+  <rect x="395" y="348.8" width="82" height="261.2" rx="5" fill="none" stroke="#37c996" stroke-width="2.5" class="green" opacity="0.95"/>
+  <text x="436" y="378.8" text-anchor="middle" class="sans val" fill="#37c996">0.7917</text>
+  <text x="436" y="652" text-anchor="middle" class="sans axis">R@8</text>
+  <rect x="515" y="343.6" width="82" height="266.4" rx="5" fill="none" stroke="#f0a43a" stroke-width="2.5" class="orange" opacity="0.95"/>
+  <text x="556" y="373.6" text-anchor="middle" class="sans val" fill="#f0a43a">0.8071</text>
+  <text x="556" y="652" text-anchor="middle" class="sans axis">MRR@8</text>
+  <line x1="88" y1="610" x2="632" y2="610" stroke="#39536f" stroke-width="1"/>
+  <text x="90" y="681" class="sans tiny">n=20, k=8; 8 engines (7 primary + 1 fallback), zero-hit queries: 0</text>
+  <text x="745" y="258" class="sans h3">rrfConstant</text>
+  <rect x="745" y="442.7" width="38" height="147.3" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="764" y="432.7" text-anchor="middle" class="sans tiny" fill="#37c996">0.834</text>
+  <text x="764" y="615" text-anchor="middle" class="sans tiny">40</text>
+  <rect x="792" y="465.8" width="38" height="124.2" rx="4" fill="#0f2036" stroke="#5b8def" stroke-width="2" opacity="0.97"/>
+  <text x="811" y="455.8" text-anchor="middle" class="sans tiny" fill="#5b8def">0.828</text>
+  <text x="811" y="615" text-anchor="middle" class="sans tiny">60</text>
+  <rect x="839" y="496.9" width="38" height="93.1" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="858" y="486.9" text-anchor="middle" class="sans tiny" fill="#37c996">0.819</text>
+  <text x="858" y="615" text-anchor="middle" class="sans tiny">80</text>
+  <text x="935" y="258" class="sans h3">authorityBoost</text>
+  <rect x="935" y="466.9" width="38" height="123.1" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="954" y="456.9" text-anchor="middle" class="sans tiny" fill="#37c996">0.827</text>
+  <text x="954" y="615" text-anchor="middle" class="sans tiny">0.1</text>
+  <rect x="982" y="471.6" width="38" height="118.4" rx="4" fill="#0f2036" stroke="#5b8def" stroke-width="2" opacity="0.97"/>
+  <text x="1001" y="461.6" text-anchor="middle" class="sans tiny" fill="#5b8def">0.826</text>
+  <text x="1001" y="615" text-anchor="middle" class="sans tiny">0.25</text>
+  <rect x="1029" y="466.9" width="38" height="123.1" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="1048" y="456.9" text-anchor="middle" class="sans tiny" fill="#37c996">0.827</text>
+  <text x="1048" y="615" text-anchor="middle" class="sans tiny">0.4</text>
+  <text x="1125" y="258" class="sans h3">freshnessBoost</text>
+  <rect x="1125" y="483.6" width="38" height="106.4" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="1144" y="473.6" text-anchor="middle" class="sans tiny" fill="#37c996">0.823</text>
+  <text x="1144" y="615" text-anchor="middle" class="sans tiny">0.1</text>
+  <rect x="1172" y="478.0" width="38" height="112.0" rx="4" fill="#0f2036" stroke="#5b8def" stroke-width="2" opacity="0.97"/>
+  <text x="1191" y="468.0" text-anchor="middle" class="sans tiny" fill="#5b8def">0.825</text>
+  <text x="1191" y="615" text-anchor="middle" class="sans tiny">0.2</text>
+  <rect x="1219" y="443.8" width="38" height="146.2" rx="4" fill="#0f2036" stroke="#37c996" stroke-width="2" opacity="0.97"/>
+  <text x="1238" y="433.8" text-anchor="middle" class="sans tiny" fill="#37c996">0.834</text>
+  <text x="1238" y="615" text-anchor="middle" class="sans tiny">0.35</text>
+  <line x1="728" y1="590" x2="1310" y2="590" stroke="#39536f" stroke-width="1"/>
+  <rect x="730" y="632" width="580" height="62" rx="8" fill="#0b1728" stroke="#2f4b6a" stroke-width="1"/>
+  <text x="746" y="651" class="sans tiny" fill="#dbe8f8" font-weight="700">Best grid point: rrf=40, authority=0.25, freshness=0.35</text>
+  <text x="746" y="668" class="sans tiny" fill="#37c996">MRR 0.8583 vs 0.8071 default (+0.0512)</text>
+  <text x="746" y="685" class="sans tiny" fill="#f0a43a">95% CI [0.0000, +0.1250] touches zero: a direction, not a proven win</text>
+  <text x="730" y="725" class="sans tiny" fill="#6f839d">Blue = shipped default. Marginals average every configuration in the grid.</text>
+</svg>

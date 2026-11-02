@@ -1,6 +1,6 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "description": "DSH bundle: key-free web search, page fetch and research for DeepSeek Harness; eight engines fused with RRF, 34 vertical sources, arXiv, Windows/macOS system-proxy support and a dependency-free MCP server.",
   "type": "module",
   "main": "lib/index.js",
@@ -37,7 +37,9 @@
     "docs/plugin-settings-form.md",
     "docs/troubleshooting.md",
     "docs/architecture.md",
-    "docs/engines.md"
+    "docs/engines.md",
+    "docs/images/bench.png",
+    "docs/images/bench.svg"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
