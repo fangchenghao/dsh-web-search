@@ -89,10 +89,12 @@ export interface PluginContext {
     registerFetchProvider: (provider: FetchProvider) => void;
   };
   /**
-   * Cordis's inject-free service lookup. `tools` is read through this rather
-   * than added to {@link inject} on purpose: a hard `tools` dependency would
+   * A synchronous service lookup `tools` is read through first, when the host
+   * answers it. `tools` never joins {@link inject}: a hard dependency would
    * stop the whole plugin (including `web_search`) from mounting in a
-   * deployment that has no tool registry.
+   * deployment that has no tool registry. A host that refuses undeclared
+   * services on this path is served by the optional `ctx.inject(['tools'])`
+   * below instead.
    */
   get?: (name: string) => unknown;
   /** Fallback for tests and hosts that expose the registry as a property. */
@@ -104,14 +106,24 @@ export interface PluginContext {
    */
   effect?: (execute: () => (() => void) | void) => unknown;
   on?: (event: string, listener: () => void) => unknown;
-  /** Optional Cordis injection hook; used for the Settings bridge and prompt. */
+  /**
+   * Optional Cordis injection hook: the Settings bridge, the prompt section,
+   * and the fallback that resolves the optional tool registry when
+   * {@link get} cannot see it.
+   */
   inject?: NonNullable<InjectableHost['inject']>;
 }
 
 /**
  * Read the optional tool registry without requiring it.
- * @param ctx - the plugin context.
- * @returns the registry, or `undefined` when this deployment has none.
+ *
+ * Works on the plugin context and on an injected services object, because both
+ * expose the registry the same way. Cordis refuses an undeclared service on
+ * these paths (`cannot get property "tools" without inject`), so an `undefined`
+ * answer means "not reachable here", not "this deployment has no tools" — which
+ * is why the caller also asks for an optional injection.
+ * @param ctx - the plugin context, or the services of one injection.
+ * @returns the registry, or `undefined` when this path cannot resolve it.
  */
 function readToolRegistry(ctx: PluginContext): ToolRegistryLike | undefined {
   let candidate: unknown;
@@ -391,9 +403,16 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
   // construction — a deployment without `ctx.tools` still loads this plugin and
   // keeps `web_search`; the registration path is the host's
   // `ToolRuntime.register(definition)`.
-  try {
-    const tools = readToolRegistry(ctx);
-    if (tools !== undefined) {
+  /**
+   * Mount the eight optional tools against a resolved registry.
+   *
+   * Kept as one callable because the registry arrives either synchronously
+   * (hosts that expose it as a property or answer `ctx.get`) or from an
+   * optional injection, and both paths must run the identical registration.
+   * @param tools - the host tool registry.
+   */
+  const mountOptionalTools = (tools: ToolRegistryLike): void => {
+    try {
       // In unified mode the eight definitions are built against a capture
       // registry, then exposed through one `web_tools` entry. Legacy mode keeps
       // the old names and their independent lifecycle.
@@ -672,9 +691,30 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
           }
         }
       }
+    } catch (error) {
+      warnTool(`optional tool registration skipped: ${error instanceof Error ? error.message : String(error)}`);
     }
-  } catch (error) {
-    warnTool(`optional tool registration skipped: ${error instanceof Error ? error.message : String(error)}`);
+  };
+
+  // Resolve the optional registry. A hard `tools` dependency would stop the
+  // whole plugin — including `web_search` — from mounting on a deployment with
+  // no tool registry, so the dependency stays optional. It must still go
+  // through `ctx.inject`: Cordis refuses an undeclared service on both
+  // `ctx.get()` and `ctx.tools`, which silently removed every optional tool on
+  // hosts that tightened that rule (the plugin kept its prompt section, so the
+  // loss looked like a settings problem rather than a dependency one).
+  const directTools = readToolRegistry(ctx);
+  if (directTools !== undefined) {
+    mountOptionalTools(directTools);
+  } else if (typeof ctx.inject === 'function') {
+    try {
+      ctx.inject(['tools'], (services) => {
+        const injected = readToolRegistry(services as unknown as PluginContext);
+        if (injected !== undefined) mountOptionalTools(injected);
+      });
+    } catch (error) {
+      warnTool(`optional tool injection skipped: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   // A short prompt section explains the relationships the tool schemas cannot:
