@@ -34,6 +34,9 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 /** Default number of redirect hops to follow. */
 const DEFAULT_REDIRECTS = 4;
 
+/** Hard ceiling for one tunnel response, before decompression. */
+const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
+
 /**
  * Environment variables read by {@link proxyFromEnv}, highest precedence first.
  * Both casings are listed because shells disagree about which one they export.
@@ -52,7 +55,7 @@ const ENV_KEYS = [
 export interface ProxyTarget {
   /** Proxy host name or IP literal, without brackets or port. */
   host: string;
-  /** Proxy port; already defaulted to 80 or 443 by {@link parseProxy}. */
+  /** Proxy port; already defaulted to 80 by {@link parseProxy}. */
   port: number;
   /** Ready-to-send `Proxy-Authorization` header value, when credentials exist. */
   authorization?: string;
@@ -86,6 +89,8 @@ export interface ProxyRequestOptions {
   method?: 'GET' | 'POST';
   /** Request body, sent verbatim for `POST`. */
   body?: string;
+  /** Maximum response bytes to retain; defaults to 8 MiB. */
+  maxBytes?: number;
 }
 
 /** A raw response split into its parts, before it is mapped to `{ url }`. */
@@ -108,11 +113,12 @@ function decodeCredential(value: string): string {
 }
 
 /**
- * Parse a proxy URL, accepting only the schemes `CONNECT` can tunnel through.
+ * Parse a proxy URL.
  *
- * `http:` is the normal case; `https:` is accepted for its default port only —
- * the tunnel itself is always opened with a plain `CONNECT`, because the
- * request written inside it is already TLS for `https:` targets.
+ * `CONNECT` is written over a plain TCP connection to the proxy. An `https:`
+ * proxy would require a TLS handshake to the proxy before that CONNECT; this
+ * transport does not implement it, so the scheme is rejected instead of being
+ * half-supported (which used to fail with an opaque `socket hang up`).
  *
  * @param raw - candidate `http://[user:pass@]host[:port]` string.
  * @returns the proxy host, port and optional `Proxy-Authorization` value.
@@ -127,13 +133,13 @@ export function parseProxy(raw: string): ProxyTarget {
   } catch {
     throw new Error(`unparsable proxy URL: ${JSON.stringify(raw)}`);
   }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+  if (url.protocol !== 'http:') {
     throw new Error(
-      `unsupported proxy scheme ${JSON.stringify(url.protocol)} in ${JSON.stringify(raw)}: only http:// and https:// proxies are supported`,
+      `unsupported proxy scheme ${JSON.stringify(url.protocol)} in ${JSON.stringify(raw)}: only http:// proxies are supported`,
     );
   }
   if (url.hostname.length === 0) throw new Error(`proxy URL has no host: ${JSON.stringify(raw)}`);
-  const port = url.port === '' ? (url.protocol === 'https:' ? 443 : 80) : Number(url.port);
+  const port = url.port === '' ? 80 : Number(url.port);
   if (!Number.isInteger(port) || port <= 0 || port > 65_535) {
     throw new Error(`proxy URL has an invalid port: ${JSON.stringify(raw)}`);
   }
@@ -141,7 +147,7 @@ export function parseProxy(raw: string): ProxyTarget {
   const password = decodeCredential(url.password);
   const authorization =
     username.length === 0 && password.length === 0 ? undefined : `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
-  return { host: url.hostname, port, ...(authorization === undefined ? {} : { authorization }) };
+  return { host: url.hostname.replace(/^\[|\]$/g, ''), port, ...(authorization === undefined ? {} : { authorization }) };
 }
 
 /**
@@ -267,7 +273,8 @@ async function captureProbe(command: string, args: readonly string[], timeoutMs 
  * @returns an `http://` proxy URL, or `undefined` when disabled/unusable.
  */
 export function proxyFromWindowsRegistry(output: string): string | undefined {
-  if ((/ProxyEnable\s+REG_DWORD\s+0x([0-9a-f]+)/iu.exec(output)?.[1] ?? '0') === '0') return undefined;
+  const enabled = Number.parseInt(/ProxyEnable\s+REG_DWORD\s+0x([0-9a-f]+)/iu.exec(output)?.[1] ?? '0', 16);
+  if (!Number.isFinite(enabled) || enabled === 0) return undefined;
   const raw = /ProxyServer\s+REG_SZ\s+(.+)/iu.exec(output)?.[1]?.trim();
   if (raw === undefined || raw.length === 0) return undefined;
   let server = raw;
@@ -322,7 +329,7 @@ export async function proxyFromSystem(): Promise<string | undefined> {
 /** Check that something is listening, so a stale setting cannot stall a search. */
 async function reachable(proxy: URL, timeoutMs = 400): Promise<boolean> {
   return await new Promise<boolean>((resolve) => {
-    const socket = net.connect({ host: proxy.hostname, port: Number(proxy.port || 80) });
+    const socket = net.connect({ host: proxy.hostname.replace(/^\[|\]$/g, ''), port: Number(proxy.port || 80) });
     const done = (value: boolean): void => {
       socket.destroy();
       resolve(value);
@@ -363,13 +370,15 @@ export async function resolveProxy(explicit?: string): Promise<string | undefine
 
 /** Open a `CONNECT` tunnel to `host:port` through the proxy. */
 async function openTunnel(proxy: ProxyTarget, host: string, port: number, timeoutMs: number, signal?: AbortSignal): Promise<net.Socket> {
+  const bare = host.replace(/^\[|\]$/g, '');
+  const authority = net.isIP(bare) === 6 ? `[${bare}]:${port}` : `${bare}:${port}`;
   const request = http.request({
     host: proxy.host,
     port: proxy.port,
     method: 'CONNECT',
-    path: `${host}:${port}`,
+    path: authority,
     headers: {
-      host: `${host}:${port}`,
+      host: authority,
       ...(proxy.authorization === undefined ? {} : { 'proxy-authorization': proxy.authorization }),
     },
   });
@@ -393,9 +402,10 @@ async function openTunnel(proxy: ProxyTarget, host: string, port: number, timeou
 }
 
 /** Write one request over a connected socket and collect the raw response. */
-function exchange(socket: net.Socket, head: string, timeoutMs: number, signal?: AbortSignal): Promise<Buffer> {
+function exchange(socket: net.Socket, head: string, timeoutMs: number, signal?: AbortSignal, maxBytes = DEFAULT_MAX_BYTES): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
+    let size = 0;
     let settled = false;
     const done = (settle: (value: Buffer) => void, value: Buffer): void => {
       if (settled) return;
@@ -416,7 +426,22 @@ function exchange(socket: net.Socket, head: string, timeoutMs: number, signal?: 
     const timer = setTimeout(() => fail(new Error('request timed out')), timeoutMs);
     const abort = (): void => fail(new Error('aborted'));
     signal?.addEventListener('abort', abort, { once: true });
-    socket.on('data', (chunk: Buffer) => chunks.push(chunk));
+    socket.on('data', (chunk: Buffer) => {
+      if (settled) return;
+      const left = maxBytes - size;
+      if (left <= 0) {
+        done(resolve, Buffer.concat(chunks));
+        return;
+      }
+      if (chunk.length > left) {
+        chunks.push(chunk.subarray(0, left));
+        size += left;
+        done(resolve, Buffer.concat(chunks));
+        return;
+      }
+      chunks.push(chunk);
+      size += chunk.length;
+    });
     socket.on('end', () => done(resolve, Buffer.concat(chunks)));
     socket.on('error', (error: Error) => fail(error));
     socket.write(head);
@@ -449,7 +474,7 @@ function dechunk(buffer: Buffer): Buffer {
  * @param buffer - the bytes received from the socket.
  * @returns the parsed response, or `undefined` when the head is incomplete.
  */
-export function readResponse(buffer: Buffer): ParsedResponse | undefined {
+export function readResponse(buffer: Buffer, maxBytes = DEFAULT_MAX_BYTES): ParsedResponse | undefined {
   const separator = buffer.indexOf('\r\n\r\n');
   if (separator === -1) return undefined;
   const [statusLine = '', ...lines] = buffer.subarray(0, separator).toString('latin1').split('\r\n');
@@ -465,12 +490,20 @@ export function readResponse(buffer: Buffer): ParsedResponse | undefined {
   else if (headers['content-length'] !== undefined) body = body.subarray(0, Number(headers['content-length']));
   const encoding = (headers['content-encoding'] ?? '').toLowerCase();
   try {
-    if (encoding.includes('gzip')) body = zlib.gunzipSync(body);
-    else if (encoding.includes('deflate')) body = zlib.inflateSync(body);
-    else if (encoding.includes('br')) body = zlib.brotliDecompressSync(body);
-  } catch {
-    // A truncated or mislabelled body is still worth parsing as-is.
+    if (encoding.includes('gzip')) body = zlib.gunzipSync(body, { maxOutputLength: maxBytes });
+    else if (encoding.includes('deflate')) body = zlib.inflateSync(body, { maxOutputLength: maxBytes });
+    else if (encoding.includes('br')) body = zlib.brotliDecompressSync(body, { maxOutputLength: maxBytes });
+  } catch (error) {
+    // If a decompression bomb hit the output ceiling, never fall back to the
+    // compressed bytes: they are not text. Keep a short explicit marker so the
+    // caller can see that the page was too large. A genuinely malformed or
+    // mislabelled body stays as-is, as before.
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ERR_BUFFER_TOO_LARGE' || code === 'Z_BUF_ERROR') {
+      body = Buffer.from('[response body exceeded the decompression limit]');
+    }
   }
+  if (body.length > maxBytes) body = body.subarray(0, maxBytes);
   return { status, headers, text: body.toString('utf8') };
 }
 
@@ -497,16 +530,23 @@ export async function proxyGet(url: string, options: ProxyRequestOptions): Promi
   const timeoutMs =
     options.timeoutMs !== undefined && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : DEFAULT_TIMEOUT_MS;
   const redirects = options.redirects !== undefined && Number.isInteger(options.redirects) ? options.redirects : DEFAULT_REDIRECTS;
+  const maxBytes = options.maxBytes !== undefined && Number.isFinite(options.maxBytes) && options.maxBytes > 0
+    ? Math.floor(options.maxBytes)
+    : DEFAULT_MAX_BYTES;
   let current = new URL(url);
   let method: 'GET' | 'POST' = options.method === 'POST' ? 'POST' : 'GET';
   let payload: string | undefined = method === 'POST' && typeof options.body === 'string' ? options.body : undefined;
   for (let hop = 0; hop <= redirects; hop += 1) {
     const secure = current.protocol === 'https:';
     const port = Number(current.port || (secure ? 443 : 80));
-    const raw = await openTunnel(proxy, current.hostname, port, timeoutMs, options.signal);
+    const targetHost = current.hostname.replace(/^\[|\]$/g, '');
+    const raw = await openTunnel(proxy, targetHost, port, timeoutMs, options.signal);
     let socket: net.Socket = raw;
     if (secure) {
-      const upgraded = tls.connect({ socket: raw, servername: current.hostname });
+      const servername = net.isIP(targetHost) === 0 ? targetHost : undefined;
+      // `host` is the identity Node checks the certificate against. Omitting it
+      // makes the check fall back to the proxy host for IP targets.
+      const upgraded = tls.connect({ socket: raw, host: targetHost, ...(servername === undefined ? {} : { servername }) });
       // `once` also rejects on 'error', so a refused TLS handshake surfaces
       // instead of becoming an unhandled socket event.
       await once(upgraded, 'secureConnect');
@@ -526,7 +566,7 @@ export async function proxyGet(url: string, options: ProxyRequestOptions): Promi
       '\r\n' +
       (payload ?? '');
     // Follow one redirect hop at a time, re-opening the tunnel per hop.
-    const response = readResponse(await exchange(socket, head, timeoutMs, options.signal));
+    const response = readResponse(await exchange(socket, head, timeoutMs, options.signal, maxBytes), maxBytes);
     const location = response?.headers.location;
     if (response !== undefined && response.status >= 300 && response.status < 400 && location !== undefined && hop < redirects) {
       // 307/308 preserve the method and body; the older statuses downgrade to GET.

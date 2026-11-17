@@ -31,9 +31,9 @@ test('parseProxy keeps an explicit port', () => {
   assert.deepEqual(parseProxy('http://127.0.0.1:7890'), { host: '127.0.0.1', port: 7890 });
 });
 
-test('parseProxy defaults an https proxy port to 443', () => {
-  assert.deepEqual(parseProxy('https://proxy.local'), { host: 'proxy.local', port: 443 });
-  assert.deepEqual(parseProxy('https://proxy.local:8443'), { host: 'proxy.local', port: 8443 });
+test('parseProxy rejects an https proxy instead of opening a plaintext tunnel', () => {
+  assert.throws(() => parseProxy('https://proxy.local'), /unsupported proxy scheme/);
+  assert.throws(() => parseProxy('https://proxy.local:8443'), /unsupported proxy scheme/);
 });
 
 test('parseProxy turns URL credentials into a Basic authorization value', () => {
@@ -216,6 +216,13 @@ test('readResponse returns undefined when the head is incomplete', () => {
   assert.equal(readResponse(Buffer.from('garbage')), undefined);
 });
 
+test('readResponse replaces a decompression bomb with an explicit marker', () => {
+  const bomb = zlib.gzipSync(Buffer.alloc(200_000, 0x61));
+  const parsed = readResponse(rawResponse('HTTP/1.1 200 OK', ['Content-Encoding: gzip', `Content-Length: ${bomb.length}`], bomb), 1000);
+  assert.equal(parsed?.status, 200);
+  assert.equal(parsed?.text, '[response body exceeded the decompression limit]');
+});
+
 // --- proxyGet argument handling (rejects before any I/O) ------------------
 
 test('proxyGet rejects a bad proxy URL before opening a tunnel', async () => {
@@ -224,4 +231,15 @@ test('proxyGet rejects a bad proxy URL before opening a tunnel', async () => {
 
 test('proxyGet rejects an unparsable target URL', async () => {
   await assert.rejects(proxyGet('not a url', { proxy: 'http://127.0.0.1:7890' }));
+});
+
+test('proxyFromWindowsRegistry treats any zero DWORD spelling as disabled', () => {
+  const zero = 'ProxyEnable    REG_DWORD    0x00000000\r\nProxyServer    REG_SZ    127.0.0.1:7890\r\n';
+  assert.equal(proxyFromWindowsRegistry(zero), undefined);
+  const paddedOne = 'ProxyEnable    REG_DWORD    0x01\r\nProxyServer    REG_SZ    127.0.0.1:7890\r\n';
+  assert.equal(proxyFromWindowsRegistry(paddedOne), 'http://127.0.0.1:7890');
+});
+
+test('parseProxy strips IPv6 brackets before handing the host to net', () => {
+  assert.deepEqual(parseProxy('http://[::1]:8080'), { host: '::1', port: 8080 });
 });

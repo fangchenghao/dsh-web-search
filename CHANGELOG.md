@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.24.3
+
+Audit fixes from an independent Claude Fable 5.1 review (reasoning effort
+`xhigh`). Search endpoints and ranking inputs are unchanged, except where noted.
+
+### Fixed
+- **A fractional engine weight silently dropped rows.** `fuse()` used the raw
+  weight as an array index, so a weight such as `2.5` produced non-integer row
+  positions and skipped every odd slot. It now uses the same floored weight as
+  `interleave()`.
+- **Windows `ProxyEnable` was compared as a string.** `0x00000000` looked
+  enabled, so a disabled system proxy could be selected. The DWORD is now parsed
+  as a hexadecimal number.
+- **IPv6 proxy targets used bracketed hostnames for SNI and TCP probes.** They
+  are now unbracketed before `net.connect`/`tls.connect`; `CONNECT` still writes
+  the bracketed authority. `https://` proxy URLs are rejected explicitly instead
+  of being handed to a plaintext CONNECT tunnel that cannot speak TLS.
+- **Fetch bodies were unbounded before `maxBytes` was applied.** The direct path
+  now reads at most the byte budget from the response stream and cancels the
+  rest; the tunnel path caps the raw response and decompressed output. A
+  decompression bomb can no longer expand without a ceiling.
+- **The Settings bridge accepted any Host on a loopback socket.** It now requires
+  a loopback Host name (DNS-rebinding defense), a JSON content type, and catches
+  body-read errors instead of leaving an async handler rejected.
+- **Markdown rendering had three denial-of-service/forgery edges.** Raw-text
+  close tags reuse one lowercase copy instead of re-lowercasing the page per
+  `<script>`; element nesting is capped at 512 so recursive pruning/rendering
+  cannot overflow the stack; and stash placeholders carry a per-render nonce so
+  page text cannot forge a code placeholder.
+- **The truncation notice counted outside `fetchMaxLength`.** The notice is now
+  part of the character budget, so `fetchMaxLength` is a real upper bound.
+  `clamp()` now describes its byte-level cut accurately.
+
+**Test suite: 698 tests across 56 files** (697 pass, 1 skipped).
+
 ## 0.24.2
 
 Documentation and image patch; no runtime behavior changed.

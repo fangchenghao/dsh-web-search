@@ -265,13 +265,16 @@ test('the character budget cuts at the limit and names the original length', () 
   const content = 'x'.repeat(1500);
   const cut = truncateFetchText(content, 1000);
   assert.equal(cut.truncated, true);
-  assert.equal(
-    cut.content,
-    `${'x'.repeat(1000)}\n\n[truncated at 1000 chars; original length 1500 chars; the rest is not shown]`,
-  );
+  assert.ok(cut.content.length <= 1000, `truncated output was ${cut.content.length} chars`);
+  assert.match(cut.content, /^x+\n\n\[truncated at 1000 chars; original length 1500 chars; the rest is not shown\]$/);
 
   const exact = truncateFetchText('y'.repeat(1000), 1000);
   assert.deepEqual(exact, { content: 'y'.repeat(1000), truncated: false });
+
+  // A tiny budget is still a hard upper bound, even when the notice is longer
+  // than the budget.
+  const tiny = truncateFetchText('z'.repeat(100), 20);
+  assert.ok(tiny.content.length <= 20, `tiny budget overflowed: ${tiny.content.length}`);
 
   const shorter = truncateFetchText('short', 1000);
   assert.deepEqual(shorter, { content: 'short', truncated: false });
@@ -299,4 +302,19 @@ test('a dense footer stub does not replace the article body', () => {
   const rendered = renderFetchText(html, { format: 'text' });
   assert.match(rendered.content, /Logical replication replicates data objects/);
   assert.doesNotMatch(rendered.content, /^Submit correction/);
+});
+
+test('deeply nested markup is flattened without corrupting the surrounding tree', () => {
+  const html = `<html><body><article><p>before</p>${'<div>'.repeat(1200)}deep text${'</div>'.repeat(1200)}<p>after</p></article></body></html>`;
+  const markdown = htmlToMarkdown(html);
+  assert.match(markdown, /deep text/);
+  assert.match(markdown, /before/);
+  assert.match(markdown, /after/);
+});
+
+test('page text cannot forge a stashed-code placeholder', () => {
+  const html = `<html><body><p>\uE0000\uE001</p><pre><code>console.log(1)</code></pre></body></html>`;
+  const markdown = htmlToMarkdown(html);
+  assert.match(markdown, /\uE0000\uE001/);
+  assert.match(markdown, /console\.log\(1\)/);
 });

@@ -466,3 +466,13 @@ test('the default authority list covers the documented hosts without duplicates'
   assert.ok(DEFAULT_AUTHORITY_DOMAINS.includes('rfc-editor.org'));
   assert.equal(new Set(DEFAULT_AUTHORITY_DOMAINS).size, DEFAULT_AUTHORITY_DOMAINS.length);
 });
+
+test('fuse floors fractional engine weights the same way interleave does', () => {
+  // A weight of 2.5 used to index rows with a fractional position and silently
+  // drop every odd slot. It must behave like weight 2.
+  const heavy = answer(host('heavy', 'global', 2.5), numbered('heavy', 8));
+  const light = answer(host('light', 'global'), numbered('light', 8));
+  const fused = fuse([heavy, light], 16, { weights: [2.5, 1] });
+  assert.equal(fused.length, 16, 'fractional weight dropped rows');
+  assert.equal(new Set(fused.map((source) => source.url)).size, 16);
+});

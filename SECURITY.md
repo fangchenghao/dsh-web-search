@@ -43,16 +43,22 @@ Outbound TCP/HTTPS only, plus one local system query described below.
 On Windows the system proxy is read locally from `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`; that registry read is not network traffic.
 
 `web_fetch` and `read_page` reach **any** HTTP(S) URL the model asks for; that is
-their purpose. `engine_test` sends its probe query to the engines it tests, just
+their purpose. There is no private-address block: DSH's local agent already has
+the host's permissions, and blocking `localhost` would break reading a local
+development server. A deployment that treats the model as untrusted should put
+the network boundary in the Host, not in this plugin. `engine_test` sends its probe query to the engines it tests, just
 like a normal search; `advanced_search` is an ordinary search with a per-call
 date window, except a windowed Chrome security/release query may read the
-official Chrome Releases feed above. The Settings page's engine test uses an **inbound**,
-loopback-only route on the host's own `webServer` (`POST
-/api/dsh-web-search/engine-test`); the plugin never opens a listening socket
-itself and the route refuses non-POST, non-loopback and cross-origin requests.
+official Chrome Releases feed above. The Settings page's engine test and **Install update** button use **inbound**
+routes on the host's own `webServer` (`POST /api/dsh-web-search/engine-test`
+and `POST /api/dsh-web-search/update`); the plugin never opens a listening
+socket itself. Both routes accept POST only, require a loopback socket and a
+loopback `Host` (so DNS rebinding cannot reach them), require
+`application/json`, and reject cross-origin callers.
 
 With `useProxy` enabled they speak to the configured proxy
-(default `127.0.0.1:7890`, auto-detected) using HTTP `CONNECT`; a 400 ms TCP
+(default `127.0.0.1:7890`, auto-detected) using HTTP `CONNECT`; `https://`
+proxy URLs are rejected because the tunnel is plaintext to the proxy. A 400 ms TCP
 connect first checks that the proxy port is listening so a stale setting cannot
 stall a search. The plugin never contacts an analytics, telemetry, or update
 endpoint.
@@ -129,7 +135,7 @@ no cookies. Fetched research bodies exist only in process memory for
 | one `platform_search` | 40 s tool budget; 8 s per direct platform attempt |
 | cache | TTL and entry count are bounded and both configurable, `0` disables |
 | system proxy probe | 2 s, then the child is killed |
-| engine test bridge request | loopback only, POST only, 16 KiB JSON body |
+| settings bridge request | loopback socket and Host, POST + JSON only, 16 KiB body |
 | one engine test | 8 s per engine, three probes in flight, no cache or cooldown writes |
 | one advanced_search | 30 s tool budget, same engine deadlines as web_search |
 

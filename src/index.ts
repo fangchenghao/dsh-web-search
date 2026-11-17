@@ -346,7 +346,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         timeoutMs: Math.min(live.timeoutMs, 2_500),
         ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
         ...(signal === undefined ? {} : { signal }),
-      });
+      })?.catch(() => undefined);
       // An explicit `arXiv` query gets the preprint index in parallel with the
       // ordinary fan-out. This is separate from the official-release lookup:
       // a survey query needs arXiv's own search, not a release announcement.
@@ -355,7 +355,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         timeoutMs: Math.min(live.timeoutMs, 3_500),
         ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
         ...(signal === undefined ? {} : { signal }),
-      });
+      }).catch(() => [] as Source[]);
       const outcome = await runQuery(query, asked, signal);
       // A version/EOL question about PostgreSQL or Rust is better answered by
       // the project's own release facts than by whatever an engine ranks first.

@@ -2,7 +2,7 @@
 export interface ProxyTarget {
     /** Proxy host name or IP literal, without brackets or port. */
     host: string;
-    /** Proxy port; already defaulted to 80 or 443 by {@link parseProxy}. */
+    /** Proxy port; already defaulted to 80 by {@link parseProxy}. */
     port: number;
     /** Ready-to-send `Proxy-Authorization` header value, when credentials exist. */
     authorization?: string;
@@ -34,6 +34,8 @@ export interface ProxyRequestOptions {
     method?: 'GET' | 'POST';
     /** Request body, sent verbatim for `POST`. */
     body?: string;
+    /** Maximum response bytes to retain; defaults to 8 MiB. */
+    maxBytes?: number;
 }
 /** A raw response split into its parts, before it is mapped to `{ url }`. */
 export interface ParsedResponse {
@@ -42,11 +44,12 @@ export interface ParsedResponse {
     text: string;
 }
 /**
- * Parse a proxy URL, accepting only the schemes `CONNECT` can tunnel through.
+ * Parse a proxy URL.
  *
- * `http:` is the normal case; `https:` is accepted for its default port only —
- * the tunnel itself is always opened with a plain `CONNECT`, because the
- * request written inside it is already TLS for `https:` targets.
+ * `CONNECT` is written over a plain TCP connection to the proxy. An `https:`
+ * proxy would require a TLS handshake to the proxy before that CONNECT; this
+ * transport does not implement it, so the scheme is rejected instead of being
+ * half-supported (which used to fail with an opaque `socket hang up`).
  *
  * @param raw - candidate `http://[user:pass@]host[:port]` string.
  * @returns the proxy host, port and optional `Proxy-Authorization` value.
@@ -119,7 +122,7 @@ export declare function resolveProxy(explicit?: string): Promise<string | undefi
  * @param buffer - the bytes received from the socket.
  * @returns the parsed response, or `undefined` when the head is incomplete.
  */
-export declare function readResponse(buffer: Buffer): ParsedResponse | undefined;
+export declare function readResponse(buffer: Buffer, maxBytes?: number): ParsedResponse | undefined;
 /**
  * Perform a request through the proxy, following redirects.
  *

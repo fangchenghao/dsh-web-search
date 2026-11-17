@@ -45,6 +45,7 @@ function request(
     method: options.method ?? 'POST',
     headers: {
       host: options.host ?? '127.0.0.1:3000',
+      'content-type': 'application/json',
       ...(options.origin === undefined ? {} : { origin: options.origin }),
     },
     socket: { remoteAddress: options.remote ?? '127.0.0.1' },

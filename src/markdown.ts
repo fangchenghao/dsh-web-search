@@ -49,6 +49,15 @@ export interface RenderedFetchText {
 /** Default `fetchMaxLength`: about 20k characters of prose. */
 export const DEFAULT_FETCH_MAX_LENGTH = 20_000;
 
+/**
+ * Maximum element nesting kept by the parser.
+ *
+ * The tree builder itself is iterative, but pruning and rendering recurse. A
+ * hostile page can nest thousands of `<div>`s; refusing to grow past this depth
+ * keeps every later pass within the JavaScript stack.
+ */
+const MAX_DOM_DEPTH = 512;
+
 /** Named entities that appear in real prose; unknown names are left alone. */
 const ENTITIES: Record<string, string> = {
   amp: '&',
@@ -242,6 +251,12 @@ function parseAttributes(raw: string): Record<string, string> {
 function parseHtml(html: string): ElementNode {
   const root = element('#root', {});
   const stack: ElementNode[] = [root];
+  /** Opening tags dropped at MAX_DOM_DEPTH, so their closing tags can be ignored too. */
+  let flattened = 0;
+  // `toLowerCase()` would change indices for a few non-ASCII strings. Keep a
+  // reusable lowercase copy only when its length still maps 1:1 to the input.
+  const lowered = html.toLowerCase();
+  const lower = lowered.length === html.length ? lowered : undefined;
 
   const pushText = (value: string): void => {
     if (value.length === 0) return;
@@ -265,6 +280,10 @@ function parseHtml(html: string): ElementNode {
   };
 
   const closeTag = (name: string): void => {
+    if (flattened > 0) {
+      flattened -= 1;
+      return;
+    }
     for (let index = stack.length - 1; index >= 1; index -= 1) {
       const open = stack[index];
       if (open === undefined) continue;
@@ -279,6 +298,12 @@ function parseHtml(html: string): ElementNode {
   const openTag = (name: string, attrs: Record<string, string>, selfClosing: boolean): void => {
     const top = stack[stack.length - 1];
     if (top === undefined) return;
+    // Deeper markup is flattened into the current element. Count the dropped
+    // opener so its closing tag does not pop one of the real ancestors.
+    if (stack.length >= MAX_DOM_DEPTH) {
+      if (!selfClosing && !VOID_TAGS.has(name)) flattened += 1;
+      return;
+    }
     if (top.tag === 'p' && BLOCK_TAGS.has(name)) stack.pop();
     if (name === 'li') closeNearest(['li'], ['ul', 'ol']);
     else if (name === 'dt' || name === 'dd') closeNearest(['dt', 'dd'], ['dl']);
@@ -349,7 +374,7 @@ function parseHtml(html: string): ElementNode {
     index = end + 1;
 
     if (RAW_TEXT_TAGS.has(name)) {
-      const closeAt = html.toLowerCase().indexOf(`</${name}`, index);
+      const closeAt = (lower ?? html.toLowerCase()).indexOf(`</${name}`, index);
       if (closeAt === -1) {
         index = html.length;
         continue;
@@ -556,19 +581,21 @@ interface RenderContext {
   readonly format: FetchFormat;
   readonly baseUrl: string | undefined;
   readonly stash: string[];
+  /** Per-render nonce, so page text cannot forge a stash placeholder. */
+  readonly stashToken: string;
 }
 
 /** Replace a code fragment with a placeholder so clean-up cannot touch it. */
 function stashCode(ctx: RenderContext, text: string): string {
   ctx.stash.push(text);
-  return `\uE000${ctx.stash.length - 1}\uE001`;
+  return `${ctx.stashToken}${ctx.stash.length - 1}\uE001`;
 }
 
 /** Put stashed code fragments back after whitespace clean-up. */
 function restoreCode(text: string, ctx: RenderContext): string {
   let out = text;
   for (let index = 0; index < ctx.stash.length; index += 1) {
-    out = out.split(`\uE000${index}\uE001`).join(ctx.stash[index] ?? '');
+    out = out.split(`${ctx.stashToken}${index}\uE001`).join(ctx.stash[index] ?? '');
   }
   return out;
 }
@@ -900,6 +927,7 @@ export function htmlToMarkdown(html: string, options: RenderOptions = {}): strin
       format: options.format ?? 'markdown',
       baseUrl: options.baseUrl,
       stash: [],
+      stashToken: `\uE000${Math.random().toString(36).slice(2, 10)}:`,
     };
     return restoreCode(cleanup(renderElement(node, ctx)), ctx).trim();
   };
@@ -928,12 +956,16 @@ export function htmlToMarkdown(html: string, options: RenderOptions = {}): strin
 export function truncateFetchText(content: string, maxLength: number): TruncatedText {
   const limit = Number.isFinite(maxLength) && maxLength >= 1 ? Math.floor(maxLength) : DEFAULT_FETCH_MAX_LENGTH;
   if (content.length <= limit) return { content, truncated: false };
-  let cut = content.slice(0, limit);
+  const fullNotice = `\n\n[truncated at ${limit} chars; original length ${content.length} chars; the rest is not shown]`;
+  // The notice is part of the configured budget, not an allowance on top of
+  // it. For a tiny budget, shorten the notice rather than exceeding the limit.
+  const notice = fullNotice.length >= limit ? fullNotice.slice(0, Math.max(0, limit - 1)) : fullNotice;
+  const budget = Math.max(1, limit - notice.length);
+  let cut = content.slice(0, budget);
   const last = cut.charCodeAt(cut.length - 1);
   // Never leave half of a surrogate pair at the cut point.
   if (last >= 0xd800 && last <= 0xdbff) cut = cut.slice(0, -1);
   cut = cut.replace(/\s+$/, '');
-  const notice = `\n\n[truncated at ${limit} chars; original length ${content.length} chars; the rest is not shown]`;
   return { content: `${cut}${notice}`, truncated: true };
 }
 

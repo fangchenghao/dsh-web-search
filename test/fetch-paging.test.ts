@@ -37,12 +37,10 @@ test('the configured budget cuts converted Markdown and names the original lengt
     assert.equal(result.statusCode, 200);
     assert.equal(result.body.kind, 'text', 'the Host must receive text, or it converts the page a second time');
     assert.equal(result.truncated, true);
-    // "# Long\n\n" is 8 characters, leaving 992 of the 1200-word body.
-    assert.equal(
-      result.body.content,
-      `# Long\n\n${'w'.repeat(992)}\n\n`
-        + '[truncated at 1000 chars; original length 1208 chars; the rest is not shown]',
-    );
+    const notice = '[truncated at 1000 chars; original length 1208 chars; the rest is not shown]';
+    assert.ok(result.body.content.length <= 1000, `budget overflowed: ${result.body.content.length}`);
+    assert.ok(result.body.content.startsWith('# Long\n\n'));
+    assert.ok(result.body.content.endsWith(notice));
   } finally {
     restore();
   }
@@ -56,11 +54,10 @@ test('the default budget is 20000 characters', async () => {
     const provider = createFetchProvider({ renderJs: 'off' });
     const result = await provider.fetch({ url: 'https://example.com/long' });
     assert.equal(result.truncated, true);
-    assert.equal(
-      result.body.content,
-      `# Long\n\n${'w'.repeat(19992)}\n\n`
-        + '[truncated at 20000 chars; original length 20508 chars; the rest is not shown]',
-    );
+    const notice = '[truncated at 20000 chars; original length 20508 chars; the rest is not shown]';
+    assert.ok(result.body.content.length <= 20000, `budget overflowed: ${result.body.content.length}`);
+    assert.ok(result.body.content.startsWith('# Long\n\n'));
+    assert.ok(result.body.content.endsWith(notice));
   } finally {
     restore();
   }
@@ -87,11 +84,10 @@ test('a plain-text body is budgeted too, without HTML conversion', async () => {
     const result = await provider.fetch({ url: 'https://api.example.com/items' });
     assert.equal(result.body.kind, 'text');
     assert.equal(result.truncated, true);
-    assert.equal(
-      result.body.content,
-      `${json.slice(0, 1000)}\n\n`
-        + `[truncated at 1000 chars; original length ${json.length} chars; the rest is not shown]`,
-    );
+    const notice = `[truncated at 1000 chars; original length ${json.length} chars; the rest is not shown]`;
+    assert.ok(result.body.content.length <= 1000, `budget overflowed: ${result.body.content.length}`);
+    assert.ok(result.body.content.startsWith('{"data":"jjj'));
+    assert.ok(result.body.content.endsWith(notice));
   } finally {
     restore();
   }

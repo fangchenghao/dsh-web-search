@@ -42,6 +42,7 @@ function request(
     method: options.method ?? 'POST',
     headers: {
       host: options.host ?? '127.0.0.1:3000',
+      'content-type': 'application/json',
       ...(options.origin === undefined ? {} : { origin: options.origin }),
     },
     socket: { remoteAddress: options.remote ?? '127.0.0.1' },
@@ -160,6 +161,22 @@ test('a malformed JSON body is rejected with 400', async () => {
   const { response: res, captured } = response();
   await handler(request('{not json'), res);
   assert.equal(captured.status, 400);
+});
+
+test('a non-loopback Host is rejected even when the socket is loopback', async () => {
+  const { handler } = mount(runner([]));
+  const { response: res, captured } = response();
+  await handler(request('{}', { host: 'evil.example:3000', origin: 'http://evil.example:3000' }), res);
+  assert.equal(captured.status, 403);
+});
+
+test('a POST without a JSON content type is rejected', async () => {
+  const { handler } = mount(runner([]));
+  const requestWithoutType = request('{}') as IncomingMessage & { headers: Record<string, string> };
+  delete requestWithoutType.headers['content-type'];
+  const { response: res, captured } = response();
+  await handler(requestWithoutType, res);
+  assert.equal(captured.status, 415);
 });
 
 test('the bridge is a no-op when the host cannot inject a web server', () => {

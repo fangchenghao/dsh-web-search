@@ -49,6 +49,31 @@ function hostOf(value: string | undefined): string | undefined {
   }
 }
 
+/** Whether a Host hostname is a loopback literal. */
+function isLoopbackHostname(hostname: string): boolean {
+  const value = hostname.replace(/\.$/u, '');
+  return value === 'localhost'
+    || value === '::1'
+    || value === '[::1]'
+    || /^127(?:\.\d{1,3}){3}$/u.test(value);
+}
+
+/** Host header hostname, without a port; undefined for a malformed header. */
+function hostnameOf(value: string | undefined): string | undefined {
+  if (typeof value !== 'string' || value.length === 0) return undefined;
+  try {
+    return new URL(`http://${value}`).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether a POST declares the JSON body this bridge parses. */
+function isJsonRequest(request: IncomingMessage): boolean {
+  const value = request.headers['content-type'];
+  return typeof value === 'string' && /^application\/(?:[a-z0-9.+-]+\+)?json\s*(?:;|$)/iu.test(value);
+}
+
 /**
  * Refuse cross-site and non-loopback callers.
  *
@@ -58,6 +83,10 @@ function hostOf(value: string | undefined): string | undefined {
  */
 function isAllowed(request: IncomingMessage): boolean {
   if (!isLoopback(request.socket.remoteAddress)) return false;
+  // A loopback socket is not enough: DNS rebinding makes a remote page
+  // same-origin while its Host/Origin still name the attacker's domain.
+  const hostname = hostnameOf(request.headers.host);
+  if (hostname === undefined || !isLoopbackHostname(hostname)) return false;
   if (request.headers['sec-fetch-site'] === 'cross-site') return false;
   const origin = request.headers.origin;
   if (origin !== undefined) {
@@ -183,7 +212,17 @@ export function registerUpdateBridge(ctx: UpdateContext): (() => void) | undefin
               writeJson(response, 403, { ok: false, code: 'forbidden', message: 'loopback settings only' });
               return;
             }
-            const body = await readJson(request);
+            if (!isJsonRequest(request)) {
+              writeJson(response, 415, { ok: false, code: 'unsupported-media-type', message: 'application/json required' });
+              return;
+            }
+            let body: unknown;
+            try {
+              body = await readJson(request);
+            } catch {
+              writeJson(response, 400, { ok: false, code: 'invalid-json', message: 'could not read the JSON body' });
+              return;
+            }
             if (body === undefined || typeof body !== 'object' || body === null || Array.isArray(body)) {
               writeJson(response, 400, { ok: false, code: 'invalid-json', message: 'body must be a JSON object' });
               return;
@@ -287,7 +326,17 @@ export function registerEngineTestBridge(
               writeJson(response, 403, { ok: false, code: 'forbidden', message: 'loopback settings only' });
               return;
             }
-            const body = await readJson(request);
+            if (!isJsonRequest(request)) {
+              writeJson(response, 415, { ok: false, code: 'unsupported-media-type', message: 'application/json required' });
+              return;
+            }
+            let body: unknown;
+            try {
+              body = await readJson(request);
+            } catch {
+              writeJson(response, 400, { ok: false, code: 'invalid-json', message: 'could not read the JSON body' });
+              return;
+            }
             if (body === undefined) {
               writeJson(response, 400, { ok: false, code: 'invalid-json', message: 'malformed or oversized JSON body' });
               return;

@@ -459,7 +459,7 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
   }
 
   const rounds = lists.reduce((deepest, rows, index) => {
-    const weight = weights[index] ?? 1;
+    const weight = slotWeight(weights, index);
     if (weight === 0 || rows.length === 0) return deepest;
     return Math.max(deepest, Math.ceil(rows.length / weight));
   }, 0);
@@ -475,7 +475,7 @@ function fuseEntries(entries: readonly RankedEntry[], limit: number, options: Ra
     for (let index = 0; index < lists.length; index += 1) {
       const rows = lists[index];
       if (rows === undefined) continue;
-      const weight = weights[index] ?? 1;
+      const weight = slotWeight(weights, index);
       for (let offset = 0; offset < weight; offset += 1) {
         const row = rows[round * weight + offset];
         if (row === undefined) continue;
