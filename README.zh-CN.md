@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@fffangchenghao/dsh-web-search"><img src="https://img.shields.io/npm/v/@fffangchenghao/dsh-web-search.svg" alt="npm 版本"></a>
-  <img src="https://img.shields.io/badge/tests-698%20tests-brightgreen" alt="测试">
+  <img src="https://img.shields.io/badge/tests-711%20tests-brightgreen" alt="测试">
   <img src="https://img.shields.io/badge/engines-8%2C%20zero%20API%20key-brightgreen" alt="引擎">
   <img src="https://img.shields.io/badge/node-%3E%3D22.18-blue" alt="node">
   <img src="https://img.shields.io/badge/dsh-%3E%3D0.2.1--rc.2%20%3C0.3.0-blueviolet" alt="dsh">
@@ -27,7 +27,7 @@
 - **公开测量，也公开输的地方。** 30 条中英查询对比记录可用性、延迟、独立域名、官方域名命中与每一条失败；对比对象是免 key Firecrawl 和匿名 Exa。这里 Exa 更快，本插件返回的独立域名更多；两条对比路径都未使用 key。方法和原始结果在 [docs/comparison.md](docs/comparison.md)；Exa 架构差异、中文 3 秒预算和 Rust 官方源见 [延迟与官方源](docs/latency-and-sources.md)。
 - **抓取会承认失败。** 二进制文档和「200 但正文为空」会被明确拒绝（`SEARCH_UNSUPPORTED`、`SEARCH_EMPTY`），而不是当噪音返回；arXiv 的 PDF 链接是有意保留的例外，会改读 HTML 全文；direct → tunnel → render → extract 四级阶梯共享 25 秒预算，预算不足就不再起新的一级。预算是「每次请求」而不是「插件启动时」，这点有回归测试守着。
 - **Windows 是一等宿主。** 纯 ESM，没有原生扩展或安装脚本；会自动读取 Windows 的 Internet 设置代理，完整测试套件也在 `windows-latest` CI 上跑通。安装见[Windows 小节](#windows)。
-- **56 个测试文件、698 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
+- **56 个测试文件、711 个用例**，`lib/` 产物入库，声明了 `engines.dsh` / `engines.node`，[SECURITY.md](SECURITY.md) 逐项列出插件会碰的进程、主机和文件。
 - **双语文档。** 本文件和 [English README](README.md) 同步维护。
 
 ![排序基线参数扫描](https://raw.githubusercontent.com/fangchenghao/dsh-web-search/main/docs/images/bench.png)
@@ -54,11 +54,11 @@ DSH 插件生态里的「联网搜索」已经很挤。下面是一张 2026-10-2
 - **功能深度：中上。** `dsh-free-search` 引擎和垂直源更多；
   `dsh-web-search-pro` 的证据/排序管线和平台后端更深；`modsearch` 的跨宿主
   能力更强。
-- **工程质量与可验证性：接近第一梯队。** 698 个本地测试、可重放的排序基准、
+- **工程质量与可验证性：接近第一梯队。** 711 个本地测试、可重放的排序基准、
   明确的安全边界、只有 1 个运行时依赖，同时体积远小于 Playwright 重型方案。
 - **免 key + 官方源纠错：最强卖点。** Chrome、PostgreSQL、AI Act 的官方路径
   和 34 个垂直源，不是其他插件普遍具备的。
-- **采用度与成熟度：这个样本里的后段。** 2026-10-25 快照时 GitHub 仓库刚创建 4 天、0 stars，还缺少独立采用；当前 npm 版本是 0.24.3。
+- **采用度与成熟度：这个样本里的后段。** 2026-10-25 快照时 GitHub 仓库刚创建 4 天、0 stars，还缺少独立采用；当前 npm 版本是 0.24.4。
 - **工具面的经济性：现在有竞争力。** 0.20.x 只暴露一个 `web_tools` + 8 个
   action，接近 `dsh-web-search-pro` 的 2 工具 + 20 动作；旧的八个工具名保留为
   可选兼容模式。

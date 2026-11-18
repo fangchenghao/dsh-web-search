@@ -18,6 +18,7 @@ import {
   parseBing,
   parseDdgHtml,
   parseDdgLite,
+  parseExaMcp,
   parseSo,
   resolveHref,
 } from '../src/parsers.ts';
@@ -68,6 +69,12 @@ describe('resolveHref', () => {
 
   test('resolves a genuinely relative path against the page', () => {
     assert.equal(resolveHref('/docs/current/', 'https://example.com/search?q=x'), 'https://example.com/docs/current/');
+  });
+
+  test('does not unwrap tracker-looking parameters on an ordinary host', () => {
+    const url = 'https://example.org/report?uddg=chapter&u=a1not-a-tracker';
+    assert.equal(resolveHref(url, 'https://example.org/'), url);
+    assert.equal(resolveHref('https://evil.example/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS8=', 'https://example.org/'), 'https://evil.example/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS8=');
   });
 });
 
@@ -271,4 +278,15 @@ describe('live fixtures', () => {
       }
     }
   });
+});
+
+
+test('Exa keeps the text after a same-line Highlights label', () => {
+  const frame = {
+    jsonrpc: '2.0',
+    id: 1,
+    result: { content: [{ type: 'text', text: 'Title: Example\nURL: https://example.com/a\nHighlights: inline summary text' }] },
+  };
+  const sources = parseExaMcp(`data: ${JSON.stringify(frame)}\n`, 'https://example.com/search');
+  assert.equal(sources[0]?.snippet, 'inline summary text');
 });

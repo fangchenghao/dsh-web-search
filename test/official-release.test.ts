@@ -97,3 +97,19 @@ test('officialLookup ignores ordinary queries', () => {
   assert.equal(officialLookup('how to write a search plugin'), undefined);
   assert.equal(officialLookup('Rust tutorial'), undefined);
 });
+
+
+test('a pre-aborted lookup never starts its fetch', async () => {
+  let called = false;
+  const controller = new AbortController();
+  controller.abort();
+  const source = await fetchRustRelease('Rust 1.90 发布说明', {
+    signal: controller.signal,
+    fetch: async () => {
+      called = true;
+      throw new Error('network should not run');
+    },
+  });
+  assert.equal(source, undefined);
+  assert.equal(called, false);
+});

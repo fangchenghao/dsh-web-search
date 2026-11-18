@@ -101,6 +101,8 @@ export interface ResearchValue {
   sources: Array<{ url: string; title?: string }>;
   /** Fetch failures, one entry per URL. */
   failures: ResearchFetchFailure[];
+  /** Search errors, one entry per failed query; omitted when none failed. */
+  searchFailures?: Array<{ query: string; reason: string }>;
   /** Number of search rows seen before the fetch budget cut them. */
   found: number;
   /** True when the search row list was cut by the fetch budget. */
@@ -290,11 +292,14 @@ export function selectExcerpt(text: string, tokens: readonly string[], max: numb
 
   const picked = new Set<number>();
   let used = 0;
-  const add = (index: number): void => {
+  const add = (index: number): boolean => {
     const window = windows[index];
-    if (window === undefined || picked.has(index)) return;
+    if (window === undefined || picked.has(index)) return false;
+    const addition = window.length + 2;
+    if (used + addition > max) return false;
     picked.add(index);
-    used += window.length + 2;
+    used += addition;
+    return true;
   };
 
   // Regulations often put the effective date in the final article, after the
@@ -354,10 +359,11 @@ export function selectExcerpt(text: string, tokens: readonly string[], max: numb
   }
   const selected = [...picked].sort((a, b) => a - b).map((index) => windows[index] ?? '');
   const excerpt = selected.join('\n\n…\n\n');
-  // Do not truncate from the end here: when tailNeeded is true, the end is the
-  // effective date the caller asked for. The selected windows are already
-  // bounded to roughly max plus one window.
-  return excerpt;
+  // The tail/legal/opening safeguards must not bypass the caller's excerpt
+  // budget. If a single window still overshoots, cut it explicitly; losing a
+  // suffix is better than returning a multi-thousand-character excerpt.
+  if (excerpt.length <= max) return excerpt;
+  return max > 0 ? `${excerpt.slice(0, Math.max(0, max - 1)).trimEnd()}…` : '';
 }
 
 /** Walk `worker` over items with at most `limit` in flight, preserving order. */
@@ -378,6 +384,30 @@ async function mapLimit<T, R>(
   });
   await Promise.all(runners);
   return results;
+}
+
+/** Race a promise against a signal while observing both outcomes. */
+function withAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) {
+    return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error('research was aborted'));
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = (): void => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason instanceof Error ? signal.reason : new Error('research was aborted'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+  });
 }
 
 /** Words that carry no retrieval signal in a research query. */
@@ -739,6 +769,15 @@ function outputSchema(): ToolJsonSchema {
           required: ['url', 'reason'],
         },
       },
+      searchFailures: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: { query: { type: 'string' }, reason: { type: 'string' } },
+          required: ['query', 'reason'],
+        },
+      },
       found: { type: 'integer' },
       truncated: { type: 'boolean' },
     },
@@ -776,10 +815,20 @@ export function formatResearchValue(value: ResearchValue): string {
       '## Found but not fetched',
       ...value.sources.map((source) => `- ${source.title !== undefined && source.title.length > 0 ? `${source.title} — ` : ''}${source.url}`),
     ];
+  const searchFailures = value.searchFailures === undefined || value.searchFailures.length === 0
+    ? []
+    : ['## Search failures', ...value.searchFailures.map((failure) => `- ${JSON.stringify(failure.query)}: ${failure.reason}`)];
   const failures = value.failures.length === 0
     ? []
     : ['## Fetch failures', ...value.failures.map((failure) => `- ${failure.url}: ${failure.reason}`)];
-  return [...head, '', ...sections, ...(notFetched.length === 0 ? [] : ['', ...notFetched]), ...(failures.length === 0 ? [] : ['', ...failures])]
+  return [
+    ...head,
+    '',
+    ...sections,
+    ...(notFetched.length === 0 ? [] : ['', ...notFetched]),
+    ...(searchFailures.length === 0 ? [] : ['', ...searchFailures]),
+    ...(failures.length === 0 ? [] : ['', ...failures]),
+  ]
     .join('\n')
     .trimEnd();
 }
@@ -812,6 +861,11 @@ export function createResearchDefinition(
       const parsed = parseArgs(args);
       const signal = exec.signal;
       const startedAt = Date.now();
+      // The tool's declared 45 s budget must cover the searches too. Passing
+      // only the host signal let a slow search consume the whole 60 s host
+      // timeout before the page ladder ever saw `remaining()`.
+      const deadline = AbortSignal.timeout(RESEARCH_BUDGET_MS);
+      const workSignal = signal === undefined ? deadline : AbortSignal.any([signal, deadline]);
       const remaining = (): number => Math.max(0, RESEARCH_BUDGET_MS - (Date.now() - startedAt));
       const cancelled = (): boolean => signal !== undefined && signal.aborted;
 
@@ -819,8 +873,13 @@ export function createResearchDefinition(
       const queriesUsed = [...parsed.queries];
       const runSearch = async (query: string): Promise<ResearchSearchOutcome> => {
         try {
-          return await search(query, searchLimit, signal);
+          if (workSignal.aborted === true) {
+            const reason = workSignal.reason;
+            throw reason instanceof Error ? reason : new Error('research was aborted');
+          }
+          return await withAbort(search(query, searchLimit, workSignal), workSignal);
         } catch (error) {
+          if (signal?.aborted === true) throw error;
           return {
             sources: [],
             failures: [error instanceof Error ? error.message : String(error)],
@@ -829,6 +888,9 @@ export function createResearchDefinition(
       };
       const outcomes = await mapLimit(parsed.queries, 2, runSearch);
       if (cancelled()) throw new Error('research was cancelled');
+      const searchFailures: Array<{ query: string; reason: string }> = parsed.queries.flatMap((query, index) =>
+        (outcomes[index]?.failures ?? []).map((reason) => ({ query, reason })),
+      );
       let candidates = interleave(outcomes.map((outcome) => outcome.sources));
       const hints = officialHints(parsed.queries);
 
@@ -836,6 +898,7 @@ export function createResearchDefinition(
       // engine may not rank. Spend unused query slots on a site-specific query
       // instead of letting the evidence pack stop at an aggregator.
       for (const hint of hints) {
+        if (remaining() === 0) break;
         // A host match is enough for most issuers, but a generic W3C page does
         // not cover a specific success criterion; let the targeted query run.
         // A generic host match is enough for most issuers, but not for the
@@ -850,6 +913,7 @@ export function createResearchDefinition(
         queriesUsed.push(hinted);
         const extra = await runSearch(hinted);
         if (cancelled()) throw new Error('research was cancelled');
+        for (const reason of extra.failures) searchFailures.push({ query: hinted, reason });
         // A site: operator is advisory on some engines; keep only rows that
         // really belong to the issuer's domain.
         outcomes.push({
@@ -933,11 +997,13 @@ export function createResearchDefinition(
             failures.push({ url: source.url, reason: 'no time left in the research budget' });
             return;
           }
-          const bound = signal === undefined
-            ? AbortSignal.timeout(budget)
-            : AbortSignal.any([signal, AbortSignal.timeout(budget)]);
+          const bound = AbortSignal.any([workSignal, AbortSignal.timeout(budget)]);
           try {
-            const fetched = await fetchPage(source.url, bound);
+            if (bound.aborted === true) {
+              const reason = bound.reason;
+              throw reason instanceof Error ? reason : new Error('research budget exhausted');
+            }
+            const fetched = await withAbort(fetchPage(source.url, bound), bound);
             if (looksLikeHtmlDocument(fetched.text)) {
               failures.push({ url: source.url, reason: 'the page returned a raw HTML document, not readable text' });
               continue;
@@ -1016,6 +1082,7 @@ export function createResearchDefinition(
             ...(source.title === undefined || source.title.length === 0 ? {} : { title: source.title }),
           })),
         failures,
+        ...(searchFailures.length === 0 ? {} : { searchFailures }),
         found: candidates.length,
         truncated: candidates.length > parsed.maxSources,
       };

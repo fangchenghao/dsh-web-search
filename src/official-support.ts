@@ -116,6 +116,10 @@ export function postgresSupportSource(releases: readonly PostgresRelease[]): Sou
 
 /** Read the page over the configured tunnel, or directly when none is set. */
 async function fetchText(url: string, options: PostgresSupportOptions, timeoutMs: number): Promise<string> {
+  if (options.signal?.aborted === true) {
+    const reason = options.signal.reason;
+    throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+  }
   if (options.proxy !== undefined && options.proxy.length > 0) {
     const response = await proxyGet(url, {
       proxy: options.proxy,

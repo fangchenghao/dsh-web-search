@@ -229,6 +229,15 @@ test('proxyGet rejects a bad proxy URL before opening a tunnel', async () => {
   await assert.rejects(proxyGet('https://example.com/', { proxy: 'socks5://127.0.0.1:1080' }), /unsupported proxy scheme/);
 });
 
+test('proxyGet refuses an already-aborted signal before opening a tunnel', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    proxyGet('https://example.com/', { proxy: 'http://127.0.0.1:9', signal: controller.signal }),
+    /abort/i,
+  );
+});
+
 test('proxyGet rejects an unparsable target URL', async () => {
   await assert.rejects(proxyGet('not a url', { proxy: 'http://127.0.0.1:7890' }));
 });

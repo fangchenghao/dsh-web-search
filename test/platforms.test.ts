@@ -605,3 +605,23 @@ test('Zhihu fallback drops a broad question when specific answers exist', () => 
   assert.deepEqual(normaliseZhihuFallback(rows, 'AI 编程助手 真实体验 高赞').map((item) => item.url), [rows[1].url, rows[2].url]);
   assert.deepEqual(normaliseZhihuFallback(rows, 'AI').map((item) => item.url), rows.map((item) => item.url));
 });
+
+test('a fallback that never settles is bounded by the platform deadline', async () => {
+  const calls: FallbackCall[] = [];
+  const startedAt = Date.now();
+  const outcome = await searchPlatforms('never', {
+    ids: ['zhihu'],
+    limit: 3,
+    timeoutMs: 50,
+    fetch: guardedFetch(),
+    fallbackSearch: async (query, limit) => {
+      calls.push({ query, limit });
+      return await new Promise(() => {});
+    },
+  });
+  const elapsed = Date.now() - startedAt;
+  assert.ok(elapsed < 1_500, `platform call hung for ${elapsed}ms`);
+  assert.equal(calls.length, 1);
+  assert.equal(outcome.sources.length, 0);
+  assert.ok(outcome.failures.length > 0);
+});

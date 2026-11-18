@@ -37,7 +37,9 @@ async function fetchNpmPackage(name: string, options: OfficialLookupOptions): Pr
   try {
     const result = await searchVerticals(name, {
       ids: ['npm'],
-      limit: 1,
+      // Search, not a registry exact lookup: ask for a few rows and verify the
+      // package identity instead of trusting the first fuzzy result.
+      limit: 10,
       timeoutMs:
         typeof options.timeoutMs === 'number' && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0
           ? Math.min(options.timeoutMs, 8_000)
@@ -45,7 +47,9 @@ async function fetchNpmPackage(name: string, options: OfficialLookupOptions): Pr
       ...(options.proxy === undefined ? {} : { proxy: options.proxy }),
       ...(options.signal === undefined ? {} : { signal: options.signal }),
     });
-    return result.sources[0];
+    return result.sources.find(
+      (source) => source.title === name || source.title?.startsWith(`${name}@`) === true,
+    );
   } catch {
     return undefined;
   }

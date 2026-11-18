@@ -87,6 +87,11 @@ export interface ResearchValue {
     }>;
     /** Fetch failures, one entry per URL. */
     failures: ResearchFetchFailure[];
+    /** Search errors, one entry per failed query; omitted when none failed. */
+    searchFailures?: Array<{
+        query: string;
+        reason: string;
+    }>;
     /** Number of search rows seen before the fetch budget cut them. */
     found: number;
     /** True when the search row list was cut by the fetch budget. */

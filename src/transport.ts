@@ -229,8 +229,10 @@ async function attemptWithRoute(
     return first;
   }
   if (signal?.aborted === true || proxy === undefined) return first;
+  // When the failed first route was the proxy, the alternate is `undefined`,
+  // which means direct — not "no alternate". The old guard here removed the
+  // direct fallback exactly when a proxy-first route failed.
   const alternateRoute = firstRoute === proxy ? undefined : proxy;
-  if (alternateRoute === undefined) return first;
   const retry = await attempt(host, url, signal, timeoutMs, alternateRoute, query);
   if (retry.ok && retry.route !== undefined) health?.noteRouteSuccess(host.id, retry.route);
   return retry.ok ? retry : first;

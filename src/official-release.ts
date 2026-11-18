@@ -129,6 +129,10 @@ export function parseRustRelease(payload: string, requested: RustVersion): Sourc
 
 /** One direct GET with its own abort budget. */
 async function directJson(url: string, headers: Record<string, string>, options: RustReleaseOptions, timeoutMs: number): Promise<string> {
+  if (options.signal?.aborted === true) {
+    const reason = options.signal.reason;
+    throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const abort = (): void => controller.abort();
@@ -164,6 +168,7 @@ async function fetchJson(url: string, options: RustReleaseOptions, timeoutMs: nu
   try {
     return await directJson(url, headers, options, Math.min(timeoutMs, 1_500));
   } catch (error) {
+    if (options.signal?.aborted === true) throw error;
     if (options.proxy === undefined || options.proxy.length === 0) throw error;
     const remaining = timeoutMs - (Date.now() - started);
     if (remaining < 250) throw error;

@@ -526,6 +526,10 @@ export function readResponse(buffer: Buffer, maxBytes = DEFAULT_MAX_BYTES): Pars
  * @returns `{ status, text, url, headers }` for the final hop.
  */
 export async function proxyGet(url: string, options: ProxyRequestOptions): Promise<ProxyResponse> {
+  if (options.signal?.aborted === true) {
+    const reason = options.signal.reason;
+    throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+  }
   const proxy = parseProxy(options.proxy);
   const timeoutMs =
     options.timeoutMs !== undefined && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : DEFAULT_TIMEOUT_MS;

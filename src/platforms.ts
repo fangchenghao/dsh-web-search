@@ -393,6 +393,30 @@ function deadline(timeoutMs: number, signal: AbortSignal | undefined): AbortSign
   return signal === undefined ? timer : AbortSignal.any([signal, timer]);
 }
 
+/** Race a promise against an abort signal, observing both outcomes. */
+function withAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) {
+    return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error('platform search was aborted'));
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = (): void => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason instanceof Error ? signal.reason : new Error('platform search was aborted'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+  });
+}
+
 /** Turn a non-2xx status into a reason. */
 function statusError(status: number): Error {
   return new Error(status === 0 ? 'no response' : `HTTP ${status}`);
@@ -938,7 +962,14 @@ async function fallbackAnswer(
   }
   const fallbackQuery = `site:${spec.site} ${query}`;
   try {
-    const result = await options.fallbackSearch(fallbackQuery, limit, options.signal);
+    if (options.signal?.aborted === true) {
+      const reason = options.signal.reason;
+      throw reason instanceof Error ? reason : new Error('platform search was aborted');
+    }
+    const result = await withAbort(
+      options.fallbackSearch(fallbackQuery, limit, options.signal),
+      options.signal ?? new AbortController().signal,
+    );
     // A search engine may ignore the site: operator and return generic pages.
     // A platform result must at least live on that platform's domain.
     const allowed = normaliseSources(result.sources, limit * 2)
@@ -984,7 +1015,7 @@ async function fallbackAnswer(
  * @param timeoutMs - per-platform deadline.
  * @returns the platform answer.
  */
-async function searchPlatform(
+async function searchPlatformInner(
   spec: PlatformSpec,
   query: string,
   limit: number,
@@ -1038,6 +1069,49 @@ async function searchPlatform(
     return { id: spec.id, sources: ordered, via: 'api' };
   }
   return fallbackAnswer(spec, query, limit, options, directReason);
+}
+
+/**
+ * Run one platform under a single deadline that also covers the fallback.
+ *
+ * `requestText` has its own per-request timeout, but an alternate endpoint or
+ * an injected fallback search can otherwise get a fresh budget, and a fallback
+ * that ignores its signal can hang the whole `Promise.all` forever.
+ *
+ * @param spec - platform being served.
+ * @param query - original query, already trimmed.
+ * @param limit - per-platform budget.
+ * @param options - caller options.
+ * @param timeoutMs - total deadline for this platform.
+ * @returns the platform answer; timeout becomes a platform failure unless the
+ *   caller itself cancelled.
+ */
+async function searchPlatform(
+  spec: PlatformSpec,
+  query: string,
+  limit: number,
+  options: PlatformSearchOptions,
+  timeoutMs: number,
+): Promise<PlatformAnswer> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error(`platform ${spec.id} timed out after ${timeoutMs}ms`)), timeoutMs);
+  const combined = options.signal === undefined
+    ? controller.signal
+    : AbortSignal.any([options.signal, controller.signal]);
+  const scoped = { ...options, signal: combined };
+  try {
+    return await withAbort(searchPlatformInner(spec, query, limit, scoped, timeoutMs), combined);
+  } catch (error) {
+    if (options.signal?.aborted === true) throw error;
+    return {
+      id: spec.id,
+      sources: [],
+      via: spec.fallbackOnly === true ? 'fallback' : 'api',
+      failure: failureText(spec.id, messageOf(error)),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**

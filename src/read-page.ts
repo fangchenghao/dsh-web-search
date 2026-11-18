@@ -541,20 +541,36 @@ export function createReadPageDefinition(
         );
       }
 
-      // Keep surrogate pairs intact at the cut point. `nextOffset` follows the
-      // adjusted end, so the concatenated chunks still equal the full body.
-      let end = Math.min(totalLength, parsed.offset + parsed.maxLength);
-      if (end > parsed.offset && end < totalLength) {
-        const last = page.content.charCodeAt(end - 1);
-        if (last >= 0xd800 && last <= 0xdbff) end -= 1;
+      // Walk the real page boundaries. A surrogate pair at a cut point moves
+      // that boundary one code unit back, so the chunk count and index cannot
+      // be derived from `ceil(totalLength / maxLength)` without drifting.
+      const pageEnd = (start: number): number => {
+        let end = Math.min(totalLength, start + parsed.maxLength);
+        if (end > start && end < totalLength) {
+          const last = page.content.charCodeAt(end - 1);
+          if (last >= 0xd800 && last <= 0xdbff) end -= 1;
+        }
+        // A one-character budget on a surrogate pair must still advance.
+        return end > start ? end : Math.min(totalLength, start + 1);
+      };
+      let count = 0;
+      let index = 0;
+      let cursor = 0;
+      while (cursor < totalLength) {
+        const boundary = pageEnd(cursor);
+        count += 1;
+        if (parsed.offset >= cursor && parsed.offset < boundary) index = count;
+        cursor = boundary;
       }
+      if (totalLength === 0) {
+        count = 1;
+        index = 1;
+      } else if (parsed.offset === totalLength) {
+        index = count;
+      }
+      const end = pageEnd(parsed.offset);
       const content = page.content.slice(parsed.offset, end);
       const nextOffset = end < totalLength ? end : null;
-
-      const count = totalLength === 0 ? 1 : Math.ceil(totalLength / parsed.maxLength);
-      const index = totalLength === 0
-        ? 1
-        : Math.min(count, Math.floor(parsed.offset / parsed.maxLength) + 1);
 
       const value: ReadPageValue = {
         url: parsed.url,

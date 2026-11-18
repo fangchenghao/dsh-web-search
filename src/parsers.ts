@@ -92,33 +92,50 @@ export function text(value: unknown): string {
 export function resolveHref(raw: string | undefined, baseUrl: string): string | undefined {
   if (typeof raw !== 'string' || raw.length === 0) return undefined;
   // Attribute values are HTML-escaped, so a Bing click tracker arrives as
-  // `...&amp;u=a1<base64url>`; decode before looking for the payload.
-  let candidate = raw.replace(/&amp;/gi, '&').replace(/&#0*38;/g, '&');
-  const wrapped = /[?&]u=a1([A-Za-z0-9_-]+)/.exec(candidate);
-  if (wrapped) {
-    try {
-      candidate = Buffer.from(wrapped[1]!.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
-    } catch {
-      return undefined;
-    }
-  } else {
-    // DuckDuckGo wraps outbound links as `/l/?uddg=<percent-encoded>`.
-    const uddg = /[?&]uddg=([^&]+)/.exec(candidate);
-    if (uddg) {
+  // `...&amp;u=a1<base64url>`; decode before parsing.
+  const candidate = raw.replace(/&amp;/gi, '&').replace(/&#0*38;/g, '&');
+  let parsed: URL;
+  try {
+    parsed = new URL(candidate, baseUrl);
+  } catch {
+    return undefined;
+  }
+
+  // Only the search engine's own wrapper is unwrapped. A normal page whose
+  // query string happens to contain `uddg` or `u=a1...` must keep its URL.
+  const host = parsed.hostname.toLowerCase();
+  let target: string | undefined;
+  if ((host === 'bing.com' || host === 'www.bing.com') && parsed.pathname === '/ck/a') {
+    const payload = parsed.searchParams.get('u');
+    const match = payload === null ? null : /^a1([A-Za-z0-9_-]+={0,2})$/u.exec(payload);
+    if (match !== null) {
       try {
-        candidate = decodeURIComponent(uddg[1]!);
+        target = Buffer.from(match[1]!.replace(/=+$/u, '').replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+      } catch {
+        return undefined;
+      }
+    }
+  } else if ((host === 'duckduckgo.com' || host.endsWith('.duckduckgo.com')) && parsed.pathname === '/l/') {
+    const wrapped = parsed.searchParams.get('uddg');
+    if (wrapped !== null && wrapped.length > 0) {
+      try {
+        target = decodeURIComponent(wrapped);
       } catch {
         return undefined;
       }
     }
   }
-  try {
-    const url = new URL(candidate, baseUrl);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined;
-    return url.toString();
-  } catch {
-    return undefined;
+
+  if (target !== undefined) {
+    try {
+      const unwrapped = new URL(target);
+      return unwrapped.protocol === 'http:' || unwrapped.protocol === 'https:' ? unwrapped.toString() : undefined;
+    } catch {
+      return undefined;
+    }
   }
+
+  return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : undefined;
 }
 
 /**
@@ -443,6 +460,8 @@ export function parseExaMcp(payload: string, baseUrl: string): Source[] {
         inHighlights = false;
       } else if (/^highlights\s*:/i.test(line)) {
         inHighlights = true;
+        const inline = line.replace(/^highlights\s*:/i, '').trim();
+        if (inline.length > 0) highlights.push(inline);
       } else if (/^(published|author)\s*:/i.test(line)) {
         inHighlights = false;
       } else if (inHighlights) {

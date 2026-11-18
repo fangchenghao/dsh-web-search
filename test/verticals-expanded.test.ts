@@ -251,3 +251,20 @@ test('unknown ids alone fall back to the default set', async () => {
   assert.equal(calls.length, DEFAULT_VERTICAL_IDS.length);
   assert.deepEqual(Object.keys(outcome.counts), [...DEFAULT_VERTICAL_IDS]);
 });
+
+
+test('OpenAlex keeps every occurrence of a repeated abstract word', () => {
+  const spec = verticalById('openalex');
+  assert.ok(spec !== undefined);
+  const payload = {
+    results: [{
+      id: 'https://openalex.org/W1',
+      display_name: 'Repeated words',
+      doi: 'https://doi.org/10.1000/example',
+      publication_year: 2026,
+      abstract_inverted_index: { the: [0, 2], cat: [1], sat: [3] },
+    }],
+  };
+  const sources = spec.parse(JSON.stringify(payload), 'https://api.openalex.org/works', 1);
+  assert.equal(sources[0]?.snippet, 'the cat the sat');
+});

@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.24.4
+
+Second independent audit, this time with `Vendor2/GPT-6-astra` at reasoning
+effort `xhigh`. Search and ranking inputs are unchanged except where stated.
+
+### Fixed
+- **A failed proxy-first route no longer removes the direct fallback.** After a
+  tunnel error, `searchHost` now retries the same engine directly instead of
+  treating `undefined` as "no alternate route".
+- **Platform searches have one deadline for direct, alternate and fallback.**
+  A fallback that ignores its signal can no longer hang the whole `Promise.all`;
+  caller cancellation still propagates as `SEARCH_ABORTED`.
+- **Already-cancelled requests do not start network work.** The official
+  release/support readers and the proxy transport check the signal before the
+  first request; the research tool also refuses to start a search after cancel.
+- **Scoped npm lookups verify the package identity.** The official resolver asks
+  for several search rows and accepts only an exact name or `name@version`
+  title instead of trusting the first fuzzy hit.
+- **OpenAlex abstracts keep repeated words.** Every inverted-index position is
+  rebuilt, not only the first.
+- **arXiv date windows preserve explicit field queries.** `ti:`, `cat:`, boolean
+  expressions and quotes are passed through; only the sort parameters are added.
+- **Tracker unwrapping is host/path scoped.** A normal URL containing `uddg=` or
+  `u=a1...` is no longer rewritten as if it came from Bing or DuckDuckGo.
+- **Exa same-line `Highlights:` text is kept.** The inline value now becomes the
+  snippet instead of being discarded.
+- **The search-cache key is an unambiguous JSON tuple.** Optional field values
+  and the query can no longer collide through delimiter prefixes.
+- **Research enforces its 45 s budget across search and fetch**, reports search
+  failures in the evidence pack, and hard-caps the selected excerpt.
+- **`read_page` chunk index/count follows surrogate-safe boundaries**, so a
+  cut emoji cannot make pagination repeat or skip a chunk.
+- **A cache snapshot that cannot fit an empty envelope is not written**, leaving
+  the previous file intact rather than replacing it with over-budget data.
+
+**Test suite: 711 tests across 56 files** (710 pass, 1 skipped).
+
 ## 0.24.3
 
 Audit fixes from an independent Claude Fable 5.1 review (reasoning effort

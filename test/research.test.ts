@@ -402,7 +402,7 @@ test('keeps a regulation effective date at the end of a long excerpt', () => {
   const excerpt = selectExcerpt(text, ['显式', '隐式', '施行', '标识'], 1_800);
   assert.match(excerpt, /第一条/u);
   assert.match(excerpt, /2025年9月1日起施行/u);
-  assert.ok(excerpt.length <= 2_600, `excerpt too long: ${excerpt.length}`);
+  assert.ok(excerpt.length <= 1_800, `excerpt too long: ${excerpt.length}`);
 });
 
 test('selects the operative legal date clause instead of article navigation', () => {
@@ -443,4 +443,33 @@ test('a clause/date question adds the official article directly', async () => {
   ).execute({ query: '欧盟 AI Act 的 GPAI 义务从哪一天开始适用？依据是哪一条？', maxSources: 1 }, {});
   assert.ok(fetched.includes('https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-113'));
   assert.match(value.pages[0]?.excerpt ?? '', /2 August 2025/u);
+});
+
+test('a pre-aborted research call does not start a search', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  let called = false;
+  const definition = createResearchDefinition(
+    RESEARCH_TOOL_NAME,
+    async () => {
+      called = true;
+      return { sources: [source('https://example.com/')], failures: [] };
+    },
+    fetchPage,
+  );
+  await assert.rejects(
+    () => definition.execute({ query: 'cancelled' }, { signal: controller.signal }),
+    /abort/i,
+  );
+  assert.equal(called, false);
+});
+
+test('search failures are reported instead of looking like an empty result', async () => {
+  const value = await createResearchDefinition(
+    RESEARCH_TOOL_NAME,
+    async () => ({ sources: [], failures: ['engine timeout'] }),
+    fetchPage,
+  ).execute({ query: 'nothing' }, {});
+  assert.deepEqual(value.searchFailures, [{ query: 'nothing', reason: 'engine timeout' }]);
+  assert.match(formatResearchValue(value), /Search failures[\s\S]*engine timeout/);
 });

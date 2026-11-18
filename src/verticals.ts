@@ -286,11 +286,13 @@ function openAlexAbstract(value: unknown): string {
   const words: { word: string; position: number }[] = [];
   for (const [word, positions] of Object.entries(value)) {
     if (!Array.isArray(positions) || word.trim().length === 0) continue;
-    const position = positions.find(
-      (item): item is number => typeof item === 'number' && Number.isFinite(item),
-    );
-    if (position === undefined) continue;
-    words.push({ word: word.trim(), position });
+    // The inverted index maps one word to every occurrence. Keeping only the
+    // first position silently deleted repeated words from the abstract.
+    for (const item of positions) {
+      if (typeof item === 'number' && Number.isSafeInteger(item) && item >= 0) {
+        words.push({ word: word.trim(), position: item });
+      }
+    }
   }
   words.sort((a, b) => a.position - b.position);
   return words.map((entry) => entry.word).join(' ');
@@ -1835,8 +1837,11 @@ export async function searchVerticals(
     specs.map(async (spec) => {
       try {
         const built = spec.build(trimmed, limit);
+        // arXiv's builder already encodes fields/booleans correctly. A date
+        // window only asks arXiv to sort newest first; replacing its
+        // `search_query` mangled `ti:`/`cat:` queries into a quoted phrase.
         const url = spec.id === 'arxiv' && options.timeRange !== undefined && options.timeRange !== 'off'
-          ? `${built.replace(/search_query=[^&]*/u, `search_query=${encodeURIComponent(`all:"${trimmed}"`)}`)}&sortBy=submittedDate&sortOrder=descending`
+          ? `${built}&sortBy=submittedDate&sortOrder=descending`
           : built;
         const payload = await fetchPayload(spec, url, options, timeoutMs);
         const sources = spec.parse(payload, url, limit);

@@ -70,3 +70,44 @@ test('a successful proxy detour is remembered for the next request', async () =>
     proxy.close();
   }
 });
+
+test('a failed proxy-first route falls back to direct', async () => {
+  let directHits = 0;
+  const target = createServer((_request, response) => {
+    directHits += 1;
+    response.writeHead(200, { 'content-type': 'text/html' });
+    response.end('<html><body>direct page</body></html>');
+  });
+  target.listen(0, '127.0.0.1');
+  await once(target, 'listening');
+  const targetAddress = target.address();
+  assert.ok(targetAddress !== null && typeof targetAddress === 'object');
+
+  const proxy = createServer();
+  proxy.on('connect', (_request, socket) => {
+    socket.end('HTTP/1.1 502 Bad Gateway\r\n\r\n');
+  });
+  proxy.listen(0, '127.0.0.1');
+  await once(proxy, 'listening');
+  const proxyAddress = proxy.address();
+  assert.ok(proxyAddress !== null && typeof proxyAddress === 'object');
+
+  const host: HostSpec = {
+    id: 'route-proxy-failure',
+    tier: 'primary',
+    region: 'global',
+    viaProxy: true,
+    build: () => `http://127.0.0.1:${targetAddress.port}/page`,
+    skipEcho: true,
+    parse: () => [{ title: 'direct page', url: 'https://example.test/direct' }],
+  };
+  try {
+    const result = await searchHost(host, 'route test', undefined, 5_000, `http://127.0.0.1:${proxyAddress.port}`);
+    assert.equal(result.ok, true);
+    assert.equal(result.ok ? result.route : undefined, 'direct');
+    assert.equal(directHits, 1);
+  } finally {
+    target.close();
+    proxy.close();
+  }
+});

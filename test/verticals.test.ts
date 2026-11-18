@@ -333,7 +333,7 @@ test('a time window switches arXiv to submitted-date order', async () => {
     fetch: routed({ 'export.arxiv.org': { body: await fixture(CASES.arxiv.normal) } }, calls),
   });
   assert.equal(calls.length, 1);
-  assert.match(calls[0] ?? '', /search_query=all%3A%22large%20language%20model%22/);
+  assert.match(calls[0] ?? '', /search_query=all%3Alarge%20AND%20all%3Alanguage%20AND%20all%3Amodel/);
   assert.match(calls[0] ?? '', /sortBy=submittedDate/);
   assert.match(calls[0] ?? '', /sortOrder=descending/);
 });
@@ -458,4 +458,17 @@ test('an empty query never touches the network', async () => {
   const outcome = await searchVerticals('   ', { fetch: routed(await normalRoutes(), calls) });
   assert.deepEqual(outcome.sources, []);
   assert.equal(calls.length, 0);
+});
+
+
+test('a time window preserves an explicit arXiv field query', async () => {
+  const calls: string[] = [];
+  await searchVerticals('ti:"graph neural networks"', {
+    ids: ['arxiv'],
+    timeRange: 'month',
+    fetch: routed({ 'export.arxiv.org': { body: await fixture(CASES.arxiv.normal) } }, calls),
+  });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0] ?? '', /search_query=ti%3A%22graph%20neural%20networks%22/);
+  assert.match(calls[0] ?? '', /sortBy=submittedDate/);
 });

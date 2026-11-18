@@ -741,3 +741,22 @@ test('live: offset=0 plus nextOffset reproduces the complete converted page', {
       + `assembledLength=${assembled.length} first80=${JSON.stringify(whole.content.slice(0, 80))}`,
   );
 });
+
+test('chunk index and count follow surrogate-safe boundaries', async () => {
+  const full = `${'a'.repeat(999)}😀${'b'.repeat(1_200)}`;
+  const { definition } = setup({ 'https://example.com/emoji': { content: full } });
+  const chunks: ReadPageValue[] = [];
+  let offset = 0;
+  for (;;) {
+    const value = await definition.execute({ url: 'https://example.com/emoji', offset, maxLength: 1000 }, {});
+    chunks.push(value);
+    if (value.nextOffset === null) break;
+    offset = value.nextOffset;
+  }
+  assert.equal(chunks.map((chunk) => chunk.content).join(''), full);
+  assert.ok(chunks.length > 1);
+  for (const chunk of chunks) {
+    assert.equal(chunk.chunk.count, chunks.length);
+    assert.equal(chunk.chunk.index, chunks.indexOf(chunk) + 1);
+  }
+});

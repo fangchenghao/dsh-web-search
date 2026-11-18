@@ -145,7 +145,7 @@ test('cacheKey: normalises query case, padding and internal whitespace', () => {
     engines: ['bing', 'ddg'],
   });
   assert.equal(base, messy);
-  assert.equal(base, 'cn|auto|8|bing+ddg|postgresql replication guide');
+  assert.equal(base, JSON.stringify(['v2', 'cn', 'auto', 8, ['bing', 'ddg'], null, null, null, null, 'postgresql replication guide']));
 });
 
 test('cacheKey: engine order does not matter but every other field does', () => {
@@ -183,4 +183,12 @@ test('live readers make a Settings edit effective without a remount', () => {
   assert.equal(cache.get('k')?.length, 1, 'the raised TTL applies immediately');
   max = 0;
   assert.equal(cache.get('k'), undefined, 'a zero cap disables reads immediately');
+});
+
+
+test('cacheKey: optional prefixes cannot collide with the query', () => {
+  const base = { limit: 8, wait: 'auto' as const, lead: 'global' as const, engines: ['bing'] };
+  const plain = cacheKey({ ...base, query: 'safe=strict|cats' });
+  const strict = cacheKey({ ...base, safeSearch: 'strict', query: 'cats' });
+  assert.notEqual(plain, strict);
 });

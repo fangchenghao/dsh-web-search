@@ -327,3 +327,11 @@ test('path resolution expands the documented default and a leading tilde', () =>
   const custom = join(tmpdir(), 'custom-cache.json');
   assert.equal(resolveCacheFile(custom), custom);
 });
+
+
+test('a byte budget smaller than the empty snapshot refuses the write', (t) => {
+  const dir = tempDir(t);
+  const file = join(dir, 'cache.json');
+  assert.equal(writeCacheFile(file, [], NOW, { maxBytes: 1 }), false);
+  assert.equal(existsSync(file), false);
+});
