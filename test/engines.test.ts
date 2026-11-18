@@ -349,3 +349,20 @@ test('Firecrawl stays direct-first: its keyless endpoint rejects the tunnel IP',
   assert.ok(host !== undefined);
   assert.notEqual(host.viaProxy, true);
 });
+
+test('a pre-aborted search never resolves a proxy or touches an engine', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  let fetched = false;
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    fetched = true;
+    throw new Error('network must not run');
+  }) as typeof fetch;
+  try {
+    await assert.rejects(() => search('pre-aborted', controller.signal, { limit: 3 }), /cancel|abort/i);
+    assert.equal(fetched, false);
+  } finally {
+    globalThis.fetch = original;
+  }
+});

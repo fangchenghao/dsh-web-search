@@ -394,6 +394,10 @@ async function runTier(
   const counters = limits.lead === 'all' || !hosts.some((host) => leadsQuery(host, limits.lead as Region))
     ? () => true
     : (host: HostSpec) => leadsQuery(host, limits.lead as Region);
+  if (isAborted(signal)) {
+    const reason = signal?.reason;
+    throw reason instanceof Error ? reason : new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
+  }
   const controller = new AbortController();
   const relayAbort = () => controller.abort();
   signal?.addEventListener('abort', relayAbort, { once: true });
@@ -489,6 +493,11 @@ async function runTier(
     }
   }
   return answers;
+}
+
+/** Read an abort flag without TypeScript assuming it cannot change after a throw. */
+function isAborted(signal: AbortSignal | undefined): boolean {
+  return signal !== undefined && signal.aborted;
 }
 
 /** Options for {@link search}: the seam's budget plus the plugin's runtime. */
@@ -611,6 +620,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   if (typeof query !== 'string' || query.trim().length === 0) {
     throw new SearchError('the search query is empty', 'SEARCH_INVALID', false);
   }
+  if (isAborted(signal)) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
   const limit = Math.max(1, Math.min(options.limit, 20));
   const timeoutMs = options.timeoutMs ?? 15000;
   const wait: WaitPolicy = options.wait ?? 'auto';
@@ -738,7 +748,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     }
   }
 
-  if (signal?.aborted === true) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
+  if (isAborted(signal)) throw new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
   sources = removeBlocked(sources, blocked);
   if (key !== undefined && sources.length > 0) options.cache?.set(key, sources);
   options.trace?.({

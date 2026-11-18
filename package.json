@@ -1,6 +1,6 @@
 {
   "name": "@fffangchenghao/dsh-web-search",
-  "version": "0.24.5",
+  "version": "0.24.6",
   "description": "DSH bundle: key-free web search, page fetch and research for DeepSeek Harness; eight engines fused with RRF, 34 vertical sources, arXiv, Windows/macOS system-proxy support and a dependency-free MCP server.",
   "type": "module",
   "main": "lib/index.js",

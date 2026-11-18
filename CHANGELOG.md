@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.24.6
+
+### Fixed
+- **A pre-aborted search no longer resolves a proxy or starts an engine.** The
+  public `search()` entry checks the caller signal before `resolveProxy()`, and
+  `runTier()` repeats the guard so a cancellation arriving at the tier boundary
+  cannot dispatch a request. The regression test stubs `fetch` and asserts it is
+  never called.
+
+**Test suite: 718 tests across 56 files** (717 pass, 1 skipped).
+
 ## 0.24.5
 
 Completed the delayed GPT-6-astra `xhigh` audit batch: tool registration,
