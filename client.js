@@ -74,7 +74,7 @@
           var ENTRY = 'web-search-bing';
           var PACKAGE_NAME = 'dsh-web-search-bing';
           /** Keep in step with package.json; compared with the npm registry. */
-          var VERSION = '0.24.6';
+          var VERSION = '0.24.7';
           /** Snapshot used while no configuration service is reachable. */
           var EMPTY_STATE = { status: 'unavailable', value: undefined, base: undefined, user: undefined, revision: undefined, writable: false };
 

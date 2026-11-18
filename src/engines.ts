@@ -304,6 +304,8 @@ interface TierLimits {
   softMs: number;
   /** Contributors required before an early release. */
   needed: number;
+  /** `fast` releases on the first settled engine, even below `limit`. */
+  fast: boolean;
   /** Region that leads, or `all` to count every engine. */
   lead: Region | 'all';
   /** Active publication window, pushed down to engines that support it. */
@@ -344,6 +346,12 @@ async function searchHostWithKeys(
   }
   let key = pool.pick();
   let last: AttemptOutcome | undefined;
+  if (key === undefined) {
+    // All configured keys are resting. Fall back to anonymous access instead
+    // of returning `undefined` (which made the tier callback read `.ok` of
+    // undefined and throw a TypeError).
+    return searchHost(host, query, signal, timeoutMs, proxy, timeRange, safeSearch, health);
+  }
   for (let attempt = 0; attempt < 2 && key !== undefined; attempt += 1) {
     const configured = resolveHost(host, {
       anysearchApiKey: key,
@@ -424,6 +432,7 @@ async function runTier(
   const leadSettled = () => outcomes.filter((outcome, index) => counters(hosts[index] as HostSpec) && outcome !== undefined).length >= leadTotal;
   const done = () =>
     answered().length === hosts.length ||
+    (limits.fast && answered().length > 0) ||
     leadSettled() ||
     tierReleaseReady(available(), contributors(), limits.limit, needed);
 
@@ -668,7 +677,14 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
   // for the full soft deadline. `all` still asks for every engine, and `fast`
   // keeps its first-answer behavior.
   const needed = wait === 'all' ? usable.length : wait === 'fast' ? 1 : Math.min(2, usable.length);
-  const limits: TierLimits = { limit, softMs, needed, lead: wait === 'all' ? 'all' : lead, timeRange };
+  const limits: TierLimits = {
+    limit,
+    softMs,
+    needed,
+    fast: wait === 'fast',
+    lead: wait === 'all' ? 'all' : lead,
+    timeRange,
+  };
   // Ranking does not drop rows; the engine layer does. `timeRange` is passed
   // into the rank options only so undated rows are scored lower while a window
   // is active. Keeping it out of the configured `rank` object preserves the
@@ -706,6 +722,15 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     ...(safeSearch === 'off' ? {} : { safeSearch }),
     ...(fallbackOn === undefined || fallbackOn.length === FAILURE_KINDS.length ? {} : { fallbackOn }),
     ...(blocked.length === 0 ? {} : { blockedDomains: blocked }),
+    rank: {
+      ...(rank.rrfConstant === undefined ? {} : { rrfConstant: rank.rrfConstant }),
+      ...(rank.authorityDomains === undefined ? {} : { authorityDomains: rank.authorityDomains }),
+      ...(rank.authorityBoost === undefined ? {} : { authorityBoost: rank.authorityBoost }),
+      ...(rank.freshnessBoost === undefined ? {} : { freshnessBoost: rank.freshnessBoost }),
+      ...(rank.freshnessDays === undefined ? {} : { freshnessDays: rank.freshnessDays }),
+      ...(rank.weights === undefined ? {} : { weights: rank.weights }),
+    },
+    ...(anysearchDomain.length === 0 ? {} : { anysearchDomain }),
   });
   const cached = key === undefined ? undefined : options.cache?.get(key);
   const cachedSources = cached === undefined ? undefined : removeBlocked(cached, blocked);

@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { HOSTS, resolveHost, search } from '../src/engines.ts';
 import { SearchCache } from '../src/cache.ts';
 import { EngineHealth } from '../src/health.ts';
+import { keyPoolFor } from '../src/keys.ts';
 import { SearchError } from '../src/errors.ts';
 import { parseBing, parseSo } from '../src/parsers.ts';
 import type { Source, TimeRange } from '../src/types.ts';
@@ -362,6 +363,28 @@ test('a pre-aborted search never resolves a proxy or touches an engine', async (
   try {
     await assert.rejects(() => search('pre-aborted', controller.signal, { limit: 3 }), /cancel|abort/i);
     assert.equal(fetched, false);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+test('all AnySearch keys resting falls back to anonymous instead of throwing', async () => {
+  const raw = `resting-a-${Date.now()},resting-b-${Date.now()}`;
+  const pool = keyPoolFor(raw);
+  pool.penalize(pool.keys[0] as string, 'throttled');
+  pool.penalize(pool.keys[1] as string, 'throttled');
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    throw new Error('network blocked in test');
+  }) as typeof fetch;
+  try {
+    const outcome = await search('resting keys', undefined, {
+      limit: 1,
+      anysearchApiKey: raw,
+      useProxy: false,
+      timeoutMs: 800,
+    });
+    assert.ok(Array.isArray(outcome.failures));
   } finally {
     globalThis.fetch = original;
   }

@@ -50,6 +50,17 @@ export interface CacheKeyParts {
     fallbackOn?: readonly string[];
     /** Domain blocklist; omitted and an empty list share a key. */
     blockedDomains?: readonly string[];
+    /** Ranking knobs that affect the fused order; omitted means defaults. */
+    rank?: {
+        rrfConstant?: number;
+        authorityDomains?: readonly string[];
+        authorityBoost?: number;
+        freshnessBoost?: number;
+        freshnessDays?: number;
+        weights?: readonly number[];
+    };
+    /** AnySearch vertical domain; it selects a different result set. */
+    anysearchDomain?: string;
 }
 /**
  * Build the cache key for one search request.

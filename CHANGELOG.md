@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.24.7
+
+### Fixed
+- **A pre-aborted search no longer resolves a proxy or starts an engine.** The
+  public `search()` entry checks the caller signal before `resolveProxy()`, and
+  `runTier()` repeats the guard.
+- **All AnySearch keys resting no longer causes a `TypeError`.** When
+  `KeyPool.pick()` returns `undefined`, the engine now falls back to anonymous
+  access instead of returning `undefined` into the tier's `.ok` callback.
+- **Search-cache keys include ranking knobs and the AnySearch domain.** Changing
+  `rrfConstant`, authority/freshness settings, per-engine weights or
+  `anysearchDomain` now produces a new entry instead of reusing results ranked
+  for the old configuration.
+- **`wait: "fast"` releases on the first settled engine, even below `limit`.**
+  It no longer waits for the soft deadline just because the first answer was
+  short.
+
+**Test suite: 720 tests across 56 files** (719 pass, 1 skipped).
+
 ## 0.24.6
 
 ### Fixed

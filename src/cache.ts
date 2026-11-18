@@ -63,6 +63,17 @@ export interface CacheKeyParts {
   fallbackOn?: readonly string[];
   /** Domain blocklist; omitted and an empty list share a key. */
   blockedDomains?: readonly string[];
+  /** Ranking knobs that affect the fused order; omitted means defaults. */
+  rank?: {
+    rrfConstant?: number;
+    authorityDomains?: readonly string[];
+    authorityBoost?: number;
+    freshnessBoost?: number;
+    freshnessDays?: number;
+    weights?: readonly number[];
+  };
+  /** AnySearch vertical domain; it selects a different result set. */
+  anysearchDomain?: string;
 }
 
 /**
@@ -86,8 +97,16 @@ export function cacheKey(parts: CacheKeyParts): string {
   // A JSON tuple is unambiguous and keeps every optional value in its own
   // slot. The old delimiter join let `safeSearch: 'off'` + a query containing
   // `safe=strict|` collide with `safeSearch: 'strict'` + a shorter query.
+  const rank = parts.rank === undefined ? null : {
+    rrfConstant: parts.rank.rrfConstant ?? null,
+    authorityDomains: [...(parts.rank.authorityDomains ?? [])].sort(),
+    authorityBoost: parts.rank.authorityBoost ?? null,
+    freshnessBoost: parts.rank.freshnessBoost ?? null,
+    freshnessDays: parts.rank.freshnessDays ?? null,
+    weights: parts.rank.weights === undefined ? null : [...parts.rank.weights],
+  };
   return JSON.stringify([
-    'v2',
+    'v3',
     parts.lead,
     parts.wait,
     parts.limit,
@@ -96,6 +115,8 @@ export function cacheKey(parts: CacheKeyParts): string {
     parts.safeSearch === undefined || parts.safeSearch === 'off' ? null : parts.safeSearch,
     parts.fallbackOn === undefined ? null : [...parts.fallbackOn].sort(),
     parts.blockedDomains === undefined || parts.blockedDomains.length === 0 ? null : [...parts.blockedDomains].sort(),
+    rank,
+    parts.anysearchDomain === undefined || parts.anysearchDomain.length === 0 ? null : parts.anysearchDomain,
     query,
   ]);
 }

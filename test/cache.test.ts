@@ -145,7 +145,7 @@ test('cacheKey: normalises query case, padding and internal whitespace', () => {
     engines: ['bing', 'ddg'],
   });
   assert.equal(base, messy);
-  assert.equal(base, JSON.stringify(['v2', 'cn', 'auto', 8, ['bing', 'ddg'], null, null, null, null, 'postgresql replication guide']));
+  assert.equal(base, JSON.stringify(['v3', 'cn', 'auto', 8, ['bing', 'ddg'], null, null, null, null, null, null, 'postgresql replication guide']));
 });
 
 test('cacheKey: engine order does not matter but every other field does', () => {
@@ -191,4 +191,16 @@ test('cacheKey: optional prefixes cannot collide with the query', () => {
   const plain = cacheKey({ ...base, query: 'safe=strict|cats' });
   const strict = cacheKey({ ...base, safeSearch: 'strict', query: 'cats' });
   assert.notEqual(plain, strict);
+});
+
+test('cacheKey: ranking knobs and AnySearch domain change the entry', () => {
+  const base = { query: 'x', limit: 5, wait: 'auto' as const, lead: 'global' as const, engines: ['bing'] };
+  const plain = cacheKey(base);
+  assert.notEqual(plain, cacheKey({ ...base, rank: { authorityBoost: 0.5 } }));
+  assert.notEqual(plain, cacheKey({ ...base, rank: { rrfConstant: 40 } }));
+  assert.notEqual(plain, cacheKey({ ...base, anysearchDomain: 'finance' }));
+  assert.equal(
+    cacheKey({ ...base, rank: { authorityDomains: ['a.example', 'b.example'] } }),
+    cacheKey({ ...base, rank: { authorityDomains: ['b.example', 'a.example'] } }),
+  );
 });
