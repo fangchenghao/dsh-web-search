@@ -298,3 +298,18 @@ test('apply without a tools service still mounts web_search', () => {
   assert.equal(providers.length, 1);
   assert.equal(providers[0]?.id, 'bing');
 });
+
+test('a pre-aborted batch does not start any query', async () => {
+  let calls = 0;
+  const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, async () => {
+    calls += 1;
+    return { sources: [], failures: [], truncated: false };
+  });
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    () => definition.execute({ queries: ['a', 'b'] }, { signal: controller.signal }),
+    /abort/i,
+  );
+  assert.equal(calls, 0);
+});

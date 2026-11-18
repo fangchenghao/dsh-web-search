@@ -130,15 +130,64 @@ export interface RenderedPage {
  */
 export function readableTextLength(html: string): number {
   if (html.length === 0) return 0;
-  return html
-    .replace(/<head\b[^>]*>[\s\S]*?<\/head\s*>/gi, ' ')
-    .replace(/<(script|style|noscript|template|svg)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
-    .replace(/<(script|style|noscript|template)\b[^>]*>[\s\S]*$/gi, ' ')
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim().length;
+  const lower = html.toLowerCase();
+  let count = 0;
+  let pendingSpace = false;
+  let index = 0;
+  const advancePast = (needle: string, from: number): number => {
+    const at = lower.indexOf(needle, from);
+    if (at < 0) return html.length;
+    const end = html.indexOf('>', at + needle.length);
+    return end < 0 ? html.length : end + 1;
+  };
+  while (index < html.length) {
+    if (html.startsWith('<!--', index)) {
+      const end = html.indexOf('-->', index + 4);
+      index = end < 0 ? html.length : end + 3;
+      continue;
+    }
+    if (html[index] === '<') {
+      const end = html.indexOf('>', index + 1);
+      if (end < 0) {
+        // A lone '<' is text, not markup.
+        index += 1;
+        continue;
+      }
+      const raw = html.slice(index + 1, end).trim();
+      if (raw.startsWith('!') || raw.startsWith('?')) {
+        index = end + 1;
+        continue;
+      }
+      const name = /^\/?\s*([a-zA-Z][a-zA-Z0-9:_-]*)/u.exec(raw)?.[1]?.toLowerCase();
+      if (name === 'head') {
+        index = advancePast('</head', end + 1);
+        continue;
+      }
+      if (name !== undefined && ['script', 'style', 'noscript', 'template', 'svg'].includes(name)) {
+        index = advancePast(`</${name}`, end + 1);
+        continue;
+      }
+      index = end + 1;
+      continue;
+    }
+    if (html[index] === '&') {
+      const entity = /^&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);/iu.exec(html.slice(index));
+      if (entity !== null) {
+        pendingSpace = true;
+        index += entity[0].length;
+        continue;
+      }
+    }
+    if (/\s/u.test(html[index] as string)) {
+      pendingSpace = true;
+    } else {
+      if (pendingSpace && count > 0) count += 1;
+      pendingSpace = false;
+      count += 1;
+    }
+    index += 1;
+  }
+  return count;
 }
 
 /**
@@ -307,10 +356,18 @@ function isAborted(signal: AbortSignal | undefined): boolean {
 /** Close a handle without letting cleanup mask the render's real outcome. */
 async function closeQuietly(target: { close: () => Promise<unknown> } | undefined): Promise<void> {
   if (target === undefined) return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    await target.close();
+    await Promise.race([
+      target.close().catch(() => undefined),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, 1_000);
+      }),
+    ]);
   } catch {
     // A close that fails is not the interesting failure.
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }
 
@@ -345,25 +402,32 @@ export async function renderWithPlaywright(
   let browser: RendererBrowser | undefined;
   let page: RendererPage | undefined;
   let resolveAbort: (() => void) | undefined;
+  let stopped = false;
   const aborted = new Promise<void>((resolve) => {
     resolveAbort = resolve;
   });
-  const onAbort = (): void => {
+  const stop = (): void => {
+    if (stopped) return;
+    stopped = true;
     resolveAbort?.();
     // Requirement, not optimisation: a cancelled render must not keep a
     // browser or a page alive while the caller has already moved on.
     void closeQuietly(page);
     void closeQuietly(browser);
   };
+  const onAbort = (): void => stop();
   let listening = false;
   if (signal !== undefined) {
     if (signal.aborted) {
-      onAbort();
+      stop();
     } else {
       signal.addEventListener('abort', onAbort, { once: true });
       listening = true;
     }
   }
+  // The navigation timeout does not bound launch, newPage, content or a close
+  // that never resolves. One total deadline does.
+  const timer = setTimeout(stop, Math.max(1, budget + Math.min(NETWORK_IDLE_EXTRA_MS, budget)));
 
   try {
     const launching = renderer.chromium.launch({ headless: true });
@@ -377,32 +441,55 @@ export async function renderWithPlaywright(
       throw abortError();
     }
     browser = winner.browser;
-    if (isAborted(signal)) throw abortError();
+    if (stopped || isAborted(signal)) throw abortError();
 
-    page = await browser.newPage();
-    if (isAborted(signal)) throw abortError();
+    const pageAttempt = browser.newPage();
+    const pageWinner = await Promise.race([
+      pageAttempt.then((value) => ({ page: value })),
+      aborted.then(() => ({ page: undefined })),
+    ]);
+    if (pageWinner.page === undefined) {
+      void pageAttempt.then((late) => closeQuietly(late)).catch(() => undefined);
+      throw abortError();
+    }
+    page = pageWinner.page;
+    if (stopped || isAborted(signal)) throw abortError();
 
-    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: budget });
+    const response = await Promise.race([
+      page.goto(url, { waitUntil: 'domcontentloaded', timeout: budget }),
+      aborted.then(() => { throw abortError(); }),
+    ]) as Awaited<ReturnType<RendererPage['goto']>>;
     const idleBudget = Math.min(NETWORK_IDLE_EXTRA_MS, budget);
     try {
-      await page.waitForLoadState('networkidle', { timeout: idleBudget });
+      await Promise.race([
+        page.waitForLoadState('networkidle', { timeout: idleBudget }),
+        aborted,
+      ]);
     } catch {
       // A page that never goes idle still has a DOM; carry on.
     }
-    if (isAborted(signal)) throw abortError();
+    if (stopped || isAborted(signal)) throw abortError();
 
-    const html = await page.content();
-    if (isAborted(signal)) throw abortError();
+    const html = await Promise.race([
+      page.content(),
+      aborted.then(() => { throw abortError(); }),
+    ]);
+    if (stopped || isAborted(signal)) throw abortError();
 
     return {
       html,
       statusCode: response === null ? 200 : response.status(),
       url: page.url(),
     };
+  } catch (error) {
+    if (stopped || isAborted(signal)) throw abortError();
+    throw error;
   } finally {
+    clearTimeout(timer);
     if (listening && signal !== undefined) signal.removeEventListener('abort', onAbort);
-    await closeQuietly(page);
-    await closeQuietly(browser);
+    // Start both closes together; a page close that hangs must not prevent the
+    // browser close from running.
+    await Promise.all([closeQuietly(page), closeQuietly(browser)]);
   }
 }
 

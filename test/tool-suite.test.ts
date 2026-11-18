@@ -147,3 +147,35 @@ test('the fallback name is exported and used in the definition name', () => {
   const definition = createUnifiedToolDefinition(UNIFIED_TOOL_FALLBACK_NAME, allSubs());
   assert.equal(definition.name, UNIFIED_TOOL_FALLBACK_NAME);
 });
+
+test('advanced_search limit is translated to maxResults only when maxResults is absent', async () => {
+  const seen: unknown[] = [];
+  const advanced: SubToolDefinition = {
+    name: 'advanced_search',
+    description: 'advanced',
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { query: { type: 'string' }, maxResults: { type: 'integer' } },
+      required: ['query'],
+    },
+    output: { schema: { type: 'object' }, render: () => [] },
+    execute: async (args) => { seen.push(args); return args; },
+  };
+  const definition = createUnifiedToolDefinition(UNIFIED_TOOL_NAME, [advanced]);
+  await definition.execute({ action: 'advanced_search', query: 'x', limit: 2 }, {});
+  await definition.execute({ action: 'advanced_search', query: 'x', limit: 2, maxResults: 4 }, {});
+  assert.deepEqual(seen[0], { query: 'x', maxResults: 2 });
+  assert.deepEqual(seen[1], { query: 'x', limit: 2, maxResults: 4 });
+});
+
+test('registration forwards the host disposer', () => {
+  let disposed = 0;
+  const tools: UnifiedToolRegistryLike = {
+    register() {
+      return () => { disposed += 1; };
+    },
+  };
+  assert.equal(registerUnifiedTool(tools, allSubs(), { onRegister: (dispose) => dispose?.() }), UNIFIED_TOOL_NAME);
+  assert.equal(disposed, 1);
+});

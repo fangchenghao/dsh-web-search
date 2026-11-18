@@ -496,7 +496,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
           };
           return settings;
         },
-        { warn: warnTool },
+        { warn: warnTool, onRegister: (dispose) => { if (dispose !== undefined) onDispose(ctx, dispose); } },
       );
 
       // Batch tool: same optional-registry path, same fail-safe mounting. Most
@@ -638,7 +638,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       const platform = registerPlatformTool(
         toolTarget as unknown as PlatformToolRegistryLike,
         platformRunner,
-        { warn: warnTool },
+        { warn: warnTool, onRegister: (dispose) => { if (dispose !== undefined) onDispose(ctx, dispose); } },
       );
 
       // Diagnostics: one tiny query per engine, no cache and no cooldown
@@ -659,13 +659,14 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         const unified = registerUnifiedTool(
           tools as unknown as UnifiedToolRegistryLike,
           captured,
-          { warn: warnTool },
+          { warn: warnTool, onRegister: (dispose) => { if (dispose !== undefined) onDispose(ctx, dispose); } },
         );
         if (unified === undefined && captured.length > 0) {
           warnTool('web_tools unavailable; registering legacy tool names as a fallback');
           for (const definition of captured) {
             try {
-              tools.register(definition as unknown as Parameters<typeof tools.register>[0]);
+              const registered = tools.register(definition as unknown as Parameters<typeof tools.register>[0]);
+              if (typeof registered === 'function') onDispose(ctx, registered as () => void);
             } catch (error) {
               warnTool(`legacy fallback registration skipped: ${error instanceof Error ? error.message : String(error)}`);
             }

@@ -95,6 +95,8 @@ export interface UnifiedToolRegistryLike {
 export interface UnifiedToolOptions {
   /** Diagnostics for a rejected registration. */
   warn?: (message: string) => void;
+  /** Receives the host's disposer, when registration returns one. */
+  onRegister?: (dispose: (() => void) | undefined) => void;
 }
 
 /** True for a plain object (not an array or null). */
@@ -266,6 +268,13 @@ export function createUnifiedToolDefinition(
     },
     async execute(args, exec) {
       const { action, rest } = parseEnvelope(args);
+      // The unified schema exposes `limit` for several actions. advanced_search's
+      // native parameter is `maxResults`; translate only when no explicit
+      // maxResults was supplied, then let its own parser validate the range.
+      if (action === 'advanced_search' && rest['maxResults'] === undefined && rest['limit'] !== undefined) {
+        rest['maxResults'] = rest['limit'];
+        delete rest['limit'];
+      }
       const definition = byAction.get(action);
       if (definition === undefined) {
         throw new Error(`web_tools action ${action} is not registered in this deployment`);
@@ -302,7 +311,12 @@ export function registerUnifiedTool(
 ): string | undefined {
   const name = pickUnifiedToolName(tools);
   try {
-    tools.register(createUnifiedToolDefinition(name, definitions));
+    const registered = tools.register(createUnifiedToolDefinition(name, definitions));
+    try {
+      options.onRegister?.(typeof registered === 'function' ? (registered as () => void) : undefined);
+    } catch {
+      // A registration observer must not break mounting.
+    }
     return name;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

@@ -73,5 +73,6 @@ export declare function pickPlatformToolName(tools: PlatformToolRegistryLike): s
 /** Register the tool; any registry failure is contained. */
 export declare function registerPlatformTool(tools: PlatformToolRegistryLike, run: PlatformRunner, options?: {
     warn?: (message: string) => void;
+    onRegister?: (dispose: (() => void) | undefined) => void;
 }): string | undefined;
 export { MAX_PLATFORM_LIMIT };

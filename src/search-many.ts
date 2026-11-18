@@ -239,11 +239,16 @@ async function mapLimit<T, R>(
   items: readonly T[],
   limit: number,
   worker: (item: T, index: number) => Promise<R>,
+  signal?: AbortSignal,
 ): Promise<R[]> {
   const results = new Array<R>(items.length);
   let next = 0;
   const runners = Array.from({ length: Math.min(Math.max(1, limit), items.length) }, async () => {
     for (;;) {
+      if (signal?.aborted === true) {
+        const reason = signal.reason;
+        throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+      }
       const index = next;
       next += 1;
       if (index >= items.length) return;
@@ -298,9 +303,17 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
     isConcurrencySafe: () => true,
     async execute(args, exec) {
       const parsed = parseArgs(args);
+      if (exec.signal?.aborted === true) {
+        const reason = exec.signal.reason;
+        throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+      }
       const outcomes = await mapLimit(parsed.queries, SEARCH_MANY_CONCURRENCY, async (query) => {
         try {
           const outcome = await runQuery(query, parsed.limit, exec.signal);
+          if (exec.signal?.aborted === true) {
+            const reason = exec.signal.reason;
+            throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+          }
           const mapped = parsed.withSites
             ? outcome.sources.map(withSite)
             : outcome.sources.map((source) => ({ ...source }));
@@ -315,6 +328,7 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
             truncated,
           };
         } catch (error) {
+          if (exec.signal?.aborted === true) throw error;
           return {
             result: {
               query,
@@ -324,7 +338,7 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
             truncated: false,
           };
         }
-      });
+      }, exec.signal);
       return {
         results: outcomes.map((entry) => entry.result),
         truncated: outcomes.some((entry) => entry.truncated),

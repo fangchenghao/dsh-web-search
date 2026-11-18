@@ -215,11 +215,16 @@ export function pickPlatformToolName(tools: PlatformToolRegistryLike): string {
 export function registerPlatformTool(
   tools: PlatformToolRegistryLike,
   run: PlatformRunner,
-  options: { warn?: (message: string) => void } = {},
+  options: { warn?: (message: string) => void; onRegister?: (dispose: (() => void) | undefined) => void } = {},
 ): string | undefined {
   const name = pickPlatformToolName(tools);
   try {
-    tools.register(createPlatformToolDefinition(name, run));
+    const registered = tools.register(createPlatformToolDefinition(name, run));
+    try {
+      options.onRegister?.(typeof registered === 'function' ? (registered as () => void) : undefined);
+    } catch {
+      // A registration observer must not break mounting.
+    }
     return name;
   } catch (error) {
     try {

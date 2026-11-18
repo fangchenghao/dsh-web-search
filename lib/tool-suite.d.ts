@@ -79,6 +79,8 @@ export interface UnifiedToolRegistryLike {
 export interface UnifiedToolOptions {
     /** Diagnostics for a rejected registration. */
     warn?: (message: string) => void;
+    /** Receives the host's disposer, when registration returns one. */
+    onRegister?: (dispose: (() => void) | undefined) => void;
 }
 /**
  * Build the single unified definition.

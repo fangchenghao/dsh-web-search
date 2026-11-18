@@ -109,11 +109,16 @@ async function mapLimit<T, R>(
   items: readonly T[],
   limit: number,
   worker: (item: T, index: number) => Promise<R>,
+  signal?: AbortSignal,
 ): Promise<R[]> {
   const results = new Array<R>(items.length);
   let next = 0;
   const runners = Array.from({ length: Math.min(Math.max(1, limit), items.length) }, async () => {
     for (;;) {
+      if (signal?.aborted === true) {
+        const reason = signal.reason;
+        throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+      }
       const index = next;
       next += 1;
       if (index >= items.length) return;
@@ -233,10 +238,18 @@ export async function runEngineTestValue(
   query: string,
   signal?: AbortSignal,
 ): Promise<EngineTestValue> {
+  if (signal?.aborted === true) {
+    const reason = signal.reason;
+    throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+  }
   const results = await mapLimit(engines, ENGINE_TEST_CONCURRENCY, async (engine) => {
     const started = Date.now();
     try {
       const outcome = await runTest(engine, query, signal);
+      if (signal?.aborted === true) {
+        const reason = signal.reason;
+        throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
+      }
       const latencyMs = Date.now() - started;
       if (outcome.sources.length > 0) {
         const first = outcome.sources[0] as Source;
@@ -261,6 +274,7 @@ export async function runEngineTestValue(
         reason,
       };
     } catch (error) {
+      if (signal?.aborted === true) throw error;
       return {
         engine,
         ok: false,
@@ -270,7 +284,7 @@ export async function runEngineTestValue(
         reason: error instanceof Error ? error.message : String(error),
       };
     }
-  });
+  }, signal);
   const ok = results.filter((result) => result.ok).length;
   return { query, results, ok, failed: results.length - ok };
 }

@@ -168,3 +168,17 @@ test('registerEngineTestTool returns a disposer and a registry rejection is swal
   assert.equal(refused, undefined);
   assert.match(warnings[0] ?? '', /registry full/u);
 });
+
+test('a pre-aborted engine test does not run an engine', async () => {
+  let calls = 0;
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    () => runEngineTestValue(async () => {
+      calls += 1;
+      return { sources: [], failures: [], failureDetails: [] };
+    }, ['anysearch'], 'probe', controller.signal),
+    /abort/i,
+  );
+  assert.equal(calls, 0);
+});

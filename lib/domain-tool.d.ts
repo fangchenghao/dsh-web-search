@@ -89,6 +89,8 @@ export interface DomainToolOptions {
     detectProxy?: () => Promise<string | undefined>;
     /** Registration diagnostics. */
     warn?: (message: string) => void;
+    /** Receives the host's disposer, when registration returns one. */
+    onRegister?: (dispose: (() => void) | undefined) => void;
 }
 /** Format the model-facing result text. */
 export declare function formatDomainValue(args: unknown, value: DomainToolValue): string;

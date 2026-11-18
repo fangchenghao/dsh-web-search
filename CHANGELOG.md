@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.24.5
+
+Completed the delayed GPT-6-astra `xhigh` audit batch: tool registration,
+rendering, advanced/search_many/engine_test, domain and platform tools.
+
+### Fixed
+- **`web_tools` ignored `limit` for `advanced_search`.** The unified dispatcher
+  now maps `limit` to `maxResults` when `maxResults` is absent; an explicit
+  `maxResults` still wins. Its own parser still validates the range.
+- **Tool disposers were dropped by three registrars.** `registerUnifiedTool`,
+  `registerDomainTool` and `registerPlatformTool` now forward the host's
+  `tools.register()` disposer through an optional `onRegister` callback, and
+  legacy fallback registrations are wired into `onDispose` too.
+- **`readableTextLength` was quadratic on repeated unclosed raw-text tags.**
+  The regex chain is replaced with a single forward scanner; repeated unclosed
+  `<head>`/`<script>` now stops at the end instead of rescanning the suffix.
+- **Render cancellation covered only browser launch.** `renderWithPlaywright`
+  now has one total deadline covering launch, `newPage`, navigation, idle wait
+  and `content`; every phase races an abort signal, late handles are closed,
+  and page/browser cleanup runs concurrently with a short cap.
+- **Batch tools swallowed cancellation.** `search_many` and `engine_test` now
+  reject on a caller abort, stop pulling queued work, and never start a
+  pre-aborted batch.
+
+**Test suite: 717 tests across 56 files** (716 pass, 1 skipped).
+
 ## 0.24.4
 
 Second independent audit, this time with `Vendor2/GPT-6-astra` at reasoning

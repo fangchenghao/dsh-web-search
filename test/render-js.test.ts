@@ -660,3 +660,31 @@ test('the default loader either finds a chromium export or reports absence witho
     assert.match(result.reason, /playwright/);
   }
 });
+
+test('readable text stays linear on repeated unclosed raw-text tags', () => {
+  const startedAt = Date.now();
+  assert.equal(readableTextLength('<head>'.repeat(20_000)), 0);
+  assert.equal(readableTextLength('<script>'.repeat(20_000)), 0);
+  assert.ok(Date.now() - startedAt < 2_000, 'readableTextLength took too long');
+});
+
+test('renderWithPlaywright aborts while newPage is still pending', async () => {
+  let browserClosed = false;
+  const browser: RendererBrowser = {
+    newPage: () => new Promise<RendererPage>(() => {}),
+    close: () => {
+      browserClosed = true;
+      return Promise.resolve();
+    },
+  };
+  const module: RendererModule = { chromium: { launch: () => Promise.resolve(browser) } };
+  const controller = new AbortController();
+  const pending = renderWithPlaywright(module, 'https://docs.example.com/pending', 15_000, controller.signal);
+  setTimeout(() => controller.abort(), 5);
+  await assert.rejects(pending, (error: unknown) => {
+    assert.ok(error instanceof Error);
+    assert.equal(error.name, 'AbortError');
+    return true;
+  });
+  assert.equal(browserClosed, true);
+});

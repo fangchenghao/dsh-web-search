@@ -99,6 +99,8 @@ export interface DomainToolOptions {
   detectProxy?: () => Promise<string | undefined>;
   /** Registration diagnostics. */
   warn?: (message: string) => void;
+  /** Receives the host's disposer, when registration returns one. */
+  onRegister?: (dispose: (() => void) | undefined) => void;
 }
 
 /** True for a value usable as a record. */
@@ -335,7 +337,12 @@ export function registerDomainTool(
 ): string | undefined {
   const name = pickDomainToolName(tools);
   try {
-    tools.register(createDomainToolDefinition(name, readSettings, options));
+    const registered = tools.register(createDomainToolDefinition(name, readSettings, options));
+    try {
+      options.onRegister?.(typeof registered === 'function' ? (registered as () => void) : undefined);
+    } catch {
+      // A registration observer must not break mounting.
+    }
     return name;
   } catch (error) {
     report(options, error);
