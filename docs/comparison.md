@@ -6,7 +6,7 @@ whether a provider answers at all, how long it takes, how many distinct domains
 it returns, and whether a page on a known official domain appears in the top 8.
 The failures are part of the result.
 
-> **Version note (2026-11-02):** 0.24.0 added Windows system-proxy discovery, and 0.24.1 and 0.24.2 are documentation/metadata patches; 0.24.3–0.24.7 fix fetch/proxy/markdown/cache/tool reliability without changing the measured search path. These patches do not change the search, ranking or source-adapter path measured below, so the 0.23.0 numbers remain the latest comparison.
+> The live comparison below used 0.23.0. Version 0.24.8 changes when a search can finish and which official or arXiv results qualify. Its live latency and success rate still need a fresh run.
 
 ## Method
 

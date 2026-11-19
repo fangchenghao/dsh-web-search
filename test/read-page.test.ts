@@ -399,6 +399,52 @@ test('a network throw becomes a failure value, never a rejected tool call', asyn
   assert.match(formatReadPageValue(value), /could not read/);
 });
 
+test('caller cancellation before the first read skips the provider', async () => {
+  const url = 'https://example.com/cancel-before-read';
+  const { definition, recorder: fake } = setup({ [url]: { content: 'page body' } });
+  const signal = AbortSignal.abort(new Error('reader stopped'));
+
+  await assert.rejects(definition.execute({ url }, { signal }), (error) => error === signal.reason);
+  assert.equal(fake.calls.length, 0);
+});
+
+test('caller cancellation during a cached continuation only rejects that read', async () => {
+  const url = 'https://example.com/cached-continuation';
+  const full = asciiDocument(1_500);
+  const { definition, recorder: fake } = setup({ [url]: { content: full } });
+  const first = await definition.execute({ url }, {});
+  const next = { url, offset: first.nextOffset };
+  const controller = new AbortController();
+
+  const cancelled = definition.execute(next, { signal: controller.signal });
+  const active = definition.execute(next, {});
+  controller.abort();
+
+  await assert.rejects(cancelled, { name: 'AbortError' });
+  const tail = await active;
+  assert.equal(first.content + tail.content, full);
+  assert.equal(fake.calls.length, 1);
+});
+
+test('caller cancellation discards a late provider response before caching it', async (t) => {
+  const url = 'https://example.com/slow-page';
+  const delayed = Promise.withResolvers<Response>();
+  const transport = t.mock.method(globalThis, 'fetch', async () => new Response('fresh body'));
+  transport.mock.mockImplementationOnce(() => delayed.promise);
+  const definition = createReadPageDefinition(READ_PAGE_TOOL_NAME, () => BASE_SETTINGS);
+  const controller = new AbortController();
+
+  const read = definition.execute({ url }, { signal: controller.signal });
+  assert.equal(transport.mock.callCount(), 1);
+  controller.abort();
+  delayed.resolve(new Response('late body'));
+  await assert.rejects(read, { name: 'AbortError' });
+
+  const retry = await definition.execute({ url }, {});
+  assert.equal(retry.content, 'fresh body');
+  assert.equal(transport.mock.callCount(), 2);
+});
+
 test('a 500 from the real fetch ladder is a structured failure, not a thrown error', async () => {
   const url = 'https://example.com/error-page';
   const restore = stubGlobalFetch('<html><body><h1>Server error</h1></body></html>', 'text/html', 500);

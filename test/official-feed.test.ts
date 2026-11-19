@@ -74,6 +74,14 @@ test('counts zero-day mentions when they exist', () => {
   assert.match(note, /1 mention zero-day/);
 });
 
+test('undated Chrome feed posts do not claim to be inside the publication window', () => {
+  for (const query of ['Chrome releases', 'Chrome zero-day releases']) {
+    const note = chromeFeedNote([{ url: 'https://example.org/chrome', title: 'Stable update' }], 'week', query);
+    assert.match(note, /publication date.*not verified|undated.*not verified/i);
+    assert.doesNotMatch(note, /each with a publication date|post\(s\) inside the week window/);
+  }
+});
+
 test('recognizes only Chrome security/release queries', () => {
   assert.equal(isChromeSecurityQuery('Chrome zero-day announcements in the last 7 days'), true);
   assert.equal(isChromeSecurityQuery('过去 7 天 Chrome 官方安全博客的零日公告'), true);

@@ -9,6 +9,12 @@ without a DSH runtime.
 The server is a single dependency-free Node process. It speaks MCP over stdio
 and imports the same compiled `lib/` modules the DSH plugin uses.
 
+Up to four tool calls can be in flight. Additional calls get a busy tool error
+instead of silently queuing; retry after one finishes. `ping` and `tools/list`
+remain available while tools are working. A `notifications/cancelled` notification
+stops the matching request without sending a late tool result, and closing stdin
+cancels outstanding work.
+
 ```sh
 npx -y @fffangchenghao/dsh-web-search dsh-web-search-mcp
 ```

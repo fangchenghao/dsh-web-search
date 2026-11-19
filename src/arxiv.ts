@@ -8,11 +8,13 @@
  *
  * @module @fangchenghao/dsh-web-search/arxiv
  */
-import type { Source } from './types.ts';
+import type { Source, TimeRange } from './types.ts';
+import { mergePreferredSources } from './result-policy.ts';
 import { searchVerticals } from './verticals.ts';
 
 /** Options for the narrow arXiv lookup. */
 export interface ArxivLookupOptions {
+  timeRange?: TimeRange;
   /** Result budget; defaults to four. */
   limit?: number;
   /** Deadline in milliseconds; defaults to 3.5 s. */
@@ -61,6 +63,7 @@ export async function arxivLookup(query: string, options: ArxivLookupOptions = {
     const result = await searchVerticals(text, {
       ids: ['arxiv'],
       limit,
+      ...(options.timeRange === undefined ? {} : { timeRange: options.timeRange }),
       timeoutMs: options.timeoutMs ?? 3_500,
       ...(options.proxy === undefined ? {} : { proxy: options.proxy }),
       ...(options.signal === undefined ? {} : { signal: options.signal }),
@@ -79,12 +82,5 @@ export async function arxivLookup(query: string, options: ArxivLookupOptions = {
  * @returns merged rows.
  */
 export function mergeArxiv(sources: readonly Source[], arxiv: readonly Source[]): Source[] {
-  const seen = new Set<string>();
-  const merged: Source[] = [];
-  for (const source of [...arxiv, ...sources]) {
-    if (source.url.length === 0 || seen.has(source.url)) continue;
-    seen.add(source.url);
-    merged.push(source);
-  }
-  return merged;
+  return mergePreferredSources(arxiv, sources);
 }

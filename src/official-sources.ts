@@ -9,6 +9,7 @@
  * @module @fangchenghao/dsh-web-search/official-sources
  */
 import type { Source } from './types.ts';
+import { mergePreferredSources } from './result-policy.ts';
 import { fetchPostgresSupport, isPostgresVersionQuery } from './official-support.ts';
 import { fetchRustRelease, isRustReleaseQuery } from './official-release.ts';
 import { searchVerticals } from './verticals.ts';
@@ -88,12 +89,5 @@ export function officialLookup(
  */
 export function mergeOfficial(sources: readonly Source[], official: Source | undefined): Source[] {
   if (official === undefined || official.url.length === 0) return [...sources];
-  const seen = new Set<string>([official.url]);
-  const merged = [official];
-  for (const source of sources) {
-    if (source.url.length === 0 || seen.has(source.url)) continue;
-    seen.add(source.url);
-    merged.push(source);
-  }
-  return merged;
+  return mergePreferredSources([official], sources);
 }

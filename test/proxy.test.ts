@@ -9,8 +9,12 @@
  *
  * Run with: node --test test/proxy.test.ts
  */
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
+import { EventEmitter } from 'node:events';
+import { syncBuiltinESMExports } from 'node:module';
+import net from 'node:net';
 import zlib from 'node:zlib';
 import { noProxyIsLoopbackOnly, parseProxy, proxyFromEnv, proxyFromWindowsRegistry, proxyGet, readResponse, resolveProxy } from '../src/proxy.ts';
 
@@ -107,6 +111,12 @@ test('proxyFromEnv honours the variable precedence', () => {
   assert.equal(proxyFromEnv({ HTTPS_PROXY: 'http://127.0.0.1:2222', HTTP_PROXY: 'http://127.0.0.1:4444' }), 'http://127.0.0.1:2222');
 });
 
+test('proxyFromEnv gives the lowercase plugin variable priority over HTTPS_PROXY', () => {
+  const env = { dsh_web_search_proxy: 'http://127.0.0.1:1111', HTTPS_PROXY: 'http://127.0.0.1:2222' };
+  assert.equal(proxyFromEnv(env), env.dsh_web_search_proxy);
+  assert.equal(proxyFromEnv({ ...env, DSH_WEB_SEARCH_PROXY: 'http://127.0.0.1:3333' }), 'http://127.0.0.1:3333');
+});
+
 test('proxyFromEnv is not defeated by a loopback-only NO_PROXY', () => {
   assert.equal(
     proxyFromEnv({ HTTPS_PROXY: 'http://127.0.0.1:7890', NO_PROXY: 'localhost,127.0.0.1,::1' }),
@@ -155,7 +165,132 @@ test('proxyFromWindowsRegistry requires ProxyEnable and a usable server', () => 
   assert.equal(proxyFromWindowsRegistry(''), undefined);
 });
 
-// --- resolveProxy (explicit path only: no detection, no network) ----------
+// --- system discovery and resolveProxy ------------------------------------
+
+const macSettings = `<dictionary> {
+  HTTPEnable : 1
+  HTTPPort : 7890
+  HTTPProxy : 127.0.0.1
+  HTTPSEnable : 1
+  HTTPSPort : 7891
+  HTTPSProxy : 127.0.0.2
+}`;
+const macHttp = 'http://127.0.0.1:7890';
+const macHttps = 'http://127.0.0.2:7891';
+
+/** Give each case a fresh resolver cache and simulate both system I/O operations. */
+async function mockDiscovery(t: TestContext, env: NodeJS.ProcessEnv = {}) {
+  const url = new URL('../src/proxy.ts', import.meta.url);
+  url.searchParams.set('case', t.name);
+  const { resolveProxy, proxyFromSystem } = await import(url.href) as typeof import('../src/proxy.ts');
+  const originalEnv = process.env;
+  const originalPlatform = process.platform;
+  t.after(() => {
+    process.env = originalEnv;
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  });
+  process.env = env;
+  Object.defineProperty(process, 'platform', { value: 'darwin' });
+  const system = { output: macSettings, listening: true };
+  const spawn = t.mock.method(childProcess, 'spawn', () => {
+    const child = Object.assign(new EventEmitter(), { stdout: new EventEmitter() });
+    queueMicrotask(() => {
+      child.stdout.emit('data', Buffer.from(system.output));
+      child.emit('close', 0);
+    });
+    return child;
+  });
+  syncBuiltinESMExports();
+  const connect = t.mock.method(net, 'connect', () => {
+    const socket = new net.Socket();
+    queueMicrotask(() => {
+      if (system.listening) socket.emit('connect');
+      else socket.emit('error', new Error('connection refused'));
+    });
+    return socket;
+  });
+  const counts = () => ({ probes: spawn.mock.callCount(), connections: connect.mock.callCount() });
+  return { resolveProxy, proxyFromSystem, system, counts };
+}
+
+test('proxyFromSystem pairs each macOS enable switch with its own host and port', async (t) => {
+  const { proxyFromSystem, system } = await mockDiscovery(t);
+  assert.equal(await proxyFromSystem(), macHttps);
+  system.output = macSettings.replace('HTTPSEnable : 1', 'HTTPSEnable : 0');
+  const httpOnly = await proxyFromSystem();
+  system.output = system.output.replace('HTTPEnable : 1', 'HTTPEnable : 0');
+  const disabled = await proxyFromSystem();
+  system.output = macSettings.replace('  HTTPSPort : 7891\n', '');
+  const missingHttpsPort = await proxyFromSystem();
+  assert.deepEqual({ httpOnly, disabled, missingHttpsPort }, { httpOnly: macHttp, disabled: undefined, missingHttpsPort: macHttp });
+});
+
+test('resolveProxy honours NO_PROXY=* before system discovery and still accepts explicit config', async (t) => {
+  const { resolveProxy, counts } = await mockDiscovery(t, { HTTPS_PROXY: 'http://127.0.0.1:2222', NO_PROXY: '*' });
+  const explicit = 'http://127.0.0.1:3333';
+  assert.equal(await resolveProxy(explicit), explicit);
+  assert.deepEqual({ proxy: await resolveProxy(), ...counts() }, { proxy: undefined, probes: 0, connections: 0 });
+});
+
+test('resolveProxy honours a lowercase wildcard with a cached automatic proxy', async (t) => {
+  const env = { HTTPS_PROXY: 'http://127.0.0.1:2222', no_proxy: 'localhost,127.0.0.1' };
+  const { resolveProxy, counts } = await mockDiscovery(t, env);
+  assert.equal(await resolveProxy(), env.HTTPS_PROXY);
+  env.no_proxy = 'localhost, *';
+  assert.equal(await resolveProxy(), undefined);
+  assert.deepEqual(counts(), { probes: 0, connections: 0 });
+});
+
+test('resolveProxy keeps an environment decision made while a system probe is pending', async (t) => {
+  const env: NodeJS.ProcessEnv = {};
+  const { resolveProxy, counts } = await mockDiscovery(t, env);
+  const pending = resolveProxy();
+  env.HTTPS_PROXY = 'http://127.0.0.1:2222';
+  const fromEnv = resolveProxy();
+  assert.deepEqual(await Promise.all([pending, fromEnv]), [macHttps, env.HTTPS_PROXY]);
+  assert.equal(await resolveProxy(), env.HTTPS_PROXY);
+  assert.deepEqual(counts(), { probes: 1, connections: 1 });
+});
+
+test('a changed environment proxy takes effect after a wildcard bypass even if a system probe just finished', async (t) => {
+  const env: NodeJS.ProcessEnv = {};
+  const { resolveProxy, counts } = await mockDiscovery(t, env);
+  const pending = resolveProxy();
+  env.NO_PROXY = '*';
+  env.HTTPS_PROXY = 'http://127.0.0.1:2222';
+  assert.equal(await resolveProxy(), undefined);
+  assert.equal(await pending, macHttps);
+  delete env.NO_PROXY;
+  assert.equal(await resolveProxy(), env.HTTPS_PROXY);
+  delete env.HTTPS_PROXY;
+  assert.equal(await resolveProxy(), macHttps);
+  assert.deepEqual(counts(), { probes: 1, connections: 1 });
+});
+
+test('resolveProxy shares cold system detection and refreshes positive and negative decisions after 60 seconds', async (t) => {
+  const { resolveProxy, system, counts } = await mockDiscovery(t);
+  let now = 0;
+  t.mock.method(Date, 'now', () => now);
+  const batch = () => Promise.all([resolveProxy(), resolveProxy(), resolveProxy()]);
+  assert.deepEqual(await batch(), [macHttps, macHttps, macHttps]);
+  assert.deepEqual(counts(), { probes: 1, connections: 1 });
+
+  system.listening = false;
+  now = 59_999;
+  assert.equal(await resolveProxy(), macHttps);
+  now = 60_000;
+  assert.deepEqual(await batch(), [undefined, undefined, undefined]);
+  assert.deepEqual(counts(), { probes: 2, connections: 2 });
+
+  system.listening = true;
+  now = 119_999;
+  assert.equal(await resolveProxy(), undefined);
+  now = 120_000;
+  assert.equal(await resolveProxy(), macHttps);
+  assert.deepEqual(counts(), { probes: 3, connections: 3 });
+});
 
 test('resolveProxy returns an explicit http proxy without touching detection', async () => {
   assert.equal(await resolveProxy('http://127.0.0.1:7890'), 'http://127.0.0.1:7890');

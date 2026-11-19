@@ -12,6 +12,7 @@
 import { Config, resolveConfig } from './config.ts';
 import type { ConfigInput, PluginConfig } from './config.ts';
 import { search } from './engines.ts';
+import { eligibleSearchSources, normaliseBlockedDomains } from './result-policy.ts';
 import { SearchCache } from './cache.ts';
 import { EngineHealth } from './health.ts';
 import { createFetchProvider } from './fetch.ts';
@@ -38,7 +39,6 @@ import { mergeOfficial, officialLookup } from './official-sources.ts';
 import { arxivLookup, arxivQueryText, mergeArxiv } from './arxiv.ts';
 import {
   chromeFeedNote,
-  chromeWindow,
   fetchChromeReleases,
   filterChromeChannel,
   hasNonStableChromePosts,
@@ -259,7 +259,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
         ...(signal === undefined ? {} : { signal }),
       });
-      const windowed = chromeWindow(posts, effective);
+      const windowed = eligibleSearchSources(posts, normaliseBlockedDomains(live.blockedDomains), effective);
       const stableOnly = /\bstable\b|稳定版|稳定渠道/i.test(query);
       const selected = filterChromeChannel(windowed, query);
       // A stable-only feed with no stable post should not mask the ordinary
@@ -274,7 +274,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
         sources: selected.slice(0, budget),
         failures: [],
         note: `${note}${channelNote}`,
-        truncated: selected.length > budget,
+        truncated: selected.length > budget || (requested !== undefined && requested > budget),
         timeRange: effective,
       };
     } catch {
@@ -352,6 +352,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       // a survey query needs arXiv's own search, not a release announcement.
       const arxiv = arxivLookup(query, {
         limit: 4,
+        timeRange: live.timeRange,
         timeoutMs: Math.min(live.timeoutMs, 3_500),
         ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
         ...(signal === undefined ? {} : { signal }),
@@ -361,8 +362,9 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       // the project's own release facts than by whatever an engine ranks first.
       // The lookup is query-scoped and failure-tolerant; it never replaces the
       // ordinary rows when the page is unavailable.
-      let sources = mergeOfficial(outcome.sources, await official);
-      sources = mergeArxiv(sources, await arxiv);
+      const merged = mergeArxiv(mergeOfficial(outcome.sources, await official), await arxiv);
+      signal?.throwIfAborted();
+      const sources = eligibleSearchSources(merged, normaliseBlockedDomains(live.blockedDomains), live.timeRange);
       if (sources.length === 0) {
         throw new Error(`no search engine returned results for ${JSON.stringify(query)} (${outcome.failures.join('; ')})`);
       }
@@ -416,32 +418,35 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
        */
       const runBatchQuery = async (
         query: string,
-        limit: number,
+        requested: number,
         signal?: AbortSignal,
       ): Promise<SearchManyOutcome> => {
+        const route = routePackageQuery(query);
+        const arxivText = arxivQueryText(query);
+        if (arxivText === undefined && route === undefined) return runQuery(query, requested, signal);
+        const live = resolveConfig(section, undefined);
+        const limit = Math.min(requested, live.limit);
+        const blocked = normaliseBlockedDomains(live.blockedDomains);
         // An explicit arXiv query is a paper lookup, not a general web query.
         // Keep the ordinary path as the fallback when the index returns no rows.
-        const arxivText = arxivQueryText(query);
         if (arxivText !== undefined) {
-          const live = resolveConfig(section, undefined);
-          const papers = await arxivLookup(query, {
+          const papers = eligibleSearchSources(await arxivLookup(query, {
             limit,
+            timeRange: live.timeRange,
             timeoutMs: live.domainTimeoutMs,
             ...(live.proxy === undefined ? {} : { proxy: live.proxy }),
             ...(signal === undefined ? {} : { signal }),
-          });
+          }), blocked, live.timeRange);
           if (papers.length > 0) {
             return {
               sources: papers.slice(0, limit),
               failures: [],
               note: `arXiv query routed to the arXiv index for ${JSON.stringify(arxivText)}; rows are preprints with stable abs URLs.`,
-              truncated: papers.length > limit,
+              truncated: requested > limit || papers.length > limit,
             };
           }
         }
-        const route = routePackageQuery(query);
         if (route !== undefined) {
-          const live = resolveConfig(section, undefined);
           try {
             const names = route.names.length > 0 ? route.names : [route.query];
             const perName = Math.max(1, Math.ceil(limit / names.length));
@@ -462,26 +467,24 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
               ...verticals.flatMap((vertical) => vertical.sources.slice(0, 1)),
               ...verticals.flatMap((vertical) => vertical.sources.slice(1)),
             ];
-            const sources = ordered
-              .filter((source) => {
-                if (seen.has(source.url)) return false;
-                seen.add(source.url);
-                return true;
-              })
-              .slice(0, limit);
-            if (sources.length > 0) {
+            const eligible = eligibleSearchSources(ordered, blocked, live.timeRange).filter((source) => {
+              if (seen.has(source.url)) return false;
+              seen.add(source.url);
+              return true;
+            });
+            if (eligible.length > 0) {
               return {
-                sources,
+                sources: eligible.slice(0, limit),
                 failures: verticals.flatMap((vertical) => vertical.failures),
                 note: `Package query routed to ${route.label} for ${names.join(', ')}; registry rows have stable package URLs and versions.`,
-                truncated: sources.length < verticals.reduce((sum, vertical) => sum + vertical.sources.length, 0),
+                truncated: requested > limit || verticals.some((vertical) => vertical.truncated) || eligible.length > limit,
               };
             }
           } catch {
             // The ordinary web path below is the fallback for a registry miss.
           }
         }
-        return runQuery(query, limit, signal);
+        return runQuery(query, requested, signal);
       };
 
       registerDomainTool(
@@ -607,7 +610,7 @@ export function apply(ctx: PluginContext, config: unknown = {}): void {
       const cacheSearch = registerCacheSearchTool(
         toolTarget as unknown as CacheSearchRegistryLike,
         researchCache,
-        { warn: warnTool },
+        { warn: warnTool, onRegister: (dispose) => { if (dispose !== undefined) onDispose(ctx, dispose); } },
       );
       if (cacheSearch !== undefined) {
         onDispose(ctx, () => researchCache.clear());

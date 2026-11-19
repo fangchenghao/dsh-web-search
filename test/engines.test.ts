@@ -185,6 +185,25 @@ test('a time window keeps dated rows inside it and holds undated rows back', asy
   assert.ok(sources.find((source) => source.url.endsWith('/fresh'))?.publishedAt !== undefined);
 });
 
+test('a cached row that ages out of its publication window triggers a fresh search before TTL expiry', async (context) => {
+  let now = Date.UTC(2026, 9, 25, 12);
+  context.mock.method(Date, 'now', () => now);
+  const cache = new SearchCache({ ttlMs: 600_000 }, () => now);
+  let requests = 0;
+  context.mock.method(globalThis, 'fetch', async () => {
+    requests += 1;
+    return Response.json({ code: 0, data: { results: [{
+      url: `https://example.org/${requests}`, date: requests === 1 ? '1439 minutes ago' : '1 minute ago',
+    }] } });
+  });
+  const options = { cache, timeRange: 'day' as const, hostIds: ['anysearch'] };
+  assert.equal((await runDirect('daily updates', options)).sources[0]?.url, 'https://example.org/1');
+  now += 120_000;
+  assert.equal((await runDirect('daily updates', options)).sources[0]?.url, 'https://example.org/2');
+  assert.equal((await runDirect('daily updates', options)).sources[0]?.url, 'https://example.org/2');
+  assert.equal(requests, 2);
+});
+
 test('a week window reaches DuckDuckGo as its own df=w parameter', () => {
   // DuckDuckGo is a viaProxy engine, so an orchestration test would need a
   // tunnel; the URL contract is asserted directly instead.
@@ -396,24 +415,19 @@ test('a pre-aborted search never resolves a proxy or touches an engine', async (
   }
 });
 
-test('all AnySearch keys resting falls back to anonymous instead of throwing', async () => {
-  const raw = `resting-a-${Date.now()},resting-b-${Date.now()}`;
+test('all AnySearch keys resting sends an anonymous request and retains the configured vertical', async (context) => {
+  const raw = 'fixture-resting-one,fixture-resting-two';
   const pool = keyPoolFor(raw);
   pool.penalize(pool.keys[0] as string, 'throttled');
   pool.penalize(pool.keys[1] as string, 'throttled');
-  const original = globalThis.fetch;
-  globalThis.fetch = (async () => {
-    throw new Error('network blocked in test');
-  }) as typeof fetch;
-  try {
-    const outcome = await search('resting keys', undefined, {
-      limit: 1,
-      anysearchApiKey: raw,
-      useProxy: false,
-      timeoutMs: 800,
-    });
-    assert.ok(Array.isArray(outcome.failures));
-  } finally {
-    globalThis.fetch = original;
-  }
+  const calls: { authorized: boolean; domain: string }[] = [];
+  context.mock.method(globalThis, 'fetch', async (_url: string, init: RequestInit) => {
+    calls.push({ authorized: new Headers(init.headers).has('authorization'), domain: JSON.parse(String(init.body)).domain });
+    return Response.json({ code: 0, data: { results: [{ url: 'https://example.org/article' }] } });
+  });
+  const outcome = await search('resting keys', undefined, {
+    limit: 1, anysearchApiKey: raw, anysearchDomain: 'academic', hostIds: ['anysearch'], useProxy: false,
+  });
+  assert.deepEqual(calls, [{ authorized: false, domain: 'academic' }]);
+  assert.equal(outcome.sources.length, 1);
 });

@@ -1,10 +1,18 @@
 # Changelog
 
-## Unreleased
+## 0.24.8
 
+- Web search applies the result blocklist and publication window to official and arXiv additions before cutting to the requested limit. Registry/arXiv batch and Chrome feed shortcuts honor deployment limits and fall back to normal search when no row qualifies.
+- Cache hits recheck rolling publication windows and refresh when all rows have aged out. When an official duplicate lacks a date, it keeps the date already known for that URL. The Chrome feed does not claim undated posts were published within the window.
+- AnySearch attaches a credential only after selecting one usable key. An all-resting pool really sends an anonymous request, retaining the configured vertical.
+- Automatic proxy detection shares concurrent probes and respects a `NO_PROXY=*` bypass ahead of the cached or system route. macOS discovery reads the host and port from the same enabled protocol.
+- Cancelling a `read_page` call no longer returns a cached chunk or stores a late provider response. Disposing a legacy tool registration also unregisters `cache_search`.
+- The stdio MCP server honors per-request cancellation and releases pending work on shutdown or EOF. At most four tools run concurrently; control requests remain responsive.
 - `fast` no longer abandons healthy engines on the first error, empty response or stale-only answer. `auto` also waits for a result that passes the relevance and time-window filters before using its lead-region shortcut. Soft deadlines are unchanged.
 - `search_many` runs exact duplicate queries once per batch while preserving input order, separate results and the three-search concurrency limit.
 - Disk-cache snapshots skip expired entries and serialize the most-recent entries that fit the UTF-8 byte budget without repeatedly rebuilding the entire snapshot. The on-disk format is unchanged.
+
+The test suite covers 754 cases across 57 files. The offline run passes 753 and skips the opt-in live check.
 
 ## 0.24.7
 

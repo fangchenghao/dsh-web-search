@@ -103,10 +103,10 @@ export declare function proxyFromSystem(): Promise<string | undefined>;
 /**
  * Decide which proxy to use, if any.
  *
- * Order: an explicit plugin setting, the cached decision, the environment, then
- * the system proxy (macOS `scutil`, Windows Internet Settings). The system proxy is only honoured when its port
- * accepts a connection, so turning the tunnel off degrades to a direct request
- * instead of breaking search. The decision is cached for a minute.
+ * An explicit setting wins. With automatic detection a `NO_PROXY` wildcard
+ * selects direct access immediately. Otherwise the environment takes priority
+ * over a reachable system proxy. Concurrent callers share the system probe and the
+ * resulting decision is cached for a minute.
  *
  * @param explicit - the plugin's `proxy` config value.
  * @returns the proxy URL to use, or `undefined` for a direct request.

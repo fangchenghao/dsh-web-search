@@ -43,6 +43,7 @@ const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
  */
 const ENV_KEYS = [
   'DSH_WEB_SEARCH_PROXY',
+  'dsh_web_search_proxy',
   'HTTPS_PROXY',
   'https_proxy',
   'ALL_PROXY',
@@ -100,8 +101,8 @@ export interface ParsedResponse {
   text: string;
 }
 
-/** Cached proxy decision: `{ at, proxy }`, where `proxy` may be `undefined`. */
-let cached: { at: number; proxy: string | undefined } | undefined;
+let cachedSystem: { at: number; proxy: string | undefined } | undefined;
+let pendingSystemProbe: Promise<string | undefined> | undefined;
 
 /** Decode one URL credential, tolerating a malformed percent escape. */
 function decodeCredential(value: string): string {
@@ -202,15 +203,19 @@ export function noProxyIsLoopbackOnly(raw: string | undefined): boolean {
   });
 }
 
-/**
- * Whether a `NO_PROXY` value is the wildcard that disables proxying entirely.
- * @param raw - the `NO_PROXY`/`no_proxy` value, if set.
- */
-function noProxyIsWildcard(raw: string): boolean {
-  return raw
-    .split(',')
-    .map((entry) => entry.trim())
-    .some((entry) => entry === '*');
+/** A wildcard bypasses automatic proxy selection for every destination. */
+function bypassesAutoProxy(env: NodeJS.ProcessEnv): boolean {
+  const noProxy = env.NO_PROXY ?? env.no_proxy;
+  return noProxy?.split(',').some((entry) => entry.trim() === '*') ?? false;
+}
+
+/** First usable proxy URL in environment priority order. */
+function firstEnvProxy(env: NodeJS.ProcessEnv): string | undefined {
+  for (const key of ENV_KEYS) {
+    const parsed = proxyUrl(env[key]);
+    if (parsed !== undefined) return formatProxyUrl(parsed);
+  }
+  return undefined;
 }
 
 /**
@@ -224,16 +229,7 @@ function noProxyIsWildcard(raw: string): boolean {
  * @returns the proxy URL, or `undefined` when the environment names none.
  */
 export function proxyFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefined {
-  const noProxy = env.NO_PROXY ?? env.no_proxy;
-  // `NO_PROXY` lists destination hosts. A loopback-only list is skipped (it can
-  // never cover a search host); a wildcard is the one form that means "never
-  // proxy", so it is honoured before any variable is read.
-  if (noProxy !== undefined && !noProxyIsLoopbackOnly(noProxy) && noProxyIsWildcard(noProxy)) return undefined;
-  for (const key of ENV_KEYS) {
-    const parsed = proxyUrl(env[key]);
-    if (parsed !== undefined) return formatProxyUrl(parsed);
-  }
-  return undefined;
+  return bypassesAutoProxy(env) ? undefined : firstEnvProxy(env);
 }
 
 /** Run a short local probe; any failure or timeout means "no answer". */
@@ -318,12 +314,17 @@ export async function proxyFromSystem(): Promise<string | undefined> {
   // Absolute path: a hijacked PATH entry must not be able to receive this
   // spawn. macOS ships scutil at /usr/sbin/scutil.
   const output = await captureProbe('/usr/sbin/scutil', ['--proxy']);
-  if (!/HTTPSEnable\s*:\s*1|HTTPEnable\s*:\s*1/.test(output)) return undefined;
-  const host = /HTTPSProxy\s*:\s*(\S+)/.exec(output)?.[1] ?? /HTTPProxy\s*:\s*(\S+)/.exec(output)?.[1];
-  const port = /HTTPSPort\s*:\s*(\d+)/.exec(output)?.[1] ?? /HTTPPort\s*:\s*(\d+)/.exec(output)?.[1];
-  if (host === undefined || port === undefined) return undefined;
-  const parsed = proxyUrl(`http://${host}:${port}`);
-  return parsed === undefined ? undefined : formatProxyUrl(parsed);
+  const setting = (key: string): string | undefined =>
+    new RegExp(`^[ \\t]*${key}[ \\t]*:[ \\t]*(\\S+)[ \\t]*$`, 'm').exec(output)?.[1];
+  for (const protocol of ['HTTPS', 'HTTP']) {
+    if (setting(`${protocol}Enable`) !== '1') continue;
+    const host = setting(`${protocol}Proxy`);
+    const port = setting(`${protocol}Port`);
+    if (host === undefined || port === undefined) continue;
+    const parsed = proxyUrl(`http://${host}:${port}`);
+    if (parsed !== undefined) return formatProxyUrl(parsed);
+  }
+  return undefined;
 }
 
 /** Check that something is listening, so a stale setting cannot stall a search. */
@@ -340,13 +341,22 @@ async function reachable(proxy: URL, timeoutMs = 400): Promise<boolean> {
   });
 }
 
+/** Cache the result of a completed system probe, including an unreachable port. */
+async function detectAndCacheSystemProxy(): Promise<string | undefined> {
+  const system = proxyUrl(await proxyFromSystem());
+  let proxy: string | undefined;
+  if (system !== undefined && (await reachable(system))) proxy = formatProxyUrl(system);
+  cachedSystem = { at: Date.now(), proxy };
+  return proxy;
+}
+
 /**
  * Decide which proxy to use, if any.
  *
- * Order: an explicit plugin setting, the cached decision, the environment, then
- * the system proxy (macOS `scutil`, Windows Internet Settings). The system proxy is only honoured when its port
- * accepts a connection, so turning the tunnel off degrades to a direct request
- * instead of breaking search. The decision is cached for a minute.
+ * An explicit setting wins. With automatic detection a `NO_PROXY` wildcard
+ * selects direct access immediately. Otherwise the environment takes priority
+ * over a reachable system proxy. Concurrent callers share the system probe and the
+ * resulting decision is cached for a minute.
  *
  * @param explicit - the plugin's `proxy` config value.
  * @returns the proxy URL to use, or `undefined` for a direct request.
@@ -354,18 +364,16 @@ async function reachable(proxy: URL, timeoutMs = 400): Promise<boolean> {
 export async function resolveProxy(explicit?: string): Promise<string | undefined> {
   const configured = proxyUrl(explicit);
   if (configured !== undefined) return formatProxyUrl(configured);
-  if (cached !== undefined && Date.now() - cached.at < CACHE_MS) return cached.proxy;
-  const fromEnv = proxyFromEnv();
-  let proxy = fromEnv;
-  if (proxy === undefined) {
-    const system = await proxyFromSystem();
-    if (system !== undefined) {
-      const parsed = proxyUrl(system);
-      if (parsed !== undefined && (await reachable(parsed))) proxy = formatProxyUrl(parsed);
-    }
+  if (bypassesAutoProxy(process.env)) return undefined;
+  const fromEnv = firstEnvProxy(process.env);
+  if (fromEnv !== undefined) return fromEnv;
+  if (cachedSystem !== undefined && Date.now() - cachedSystem.at < CACHE_MS) return cachedSystem.proxy;
+  if (pendingSystemProbe === undefined) {
+    pendingSystemProbe = detectAndCacheSystemProxy().finally(() => {
+      pendingSystemProbe = undefined;
+    });
   }
-  cached = { at: Date.now(), proxy };
-  return proxy;
+  return pendingSystemProbe;
 }
 
 /** Open a `CONNECT` tunnel to `host:port` through the proxy. */

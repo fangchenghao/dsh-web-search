@@ -21,6 +21,7 @@ import { mergeRegions } from './rank.ts';
 import { filterRelevant } from './relevance.ts';
 import { cjkQueryVariants } from './variants.ts';
 import { cacheKey } from './cache.ts';
+import { eligibleSearchSources, normaliseBlockedDomains, removeBlocked } from './result-policy.ts';
 import type { SearchCache } from './cache.ts';
 import type { EngineHealth } from './health.ts';
 import { searchHost } from './transport.ts';
@@ -228,52 +229,6 @@ function failureDetail(id: string, reason: string, error?: SearchError): EngineF
     kind: error === undefined ? 'unknown' : classifyFailure(error),
     ...(error?.status === undefined ? {} : { status: error.status }),
   };
-}
-
-/**
- * Normalise a configured domain for suffix matching.
- *
- * Accepts a bare domain, a `*.domain` wildcard or a pasted URL, because all
- * three are things a person reasonably types into a blocklist field.
- */
-function normaliseDomain(value: string): string {
-  let text = value.trim().toLowerCase();
-  if (text.includes('://')) {
-    try {
-      text = new URL(text).hostname;
-    } catch {
-      // Fall through: the bare-domain cleanup below may still help.
-    }
-  }
-  return text
-    .replace(/^\*\./u, '')
-    .replace(/^\.+/u, '')
-    .replace(/\.+$/u, '')
-    .replace(/\/.*$/u, '')
-    .trim();
-}
-
-/** Whether a URL's host is the configured domain or a subdomain of it. */
-function isBlockedHost(hostname: string, blocked: readonly string[]): boolean {
-  const host = hostname.toLowerCase().replace(/\.$/u, '');
-  return blocked.some((domain) => host === domain || host.endsWith(`.${domain}`));
-}
-
-/**
- * Remove a caller-blocked domain from a result list.
- *
- * The filter is applied after fusion so it can never change the ranking of the
- * rows that survive; it only removes rows the user explicitly excluded.
- */
-function removeBlocked(sources: readonly Source[], blocked: readonly string[]): Source[] {
-  if (blocked.length === 0) return [...sources];
-  return sources.filter((source) => {
-    try {
-      return !isBlockedHost(new URL(source.url).hostname, blocked);
-    } catch {
-      return true;
-    }
-  });
 }
 
 /** Whether the primary failures permit a fallback under the configured policy. */
@@ -642,7 +597,6 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     .filter((host) => host.viaProxy !== true || proxy !== undefined)
     .map((host) =>
       resolveHost(host, {
-        ...(options.anysearchApiKey === undefined ? {} : { anysearchApiKey: options.anysearchApiKey }),
         ...(options.anysearchDomain === undefined ? {} : { anysearchDomain: options.anysearchDomain }),
         ...(options.firecrawlApiKey === undefined ? {} : { firecrawlApiKey: options.firecrawlApiKey }),
       }),
@@ -663,7 +617,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     }
   }
   const usable = rested.length > 0 ? rested : hosts;
-  const blocked = (options.blockedDomains ?? []).map(normaliseDomain).filter((domain) => domain.length > 0);
+  const blocked = normaliseBlockedDomains(options.blockedDomains);
   const safeSearch = options.safeSearch ?? 'off';
   const fallbackOn = options.fallbackOn;
 
@@ -719,7 +673,7 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     ...(anysearchDomain.length === 0 ? {} : { anysearchDomain }),
   });
   const cached = key === undefined ? undefined : options.cache?.get(key);
-  const cachedSources = cached === undefined ? undefined : removeBlocked(cached, blocked);
+  const cachedSources = cached === undefined ? undefined : eligibleSearchSources(cached, blocked, timeRange);
   if (cachedSources !== undefined && cachedSources.length > 0) {
     options.trace?.({
       limit,

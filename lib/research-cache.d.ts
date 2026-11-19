@@ -1,4 +1,4 @@
-import type { ToolContent, ToolJsonSchema } from './domain-tool.ts';
+import type { DomainToolOptions, ToolContent, ToolJsonSchema } from './domain-tool.ts';
 /** The name this tool prefers. */
 export declare const CACHE_SEARCH_TOOL_NAME = "cache_search";
 /** The name used when another plugin already registered `cache_search`. */
@@ -110,6 +110,4 @@ export declare function pickCacheSearchToolName(tools: CacheSearchRegistryLike):
  * Register the cache-search tool; every failure is contained so the rest of the
  * plugin keeps mounting.
  */
-export declare function registerCacheSearchTool(tools: CacheSearchRegistryLike, cache: ResearchBodyCache, options?: {
-    warn?: (message: string) => void;
-}): string | undefined;
+export declare function registerCacheSearchTool(tools: CacheSearchRegistryLike, cache: ResearchBodyCache, options?: Pick<DomainToolOptions, 'warn' | 'onRegister'>): string | undefined;

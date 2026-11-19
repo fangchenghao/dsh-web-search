@@ -302,6 +302,7 @@ test('apply registers search_many with the host tools service and disposes it', 
 
   for (const cleanup of cleanups) cleanup();
   assert.equal(definitions.has(SEARCH_MANY_TOOL_NAME), false, 'dispose removed the batch tool');
+  assert.deepEqual([...definitions.keys()], [], 'disposing a legacy mount must unregister every tool');
 });
 
 test('apply without a tools service still mounts web_search', () => {

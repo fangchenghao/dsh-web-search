@@ -12,7 +12,7 @@
  * @module @fangchenghao/dsh-web-search/research-cache
  */
 import type { Source } from './types.ts';
-import type { ToolContent, ToolJsonSchema } from './domain-tool.ts';
+import type { DomainToolOptions, ToolContent, ToolJsonSchema } from './domain-tool.ts';
 import { wrapUntrustedContent } from './untrusted.ts';
 
 /** The name this tool prefers. */
@@ -329,11 +329,16 @@ export function pickCacheSearchToolName(tools: CacheSearchRegistryLike): string 
 export function registerCacheSearchTool(
   tools: CacheSearchRegistryLike,
   cache: ResearchBodyCache,
-  options: { warn?: (message: string) => void } = {},
+  options: Pick<DomainToolOptions, 'warn' | 'onRegister'> = {},
 ): string | undefined {
   const name = pickCacheSearchToolName(tools);
   try {
-    tools.register(createCacheSearchDefinition(name, cache));
+    const registered = tools.register(createCacheSearchDefinition(name, cache));
+    try {
+      options.onRegister?.(typeof registered === 'function' ? (registered as () => void) : undefined);
+    } catch {
+      return name;
+    }
     return name;
   } catch (error) {
     try {

@@ -141,7 +141,9 @@ and URL are returned, which is how the caller can read `Retry-After`.
 Proxy selection is explicit config → environment (`DSH_WEB_SEARCH_PROXY`,
 `HTTPS_PROXY`, `ALL_PROXY`, `HTTP_PROXY`, both casings) → the OS system proxy
 (macOS `scutil --proxy`, Windows Internet Settings) gated by a 400 ms TCP probe,
-cached for 60 seconds. Only `http://` proxies are
+cached for 60 seconds. Concurrent misses share one detection. With no explicit
+plugin proxy, `NO_PROXY=*` selects direct access even if a proxy was already
+cached. Only `http://` proxies are
 dialled from detection, because the tunnel itself is a plain `CONNECT`; an
 `https://` value elsewhere in the environment is skipped rather than selected.
 

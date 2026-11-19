@@ -99,9 +99,10 @@ npm run build
 ## Proxy is not detected
 
 Resolution order is: explicit `proxy` config → environment → the OS system
-proxy (macOS `scutil`, Windows Internet Settings) → direct. The decision is
-cached for 60 seconds, so a change can take up to a minute (or a restart) to be
-honoured.
+proxy (macOS `scutil`, Windows Internet Settings) → direct. Only the OS discovery
+result is cached for 60 seconds. An OS-only change can take up to a minute;
+an explicit setting or a change to the running process's environment takes
+priority on the next call.
 
 1. Is a proxy configured at all?
 
@@ -149,7 +150,8 @@ honoured.
 
    A loopback-only list (`localhost,127.0.0.1`, a common shell default) is
    skipped: it cannot cover a public search host and must not be read as "no
-   proxy". A wildcard (`NO_PROXY=*`) is honoured and disables proxying.
+   proxy". A wildcard (`NO_PROXY=*`) disables automatic proxy selection,
+   including a cached or OS proxy; an explicit plugin `proxy` setting still wins.
 
 4. Fix it explicitly instead of relying on detection:
 

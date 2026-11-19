@@ -451,6 +451,7 @@ export function createReadPageDefinition(
     settings: ReadPageSettings,
     signal: AbortSignal | undefined,
   ): Promise<LoadResult> => {
+    signal?.throwIfAborted();
     const signature = fetchSignature(format, settings);
     const cacheKey = `${signature}\u0000${url}`;
     const cached = pages.get(cacheKey);
@@ -486,6 +487,7 @@ export function createReadPageDefinition(
       return { ok: false, failure: `read_page: ${reason}` };
     }
 
+    signal?.throwIfAborted();
     if (outcome.statusCode < 200 || outcome.statusCode >= 300) {
       return {
         ok: false,
@@ -525,10 +527,11 @@ export function createReadPageDefinition(
     // A single fetch may try direct, tunnel, a browser and extraction in turn.
     timeoutMs: 60_000,
     isConcurrencySafe: () => true,
-    async execute(args, exec) {
+    async execute(args, { signal }) {
       const settings = readSettings();
       const parsed = parseArgs(args, settings);
-      const loaded = await load(parsed.url, parsed.format, settings, exec.signal);
+      const loaded = await load(parsed.url, parsed.format, settings, signal);
+      signal?.throwIfAborted();
       if (!loaded.ok) {
         return failureValue(parsed.url, parsed.offset, loaded.failure, loaded.render);
       }

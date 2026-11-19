@@ -8,9 +8,10 @@
  *
  * @module @fangchenghao/dsh-web-search/arxiv
  */
-import type { Source } from './types.ts';
+import type { Source, TimeRange } from './types.ts';
 /** Options for the narrow arXiv lookup. */
 export interface ArxivLookupOptions {
+    timeRange?: TimeRange;
     /** Result budget; defaults to four. */
     limit?: number;
     /** Deadline in milliseconds; defaults to 3.5 s. */

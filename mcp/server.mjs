@@ -30,6 +30,7 @@ import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { search } from '../lib/engines.js';
 import { createFetchProvider } from '../lib/fetch.js';
+import { proxyFromEnv } from '../lib/proxy.js';
 import { searchVerticals } from '../lib/verticals.js';
 import { createResearchDefinition, formatResearchValue } from '../lib/research.js';
 import { mergeOfficial, officialLookup } from '../lib/official-sources.js';
@@ -43,9 +44,10 @@ const PROTOCOL_VERSION = '2024-11-05';
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 20;
 const MAX_TEXT = 80_000;
+const MAX_ACTIVE_TOOLS = 4;
 
 const env = process.env;
-const proxy = env.DSH_WEB_SEARCH_PROXY ?? env.HTTPS_PROXY ?? env.HTTP_PROXY ?? undefined;
+const proxy = proxyFromEnv(env);
 const anysearchApiKey = env.ANYSEARCH_API_KEY ?? env.DSH_WEB_SEARCH_ANYSEARCH_KEY ?? '';
 const firecrawlApiKey = env.FIRECRAWL_API_KEY ?? env.DSH_WEB_SEARCH_FIRECRAWL_KEY ?? '';
 const defaultLimit = (() => {
@@ -167,7 +169,7 @@ function makeFetcher(args) {
 }
 
 /** Run one tool and return MCP content. */
-async function callTool(name, args) {
+async function callTool(name, args, signal) {
   if (args === null || typeof args !== 'object' || Array.isArray(args)) {
     throw new Error('arguments must be an object');
   }
@@ -177,15 +179,17 @@ async function callTool(name, args) {
     const limit = intArg(args.limit, defaultLimit, 1, MAX_LIMIT);
     const timeoutMs = intArg(args.timeoutMs, 12_000, 1_000, 30_000);
     const official = officialLookup(query, {
+      signal,
       timeoutMs: Math.min(timeoutMs, 2_500),
       ...(proxy === undefined ? {} : { proxy }),
     });
     const arxiv = arxivLookup(query, {
+      signal,
       limit: 4,
       timeoutMs: Math.min(timeoutMs, 3_500),
       ...(proxy === undefined ? {} : { proxy }),
     });
-    const outcome = await search(query, undefined, searchOptions(limit, timeoutMs));
+    const outcome = await search(query, signal, searchOptions(limit, timeoutMs));
     const sources = mergeArxiv(mergeOfficial(outcome.sources, await official), await arxiv);
     return formatSources(query, sources.slice(0, limit), { failures: outcome.failures });
   }
@@ -193,7 +197,7 @@ async function callTool(name, args) {
     const url = typeof args.url === 'string' ? args.url.trim() : '';
     if (!/^https?:\/\//iu.test(url)) throw new Error('fetch requires an absolute http(s) URL');
     const provider = makeFetcher(args);
-    const outcome = await provider.fetch({ url });
+    const outcome = await provider.fetch({ url }, signal);
     const head = [`URL: ${outcome.url}`, `HTTP ${outcome.statusCode}`, `Format: ${args.format === 'text' ? 'text' : 'markdown'}`];
     if (outcome.truncated) head.push('Truncated: yes');
     return wrapUntrustedContent(`${head.join('\n')}\n\n${outcome.body.content}`);
@@ -217,7 +221,7 @@ async function callTool(name, args) {
       query,
       ...(Array.isArray(args.queries) ? { queries: args.queries.filter((item) => typeof item === 'string') } : {}),
       ...(typeof args.maxSources === 'number' ? { maxSources: args.maxSources } : {}),
-    }, {});
+    }, { signal });
     return wrapUntrustedContent(formatResearchValue(value));
   }
   if (name === 'domain_search') {
@@ -225,6 +229,7 @@ async function callTool(name, args) {
     if (query.length === 0) throw new Error('domain_search requires a non-empty query');
     const ids = Array.isArray(args.ids) ? args.ids.filter((item) => typeof item === 'string') : undefined;
     const outcome = await searchVerticals(query, {
+      signal,
       ...(ids === undefined || ids.length === 0 ? {} : { ids }),
       limit: intArg(args.limit, defaultLimit, 1, 20),
       ...(typeof args.timeRange === 'string' ? { timeRange: args.timeRange } : {}),
@@ -240,12 +245,36 @@ function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
+const activeTools = new Map();
+let shuttingDown = false;
+
+function stopTools() {
+  shuttingDown = true;
+  for (const controller of activeTools.values()) controller.abort();
+}
+
 /** Handle one request; notifications return `undefined`. */
 async function handle(message) {
   const id = message.id;
   const method = message.method;
   const params = message.params ?? {};
+  let controller;
   try {
+    if (method === 'notifications/initialized' || method === 'initialized') return;
+    if (method === 'notifications/cancelled' || method === 'cancelled') {
+      if (id === undefined) activeTools.get(params.requestId)?.abort();
+      return;
+    }
+    if (method === 'exit') {
+      lines.close();
+      process.stdin.destroy();
+      return;
+    }
+    if (id === undefined) {
+      process.stderr.write(`[${NAME}] ignored notification: ${String(method)}\n`);
+      return;
+    }
+    if (activeTools.has(id)) return;
     if (method === 'initialize') {
       send({
         jsonrpc: '2.0',
@@ -259,11 +288,6 @@ async function handle(message) {
       });
       return;
     }
-    if (method === 'notifications/initialized' || method === 'initialized') return;
-    if (method === 'notifications/cancelled' || method === 'cancelled') return;
-    if (method === 'exit') {
-      process.exit(0);
-    }
     if (method === 'ping') {
       send({ jsonrpc: '2.0', id, result: {} });
       return;
@@ -273,8 +297,13 @@ async function handle(message) {
       return;
     }
     if (method === 'tools/call') {
+      if (shuttingDown) throw new Error('MCP server is shutting down');
+      if (activeTools.size >= MAX_ACTIVE_TOOLS) throw new Error('MCP server busy, retry once an active tool finishes');
+      controller = new AbortController();
+      activeTools.set(id, controller);
       const name = params.name;
-      const text = await callTool(name, params.arguments ?? {});
+      const text = await callTool(name, params.arguments ?? {}, controller.signal);
+      if (controller.signal.aborted) return;
       send({
         jsonrpc: '2.0',
         id,
@@ -294,15 +323,13 @@ async function handle(message) {
       return;
     }
     if (method === 'shutdown') {
+      stopTools();
       send({ jsonrpc: '2.0', id, result: null });
-      return;
-    }
-    if (id === undefined) {
-      process.stderr.write(`[${NAME}] ignored notification: ${String(method)}\n`);
       return;
     }
     send({ jsonrpc: '2.0', id, error: { code: -32601, message: `method not found: ${String(method)}` } });
   } catch (error) {
+    if (controller?.signal.aborted) return;
     if (id === undefined) {
       process.stderr.write(`[${NAME}] notification failed: ${errorText(error)}\n`);
       return;
@@ -316,11 +343,13 @@ async function handle(message) {
       return;
     }
     send({ jsonrpc: '2.0', id, error: { code: -32603, message: errorText(error) } });
+  } finally {
+    if (controller !== undefined) activeTools.delete(id);
   }
 }
 
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
-lines.on('line', (line) => {
+function handleLine(line) {
   const trimmed = line.trim();
   if (trimmed.length === 0) return;
   let message;
@@ -335,5 +364,10 @@ lines.on('line', (line) => {
     return;
   }
   void handle(message);
+}
+lines.on('line', handleLine);
+lines.on('close', () => {
+  lines.off('line', handleLine);
+  stopTools();
 });
 process.stderr.write(`[${NAME}] MCP server ${VERSION} ready on stdio\n`);

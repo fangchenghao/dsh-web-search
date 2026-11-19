@@ -11,7 +11,7 @@
  * @module @fangchenghao/dsh-web-search/official-feed
  */
 import type { Source, TimeRange } from './types.ts';
-import { filterByTimeRange } from './freshness.ts';
+import { filterByTimeRange, publishedTimestamp } from './freshness.ts';
 import { proxyGet } from './proxy.ts';
 import { text } from './parsers.ts';
 
@@ -310,16 +310,19 @@ export function chromeWindow(
  */
 export function chromeFeedNote(sources: readonly Source[], range: TimeRange, query: string): string {
   const window = range === 'off' ? 'latest' : range;
+  if (sources.length === 0) return `Official Chrome Releases feed checked: no post fell inside the ${window} window.`;
+  const undated = sources.filter((source) => publishedTimestamp(source.publishedAt) === undefined).length;
+  const dates = undated > 0
+    ? ` (${undated} without a publication date, not verified for this window)`
+    : '';
+  const summary = `Official Chrome Releases feed: ${sources.length} post(s) in the ${window} result set${dates}`;
   if (!/zero[- ]?day|0[- ]?day|零日/iu.test(query)) {
-    return `Official Chrome Releases feed: ${sources.length} post(s) in the ${window} result set, each with a publication date.`;
+    return `${summary}.`;
   }
   const zeroDay = sources.filter((source) =>
     /zero[- ]?day|0[- ]?day|零日/iu.test(`${source.title ?? ''} ${source.snippet ?? ''}`),
   ).length;
-  if (sources.length === 0) {
-    return `Official Chrome Releases feed checked: no post fell inside the ${window} window.`;
-  }
   return zeroDay === 0
-    ? `Official Chrome Releases feed checked: ${sources.length} post(s) inside the ${window} window; no title or summary mentions zero-day.`
-    : `Official Chrome Releases feed checked: ${sources.length} post(s) inside the ${window} window; ${zeroDay} mention zero-day.`;
+    ? `${summary}; no title or summary mentions zero-day.`
+    : `${summary}; ${zeroDay} mention zero-day.`;
 }
