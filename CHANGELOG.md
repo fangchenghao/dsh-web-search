@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `fast` no longer abandons healthy engines on the first error, empty response or stale-only answer. `auto` also waits for a result that passes the relevance and time-window filters before using its lead-region shortcut. Soft deadlines are unchanged.
+- `search_many` runs exact duplicate queries once per batch while preserving input order, separate results and the three-search concurrency limit.
+- Disk-cache snapshots skip expired entries and serialize the most-recent entries that fit the UTF-8 byte budget without repeatedly rebuilding the entire snapshot. The on-disk format is unchanged.
+
 ## 0.24.7
 
 ### Fixed

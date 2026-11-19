@@ -4,10 +4,10 @@
  * A run has three stages: every engine of the leading tier is asked
  * concurrently, the answers are fused by reciprocal rank fusion with the
  * bilingual region policy on top, and the result is memoised. The tier releases
- * on the first of: every engine settled, the engines that lead this query's
- * language all settled, enough sources from enough contributors, or the soft
- * deadline. Requiring more than one contributor is what keeps the fused list
- * cross-engine: the first engine to answer is usually fast but narrow.
+ * when every engine settles or the soft deadline expires. It can finish sooner
+ * with rows that pass the relevance and time filters: the first such answer
+ * for `fast`, or once the lead engines settle or enough engines contribute
+ * enough rows for `auto`.
  *
  * @module @fangchenghao/dsh-web-search/engines
  */

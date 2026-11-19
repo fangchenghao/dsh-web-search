@@ -119,6 +119,24 @@ test('three queries run independently and keep their order and shape', async () 
   assert.match(formatSearchManyValue(value), /Batch search: 3 queries, 4 result\(s\)\./);
 });
 
+test('duplicate batch queries share work but keep independent ordered results, including failures', async () => {
+  const calls: { query: string; limit: number }[] = [];
+  const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, runnerFrom({
+    alpha: [source('https://example.com/a'), source('https://example.com/b')],
+    broken: new Error('upstream unavailable'),
+  }, calls));
+  const value = await definition.execute({ queries: [' alpha ', 'broken', 'alpha', 'broken', 'alpha'], limit: 1, withSites: true }, {});
+  assert.deepEqual(calls.map(({ query }) => query), ['alpha', 'broken']);
+  assert.deepEqual(value.results.map(({ query }) => query), ['alpha', 'broken', 'alpha', 'broken', 'alpha']);
+  assert.equal(value.truncated, true);
+  assert.deepEqual(value.results[0], value.results[2]);
+  assert.equal(value.results[0].sources[0].site, 'example.com');
+  value.results[0].sources[0].title = 'edited';
+  assert.equal(value.results[2].sources[0].title, 'Title');
+  value.results[1].failures.pop();
+  assert.deepEqual(value.results[3].failures, ['upstream unavailable']);
+});
+
 test('one failed query does not stop the others', async () => {
   const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, runnerFrom({
     first: [source('https://example.com/first')],
@@ -312,4 +330,20 @@ test('a pre-aborted batch does not start any query', async () => {
     /abort/i,
   );
   assert.equal(calls, 0);
+});
+
+test('cancelling a duplicate-heavy batch does not dispatch the queued distinct query', async () => {
+  const controller = new AbortController();
+  const running = Promise.withResolvers<void>();
+  const calls: string[] = [];
+  const definition = createSearchManyDefinition(SEARCH_MANY_TOOL_NAME, async (query) => {
+    calls.push(query);
+    await running.promise;
+    return { sources: [], failures: [], truncated: false };
+  });
+  const batch = definition.execute({ queries: ['alpha', 'alpha', 'ALPHA', 'beta', 'queued'] }, { signal: controller.signal });
+  controller.abort();
+  running.resolve();
+  await assert.rejects(batch, /abort/i);
+  assert.deepEqual(calls, ['alpha', 'ALPHA', 'beta']);
 });

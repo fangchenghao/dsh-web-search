@@ -307,42 +307,35 @@ export function createSearchManyDefinition(name: string, runQuery: SearchManyRun
         const reason = exec.signal.reason;
         throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
       }
-      const outcomes = await mapLimit(parsed.queries, SEARCH_MANY_CONCURRENCY, async (query) => {
+      const queries = [...new Set(parsed.queries)];
+      const outcomes = await mapLimit(queries, SEARCH_MANY_CONCURRENCY, async (query) => {
         try {
           const outcome = await runQuery(query, parsed.limit, exec.signal);
-          if (exec.signal?.aborted === true) {
-            const reason = exec.signal.reason;
-            throw reason instanceof Error ? reason : new DOMException('The operation was aborted', 'AbortError');
-          }
-          const mapped = parsed.withSites
-            ? outcome.sources.map(withSite)
-            : outcome.sources.map((source) => ({ ...source }));
-          const truncated = outcome.truncated || mapped.length > parsed.limit;
+          const sources = outcome.sources.slice(0, parsed.limit).map(parsed.withSites ? withSite : (source) => ({ ...source }));
           return {
             result: {
-              query,
-              sources: mapped.slice(0, parsed.limit),
-              failures: [...outcome.failures],
+              query, sources, failures: [...outcome.failures],
               ...(outcome.note === undefined ? {} : { note: outcome.note }),
             },
-            truncated,
+            truncated: outcome.truncated || outcome.sources.length > parsed.limit,
           };
         } catch (error) {
           if (exec.signal?.aborted === true) throw error;
           return {
-            result: {
-              query,
-              sources: [],
-              failures: [error instanceof Error ? error.message : String(error)],
-            },
+            result: { query, sources: [], failures: [error instanceof Error ? error.message : String(error)] },
             truncated: false,
           };
         }
       }, exec.signal);
-      return {
-        results: outcomes.map((entry) => entry.result),
-        truncated: outcomes.some((entry) => entry.truncated),
-      };
+      let results: SearchManyResult[] = outcomes.map(({ result }) => result);
+      if (queries.length < parsed.queries.length) {
+        const byQuery = new Map(results.map((result) => [result.query, result]));
+        results = parsed.queries.map((query) => {
+          const result = byQuery.get(query) as SearchManyResult;
+          return { ...result, sources: result.sources.map((source) => ({ ...source })), failures: [...result.failures] };
+        });
+      }
+      return { results, truncated: outcomes.some((entry) => entry.truncated) };
     },
   };
 }

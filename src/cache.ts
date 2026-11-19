@@ -284,7 +284,7 @@ export class SearchCache {
     if (!this.dirty) return false;
     const entries: PersistedEntry[] = [];
     for (const [key, entry] of this.entries) {
-      entries.push({ key, expiresAt: entry.expiresAt, sources: cloneSources(entry.sources) });
+      entries.push({ key, ...entry });
     }
     const written = writeCacheFile(this.persistTo.file, entries, this.now(), {
       ...(this.persistTo.maxBytes === undefined ? {} : { maxBytes: this.persistTo.maxBytes }),

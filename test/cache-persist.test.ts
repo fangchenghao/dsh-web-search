@@ -19,6 +19,7 @@ import {
   defaultCacheFile,
   nodeCacheFileIo,
   resolveCacheFile,
+  serializeCache,
   writeCacheFile,
 } from '../src/cache-persist.ts';
 import type { CacheFileIo } from '../src/cache-persist.ts';
@@ -210,6 +211,28 @@ test('the byte cap evicts the oldest entries until the snapshot fits', (t) => {
   reopened.close();
 });
 
+test('the byte cap counts UTF-8, escaping and separators exactly and preserves LRU order', () => {
+  const entries = ['old', '中文', 'emoji 😀'].map((key) => ({
+    key, expiresAt: NOW + 1, sources: [source('https://example.com/', '字\\"\n😀')],
+  }));
+  const document = (start: number) => JSON.stringify({ version: CACHE_FILE_VERSION, savedAt: NOW, entries: entries.slice(start) });
+  const check = (budget: number, start: number) => {
+    const data = document(start);
+    assert.deepEqual(serializeCache(entries, NOW, budget), { data, entries: entries.length - start, bytes: Buffer.byteLength(data) });
+  };
+  const exact = Buffer.byteLength(document(1));
+  check(exact, 1);
+  check(exact - 1, 2);
+  check(Buffer.byteLength(document(2)) - 1, 3);
+});
+
+test('an expired MRU entry cannot evict a recoverable entry from the snapshot', () => {
+  const live = { key: 'live', expiresAt: NOW + 1, sources: [source('https://example.com/live')] };
+  const expired = { key: 'expired', expiresAt: NOW, sources: [source('https://example.com/expired', 'x'.repeat(1_000))] };
+  const expected = serializeCache([live], NOW);
+  assert.deepEqual(serializeCache([live, expired], NOW, expected.bytes), expected);
+});
+
 test('loading more entries than maxEntries keeps the newest tail', (t) => {
   const dir = tempDir(t);
   const file = join(dir, 'cache.json');
@@ -233,7 +256,7 @@ test('an expired entry is dropped while loading instead of waiting for a read', 
   const file = join(dir, 'cache.json');
   writeCacheFile(file, [
     { key: 'stale', expiresAt: NOW - 1, sources: [source('https://example.com/stale')] },
-  ], NOW);
+  ], NOW - 2);
   const cache = new SearchCache({ ttlMs: 600_000, maxEntries: 10, persist: { file } }, () => NOW);
   assert.equal(cache.size, 0);
   assert.equal(cache.get('stale'), undefined);

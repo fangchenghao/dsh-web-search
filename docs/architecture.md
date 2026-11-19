@@ -52,9 +52,10 @@ touch the network; `proxy` never parses a result page.
    `primary` and `fallback`. `runTier` asks every engine of a tier concurrently
    through `searchHost` and releases on the first of:
    - every engine settled;
-   - every engine of the leading region settled (success *or* failure), so a
-     failed engine cannot hold the tier open until the deadline;
-   - `available() >= limit` sources from at least `needed` contributors across
+   - `fast` has one answer that passed the relevance and time-window filters;
+   - every engine of the leading region settled and at least one engine in any
+     region supplied a row that passed those filters;
+   - at least `limit` filtered rows from at least `needed` contributors across
      **all** regions (two for `auto`), so one slow lead engine cannot keep a
      complete cross-engine answer waiting;
    - the soft deadline (`auto`: 5 s ASCII / 3 s CJK, `fast`: 3.5 s, `all`: 10 s).

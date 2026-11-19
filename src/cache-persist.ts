@@ -229,22 +229,20 @@ export function serializeCache(
   maxBytes?: number,
 ): SerializedCache {
   const budget = normaliseMaxBytes(maxBytes);
-  const kept = entries.map((entry) => ({
-    key: entry.key,
-    expiresAt: entry.expiresAt,
-    sources: entry.sources.map(storedSource),
-  }));
-  const build = (): string => JSON.stringify({
-    version: CACHE_FILE_VERSION,
-    savedAt: now,
-    entries: kept,
-  });
-  let data = build();
-  while (kept.length > 0 && Buffer.byteLength(data, 'utf8') > budget) {
-    kept.shift();
-    data = build();
+  const prefix = `{"version":${CACHE_FILE_VERSION},"savedAt":${JSON.stringify(now)},"entries":[`;
+  const suffix = ']}';
+  let bytes = Buffer.byteLength(prefix + suffix);
+  const kept: string[] = [];
+  for (let index = entries.length - 1; index >= 0 && bytes < budget; index -= 1) {
+    const entry = entries[index];
+    if (entry === undefined || entry.expiresAt <= now) continue;
+    const encoded = JSON.stringify({ key: entry.key, expiresAt: entry.expiresAt, sources: entry.sources.map(storedSource) });
+    const extra = Buffer.byteLength(encoded) + (kept.length > 0 ? 1 : 0);
+    if (bytes + extra > budget) break;
+    kept.push(encoded);
+    bytes += extra;
   }
-  return { data, entries: kept.length, bytes: Buffer.byteLength(data, 'utf8') };
+  return { data: prefix + kept.reverse().join(',') + suffix, entries: kept.length, bytes };
 }
 
 /** Distinguishes temporary files of concurrent writers in this process. */

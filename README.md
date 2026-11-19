@@ -829,7 +829,7 @@ They chain: `domain_search` finds the package or paper entry, then `web_fetch` o
 
 ### What is the fastest way to ask several questions?
 
-Use `search_many`. One call carries one to five `queries`, runs three at a time, and returns each query's results separately; `limit` (default 5) caps results per query, and `withSites: true` adds each result's hostname. A failed query becomes its own `failures` line instead of ending the batch. Use `web_search` for a single question, and `domain_search` when the target is a package, a repository, a paper or a Q&A thread.
+Use `search_many`. One call carries one to five `queries`, with up to three distinct queries running at a time. Exact repeats (after trimming outer whitespace) run once per batch, but every input keeps its own result in the original order. `limit` (default 5) caps results per query, and `withSites: true` adds each result's hostname. A failed query becomes its own `failures` line instead of ending the batch. Use `web_search` for a single question, and `domain_search` when the target is a package, a repository, a paper or a Q&A thread.
 
 ### I changed a setting, why did nothing happen?
 
@@ -873,7 +873,7 @@ web_search call
   → store in the cache, mark the snapshot dirty, return { sources, failures, proxy }
 ```
 
-A tier releases on whichever comes first: every engine settled; every engine of the leading region settled (success or failure); enough sources from enough contributors; the soft deadline. Engines still running are aborted and reported as `still running at deadline` or `aborted once enough results had arrived`.
+`fast` returns the first answer that passes the relevance and time-window filters, even below `limit`. `auto` can release once the leading region has settled and any engine has such a result, or when enough engines supply enough rows. A quick error or empty answer alone does not cancel other engines. Every policy stops when all engines settle or the soft deadline expires. Engines still running are aborted and reported as `still running at deadline` or `aborted once enough results had arrived`.
 
 One engine's failure is classified into a `SearchError` and returned, not thrown — a dead engine must not take the whole search with it.
 

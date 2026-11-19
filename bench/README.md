@@ -28,6 +28,10 @@ node scripts/bench.mjs --json --out bench/results/0.12.0.json
 
 Fixtures are read only; evaluation re-runs the current `mergeRegions`/`preferWindow` at each fixture's `recordedAt` (so freshness cannot drift) and never touches the network or cache. Missing/failed fixtures are excluded and printed as `MISSING`, so the evaluated count is always visible.
 
+### Cache serialization (offline)
+
+`node scripts/bench-cache.mjs` times 100 synthetic queries with eight multilingual results each, both when all entries fit (4 MiB) and when older entries must be evicted (64 KiB). It reports the median of 41 runs after ten warmups. Pass another checkout's `lib/cache-persist.js` as the first argument to measure that version on the same data. This measures serialization only, not disk I/O or live search latency.
+
 ## Compare versions
 
 ```sh

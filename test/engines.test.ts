@@ -290,6 +290,34 @@ test('the configured wait policy decides whether a slow engine is still worth wa
   assert.ok(auto >= 280, `wait: auto should have waited for the slow engine, took ${auto}ms`);
 });
 
+for (const scenario of [
+  { wait: 'fast', query: '并发搜索', status: 503, rows: [], timeRange: 'off', first: 'an HTTP failure' },
+  { wait: 'fast', query: '并发搜索', status: 200, rows: [{ url: 'https://example.com/unrelated' }], timeRange: 'off', first: 'an irrelevant answer' },
+  { wait: 'auto', query: 'postgres replication', status: 200, rows: [{ url: 'https://example.com/old', date: '2001-01-01' }], timeRange: 'week', first: 'an out-of-window lead answer' },
+] as const) {
+  test(`${scenario.wait} does not cancel a usable primary after ${scenario.first}`, async (t) => {
+    const winner = 'https://example.com/guide';
+    const calls: string[] = [];
+    t.mock.method(globalThis, 'fetch', async (input: string, init?: RequestInit) => {
+      const host = new URL(input).hostname;
+      calls.push(host);
+      if (host === ANYSEARCH) {
+        return Response.json({ code: 0, data: { results: scenario.rows } }, { status: scenario.status });
+      }
+      if (host !== CN_BING) return new Response(null, { status: 503 });
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      init?.signal?.throwIfAborted();
+      return new Response(`<li class="b_algo"><h2><a href="${winner}">${scenario.query}</a></h2></li>`);
+    });
+    const result = await search(scenario.query, undefined, {
+      hostIds: ['anysearch', 'cn.bing', 'so'], useProxy: false, limit: 8,
+      wait: scenario.wait, timeRange: scenario.timeRange,
+    });
+    assert.deepEqual(result.sources.map((source) => source.url), [winner]);
+    assert.equal(calls.includes(SO), false, 'a usable primary makes the fallback unnecessary');
+  });
+}
+
 test('cancellation propagates as SEARCH_ABORTED instead of a partial answer', async () => {
   stubFetch({
     [ANYSEARCH]: () => ({ error: new DOMException('aborted', 'AbortError') }),

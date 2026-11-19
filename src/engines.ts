@@ -4,10 +4,10 @@
  * A run has three stages: every engine of the leading tier is asked
  * concurrently, the answers are fused by reciprocal rank fusion with the
  * bilingual region policy on top, and the result is memoised. The tier releases
- * on the first of: every engine settled, the engines that lead this query's
- * language all settled, enough sources from enough contributors, or the soft
- * deadline. Requiring more than one contributor is what keeps the fused list
- * cross-engine: the first engine to answer is usually fast but narrow.
+ * when every engine settles or the soft deadline expires. It can finish sooner
+ * with rows that pass the relevance and time filters: the first such answer
+ * for `fast`, or once the lead engines settle or enough engines contribute
+ * enough rows for `auto`.
  *
  * @module @fangchenghao/dsh-web-search/engines
  */
@@ -304,7 +304,7 @@ interface TierLimits {
   softMs: number;
   /** Contributors required before an early release. */
   needed: number;
-  /** `fast` releases on the first settled engine, even below `limit`. */
+  /** `fast` releases on the first relevant, in-window answer, even below `limit`. */
   fast: boolean;
   /** Region that leads, or `all` to count every engine. */
   lead: Region | 'all';
@@ -399,9 +399,10 @@ async function runTier(
   anysearchDomain: string | undefined,
   safeSearch: SafeSearch | undefined,
 ): Promise<EngineAnswer[]> {
-  const counters = limits.lead === 'all' || !hosts.some((host) => leadsQuery(host, limits.lead as Region))
+  const lead = limits.lead;
+  const countsAsLead = lead === 'all' || !hosts.some((host) => leadsQuery(host, lead))
     ? () => true
-    : (host: HostSpec) => leadsQuery(host, limits.lead as Region);
+    : (host: HostSpec) => leadsQuery(host, lead);
   if (isAborted(signal)) {
     const reason = signal?.reason;
     throw reason instanceof Error ? reason : new SearchError('web search was cancelled', 'SEARCH_ABORTED', false);
@@ -410,31 +411,18 @@ async function runTier(
   const relayAbort = () => controller.abort();
   signal?.addEventListener('abort', relayAbort, { once: true });
 
-  const outcomes: Array<EngineAnswer | SearchError | undefined> = new Array(hosts.length).fill(undefined);
-  /** Rows each engine returned before the CJK relevance gate, for the failure text. */
-  const rawCounts: number[] = new Array(hosts.length).fill(0);
-  const answered = () => outcomes.filter((outcome) => outcome instanceof SearchError || outcome !== undefined);
-  const available = () =>
-    outcomes.reduce((total, outcome) => total + (outcome instanceof SearchError || outcome === undefined ? 0 : outcome.sources.length), 0);
+  const outcomes: Array<EngineAnswer | EngineFailure | undefined> = new Array(hosts.length).fill(undefined);
   // A contributor is any engine that returned rows, not only an engine in the
   // leading region. The lead still decides ordering and the `leadSettled`
   // shortcut; it must not also veto an early release when a healthy global
   // engine has already supplied useful rows. This is the fan-out tail issue:
   // a slow AnySearch request should not hold the whole Chinese query open
   // after CN Bing and a global engine have enough rows between them.
-  const contributors = () =>
-    outcomes.filter((outcome) => !(outcome instanceof SearchError) && outcome !== undefined && outcome.sources.length > 0).length;
-  const leadTotal = hosts.filter(counters).length || hosts.length;
+  const leadTotal = hosts.filter(countsAsLead).length;
   const needed = Math.min(limits.needed, leadTotal);
-  // Nothing more can arrive from the leading region once every one of its
-  // engines settled, so a failed engine there must not hold the tier open until
-  // the soft deadline.
-  const leadSettled = () => outcomes.filter((outcome, index) => counters(hosts[index] as HostSpec) && outcome !== undefined).length >= leadTotal;
-  const done = () =>
-    answered().length === hosts.length ||
-    (limits.fast && answered().length > 0) ||
-    leadSettled() ||
-    tierReleaseReady(available(), contributors(), limits.limit, needed);
+  let leadSettled = 0;
+  let contributors = 0;
+  let available = 0;
 
   let releasedEarly = false;
   let closed = false;
@@ -448,19 +436,33 @@ async function runTier(
     releasedEarly = early;
     released();
   };
+  const settled = (host: HostSpec, rows: number): void => {
+    if (countsAsLead(host)) leadSettled += 1;
+    if (rows > 0) {
+      contributors += 1;
+      available += rows;
+    }
+    if (contributors > 0 && (limits.fast || leadSettled === leadTotal || tierReleaseReady(available, contributors, limits.limit, needed))) {
+      release(true);
+    }
+  };
 
   const running = hosts.map((host, index) =>
     searchHostWithKeys(host, query, controller.signal, timeoutMs, proxy, limits.timeRange, pool, anysearchDomain, safeSearch, health).then(
       (outcome) => {
         if (outcome.ok) {
-          rawCounts[index] = outcome.sources.length;
-          outcomes[index] = { host, sources: filterRelevant(outcome.sources, query) };
+          const relevant = filterRelevant(outcome.sources, query);
+          const sources = limits.timeRange === 'off' ? relevant : filterByTimeRange(relevant, limits.timeRange);
+          outcomes[index] = relevant.length > 0
+            ? { host, sources }
+            : failureDetail(host.id, `${host.id}: ${outcome.sources.length > 0 ? 'no relevant results' : 'no results'}`);
           health?.noteSuccess(host.id);
+          settled(host, sources.length);
         } else {
-          outcomes[index] = outcome.error;
+          outcomes[index] = failureDetail(host.id, outcome.error.message, outcome.error);
           health?.noteFailure(host.id, outcome.error);
+          settled(host, 0);
         }
-        if (done()) release(true);
       },
       (error: unknown) => {
         // An engine's own failure is a returned value, but cancellation comes
@@ -468,8 +470,9 @@ async function runTier(
         // waiting for any more.
         if (signal?.aborted === true) throw error;
         const message = error instanceof Error ? error.message : String(error);
-        outcomes[index] = new SearchError(`${host.id}: ${message}`, 'SEARCH_NETWORK', true);
-        if (done()) release(true);
+        const failure = new SearchError(`${host.id}: ${message}`, 'SEARCH_NETWORK', true);
+        outcomes[index] = failureDetail(host.id, failure.message, failure);
+        settled(host, 0);
       },
     ),
   );
@@ -490,13 +493,9 @@ async function runTier(
       const reason = releasedEarly ? `${host.id}: aborted once enough results had arrived` : `${host.id}: still running at deadline`;
       failures.push(reason);
       failureDetails.push(failureDetail(host.id, reason));
-    } else if (outcome instanceof SearchError) {
-      failures.push(outcome.message);
-      failureDetails.push(failureDetail(host.id, outcome.message, outcome));
-    } else if (outcome.sources.length === 0) {
-      const reason = `${host.id}: ${(rawCounts[index] ?? 0) > 0 ? 'no relevant results' : 'no results'}`;
-      failures.push(reason);
-      failureDetails.push(failureDetail(host.id, reason));
+    } else if ('reason' in outcome) {
+      failures.push(outcome.reason);
+      failureDetails.push(outcome);
     } else {
       answers.push(outcome);
     }
@@ -695,19 +694,6 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
     ...(timeRange === 'off' ? {} : { timeRange }),
   };
 
-  /**
-   * Drop results whose parsed date is outside the window.
-   *
-   * Undated results survive on purpose: most documentation pages publish no
-   * date, and discarding them would empty the list for a library query. They
-   * are down-weighted during fusion instead, so a dated in-window page wins a
-   * close comparison without erasing the undated long tail.
-   */
-  const applyWindow = (answers: EngineAnswer[]): EngineAnswer[] =>
-    timeRange === 'off'
-      ? answers
-      : answers.map((answer) => ({ host: answer.host, sources: filterByTimeRange(answer.sources, timeRange) }));
-
   // The key names the engines the run *would* use, not the ones that survived
   // the cooldown filter: an engine entering or leaving a cooldown must not
   // invalidate an entry that is still fresh, or every throttle would turn the
@@ -757,14 +743,14 @@ export async function search(query: string, signal: AbortSignal | undefined, opt
 
   let tier: SearchTrace['tier'] = 'none';
   let note: string | undefined;
-  let answers = applyWindow(await runTier(primary, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch));
+  let answers = await runTier(primary, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch);
   if (answers.length > 0) tier = 'primary';
   let sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
   if (sources.length === 0 && fallback.length > 0) {
     if (allowsFallback(failureDetails, fallbackOn)) {
       tier = 'fallback';
       const kinds = [...new Set(failureDetails.map((detail) => detail.kind))];
-      answers = applyWindow(await runTier(fallback, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch));
+      answers = await runTier(fallback, query, signal, timeoutMs, failures, failureDetails, proxy, limits, options.health, pool, anysearchDomain, safeSearch);
       sources = answers.length === 0 ? [] : preferWindow(mergeRegions(answers, lead, limit, rank), timeRange);
       if (answers.length > 0 && kinds.length > 0) note = `primary engines failed (${kinds.join(', ')}); using fallback.`;
     } else {
