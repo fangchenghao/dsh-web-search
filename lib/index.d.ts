@@ -32,10 +32,12 @@ export interface PluginContext {
         registerFetchProvider: (provider: FetchProvider) => void;
     };
     /**
-     * Cordis's inject-free service lookup. `tools` is read through this rather
-     * than added to {@link inject} on purpose: a hard `tools` dependency would
+     * A synchronous service lookup `tools` is read through first, when the host
+     * answers it. `tools` never joins {@link inject}: a hard dependency would
      * stop the whole plugin (including `web_search`) from mounting in a
-     * deployment that has no tool registry.
+     * deployment that has no tool registry. A host that refuses undeclared
+     * services on this path is served by the optional `ctx.inject(['tools'])`
+     * below instead.
      */
     get?: (name: string) => unknown;
     /** Fallback for tests and hosts that expose the registry as a property. */
@@ -47,7 +49,11 @@ export interface PluginContext {
      */
     effect?: (execute: () => (() => void) | void) => unknown;
     on?: (event: string, listener: () => void) => unknown;
-    /** Optional Cordis injection hook; used for the Settings bridge and prompt. */
+    /**
+     * Optional Cordis injection hook: the Settings bridge, the prompt section,
+     * and the fallback that resolves the optional tool registry when
+     * {@link get} cannot see it.
+     */
     inject?: NonNullable<InjectableHost['inject']>;
 }
 /** Configuration as the loader hands it over, already schema-validated. */
